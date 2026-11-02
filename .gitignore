@@ -51,5 +51,8 @@ node_modules
 /build
 .claude/settings.local.json
 
-# Store credentials for `npm run release`
+# Store credentials for `npm run ext:release`
 .env
+
+# Stale ad-hoc zip of the extension folder (packaging writes to /build instead)
+browser-extension.zip

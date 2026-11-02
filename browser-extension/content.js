@@ -1309,6 +1309,7 @@
   // Accessible name is set when state changes; initial text hidden but accessible.
   autoButton.setAttribute("aria-label", "Start slideshow");
   const nextButton = element("button", "redditp__arrow redditp__next", "›");
+
   nextButton.setAttribute("aria-label", "Next slide");
   nextButton.title = "Next slide (→)";
   prevButton.type =
@@ -1318,7 +1319,11 @@
     hideButton.type =
     fullscreenButton.type =
       "button";
-  controls.append(count);
+  // The bottom navigation is one row: the count chip stays fixed on the
+  // left while the auto toggle and the numbered post buttons scroll inside
+  // the numbered track. Sliding the track into the controls nav keeps the
+  // row's children on a shared flex line without overlapping the media.
+  controls.append(count, numberBar);
 
   const settingsOverlay = element("div", "redditp__settings-overlay", "");
   settingsOverlay.hidden = true;
@@ -1430,7 +1435,6 @@
     hideButton,
     fullscreenButton,
     galleryButton,
-    numberBar,
     settingsOverlay,
   );
 
@@ -1582,13 +1586,45 @@
     );
   }
 
+  // Bring the active number button into view by scrolling ONLY the numbered
+  // track. Element.scrollIntoView() scrolls *every* scrollable ancestor, and
+  // an ancestor with `overflow: hidden` still counts as programmatically
+  // scrollable — so a wide numbered bar used to drag the whole viewer
+  // sideways with every rapid Arrow key press. Setting the track's own
+  // scrollLeft keeps the viewer anchored to the viewport no matter how the
+  // track is laid out.
+  function scrollNumberTrackTo(button) {
+    const track = button.parentElement;
+    if (!track) return;
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    if (maxScroll <= 0) return;
+    const trackLeft = track.getBoundingClientRect().left;
+    const rect = button.getBoundingClientRect();
+    const padLeft =
+      parseFloat(getComputedStyle(track).paddingLeft) || 0;
+    const padRight =
+      parseFloat(getComputedStyle(track).paddingRight) || 0;
+    const left = track.scrollLeft + (rect.left - trackLeft);
+    const right = track.scrollLeft + (rect.right - trackLeft);
+    if (left < track.scrollLeft) {
+      track.scrollLeft = Math.min(maxScroll, left - padLeft);
+    } else if (right > track.scrollLeft + track.clientWidth) {
+      track.scrollLeft = Math.max(0, right - track.clientWidth + padRight);
+    }
+  }
+
   function syncPresentationUi() {
     const hasSlides = state.slides.length > 0;
     empty.hidden = hasSlides;
     details.hidden =
       !hasSlides || !state.settings.showDetails || state.interfaceHidden;
     meta.hidden = true;
-    controls.hidden = !hasSlides || !state.settings.showControls;
+    // The bottom-nav row itself follows the interface's visibility; the
+    // count chip specifically also keeps the compact-controls behavior of
+    // old (`P` hides the count and the numbered buttons but never the auto
+    // toggle, which stays reachable).
+    controls.hidden = !hasSlides || state.interfaceHidden;
+    count.hidden = !hasSlides || !state.settings.showControls;
     settingsButton.hidden = !state.settings.showControls;
     prevButton.hidden = nextButton.hidden =
       !hasSlides || !state.settings.showArrows;
@@ -1631,9 +1667,7 @@ galleryButton.textContent = "";
       numberBar.append(button);
     });
     const activeButton = numberBar.querySelector(".redditp__number--active");
-    if (activeButton && typeof activeButton.scrollIntoView === "function") {
-      activeButton.scrollIntoView({ inline: "nearest", block: "nearest" });
-    }
+    if (activeButton) scrollNumberTrackTo(activeButton);
     // The auto-advance toggle stays reachable even when the rest of the
     // numbered bar is hidden with the other controls (P). Only a hidden
     // interface (H) takes the whole strip away.
@@ -2909,18 +2943,23 @@ galleryButton.textContent = "";
     }
   }
 
+  // One place keeps the auto toggle's icon, accessible name, and pressed
+  // state in sync with `state.autoPlaying`, so every entry point (user
+  // toggle, open, close) paints the same play/pause visuals.
+  function renderAutoButton() {
+    autoButton.innerHTML = state.autoPlaying ? pauseSvg : playSvg;
+    autoButton.setAttribute(
+      "aria-label",
+      state.autoPlaying ? "Pause slideshow" : "Start slideshow",
+    );
+    autoButton.setAttribute("aria-pressed", String(state.autoPlaying));
+  }
+
   function toggleAuto() {
     state.autoPlaying = !state.autoPlaying;
     state.settings.autoAdvance = state.autoPlaying;
     saveSettings();
-    if (state.autoPlaying) {
-      autoButton.innerHTML = pauseSvg;
-      autoButton.setAttribute("aria-label", "Pause slideshow");
-    } else {
-      autoButton.innerHTML = playSvg;
-      autoButton.setAttribute("aria-label", "Start slideshow");
-    }
-    autoButton.setAttribute("aria-pressed", String(state.autoPlaying));
+    renderAutoButton();
     scheduleAuto();
   }
 
@@ -3097,7 +3136,7 @@ galleryButton.textContent = "";
     state.interfaceHidden = false;
     settingsOverlay.hidden = true;
     clearTimeout(state.autoTimer);
-    autoButton.textContent = "auto";
+    renderAutoButton();
     stopMedia();
     cancelPreloads();
     root.hidden = true;
@@ -3127,8 +3166,7 @@ galleryButton.textContent = "";
     // A fresh feed may be able to load more posts again.
     state.scanFailures = 0;
     state.autoPlaying = Boolean(state.settings.autoAdvance);
-    autoButton.textContent = state.autoPlaying ? "pause" : "auto";
-    autoButton.setAttribute("aria-pressed", String(state.autoPlaying));
+    renderAutoButton();
     state.interfaceHidden = Boolean(state.settings.startHidden);
     root.hidden = false;
     document.documentElement.style.overflow = "hidden";

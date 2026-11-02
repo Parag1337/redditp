@@ -96,19 +96,20 @@ Edits should continue to work on:
 
 Be extra conservative when touching:
 
-- `index.html`
-- `js/script.js`
-- `js/EmbedIt.js`
-- `css/style.css`
-- routing or rewrite config such as `vercel.json`, `_redirects`, `.htaccess`
+- `browser-extension/manifest.json`
+- `browser-extension/background.js`
+- `browser-extension/content.js`
+- `browser-extension/presentation.css`
+- `nodejs/package-extension.js` and `nodejs/release-extension.js`
+- `tests/playwright/browser-extension.spec.js`
 
-These files affect the broadest compatibility surface.
+These files affect the broadest extension compatibility surface.
 
 ## Validation Checklist
 
 For any non-trivial UI or behavior change, verify at least:
 
-- Initial page load still works from a routed URL such as `/r/pics`
+- The unpacked extension loads and opens on a Reddit feed (e.g. `/r/pics`)
 - Slide navigation still works with mouse, keyboard, and swipe/touch
 - Controls remain reachable on mobile-sized screens
 - Core links still open correctly

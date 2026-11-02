@@ -2,17 +2,14 @@
   "name": "redditp",
   "version": "1.0.0",
   "description": "Convert reddit urls into slideshows",
-  "main": "index.html",
+  "main": "browser-extension/manifest.json",
   "devDependencies": {
     "@playwright/test": "^1.54.1",
     "chrome-webstore-upload-cli": "^3.5.0",
-    "express": "^4.22.0",
     "prettier": "^3.8.1",
     "web-ext": "^10.8.0"
   },
   "scripts": {
-    "start": "node server.js",
-    "debug": "node --inspect server.js",
     "format": "prettier --write .",
     "ext:package": "node ./nodejs/package-extension.js",
     "ext:package:firefox": "node ./nodejs/package-extension.js firefox",
@@ -21,8 +18,7 @@
     "ext:firefox:sign": "npm run ext:package:firefox && web-ext sign --source-dir build/firefox-extension --channel unlisted --artifacts-dir build",
     "ext:release": "node ./nodejs/release-extension.js",
     "ext:release:dry": "node ./nodejs/release-extension.js --dry-run",
-    "test": "node ./nodejs/test-embedit.js",
-    "test:all": "npm run test && npm run test:playwright",
+    "test": "npm run test:playwright",
     "test:playwright": "npx playwright test",
     "test:playwright:ui": "npx playwright test --ui"
   },

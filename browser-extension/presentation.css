@@ -1,15 +1,3 @@
-#redditp-presentation .redditp__count {
-  position: absolute;
-  left: 0;
-  bottom: 12px;
-  z-index: 5;
-  flex-shrink: 0;
-  width: auto;
-  padding: 5px 7px;
-  color: #aaa;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
 #redditp-presentation[hidden] {
   display: none !important;
 }
@@ -141,8 +129,7 @@
   margin: 0;
 }
 
-#redditp-presentation .redditp__details,
-#redditp-presentation .redditp__controls {
+#redditp-presentation .redditp__details {
   position: absolute;
   left: 0;
   z-index: 4;
@@ -196,29 +183,32 @@
 }
 
 #redditp-presentation .redditp__controls {
-  /* Sit above the numbered bar so the count never collides with the auto
-     toggle at the bar's start (narrow screens align the bar to start when it
-     overflows). 12px matches the bar's own gap above the screen edge. */
-  bottom: 74px;
-  bottom: calc(74px + max(0px, env(safe-area-inset-bottom)));
+  /* One bottom navigation row: the fixed count chip and the scrollable
+     numbered track share a flex line. The row is a transparent pass-through
+     strip (only the count and the buttons take visual weight; the strip
+     stays open to tap zones and video controls). Root safe-area padding
+     keeps the 12px offset clear of browser bottom UI. */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  z-index: 5;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 0;
-  /* Shrink to the count ("1 / 5 · loading more") now that the legacy
-     redditp/comments/media buttons and the mute control are gone. */
-  max-width: calc(100vw - 48px);
-  padding: 5px 7px;
+  gap: 6px;
+  padding-left: 12px;
+  background: transparent;
+  pointer-events: none;
 }
 
 #redditp-presentation .redditp__count {
-  position: absolute;
-  left: 0;
-  bottom: 12px;
-  z-index: 5;
   flex-shrink: 0;
-  width: auto;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
   padding: 5px 7px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.72);
   color: #aaa;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -556,8 +546,7 @@
 }
 
 @media (max-width: 600px) {
-  #redditp-presentation .redditp__details,
-  #redditp-presentation .redditp__controls {
+  #redditp-presentation .redditp__details {
     width: calc(100vw - 40px);
     max-width: none;
   }
@@ -619,7 +608,7 @@
 
 @supports not (backdrop-filter: blur(3px)) {
   #redditp-presentation .redditp__details,
-  #redditp-presentation .redditp__controls {
+  #redditp-presentation .redditp__count {
     background: rgba(0, 0, 0, 0.82);
   }
 }
@@ -644,7 +633,7 @@
   backdrop-filter: blur(8px);
 }
 #redditp-presentation .redditp__hide {
-  right: 52px;
+  right: 12px;
 }
 #redditp-presentation .redditp__rotate {
   right: 128px;
@@ -652,8 +641,9 @@
 #redditp-presentation .redditp__settings-button {
   right: 90px;
 }
+/* Hide sits in the far-right corner; fullscreen took its previous slot. */
 #redditp-presentation .redditp__fullscreen {
-  right: 12px;
+  right: 52px;
 }
 
 #redditp-presentation.redditp__interface-hidden .redditp__details,
@@ -671,22 +661,25 @@
 }
 
 #redditp-presentation .redditp__numbers {
-  position: absolute;
-  left: 0;
-
-  bottom: 12px;
-  z-index: 5;
+  /* The scrollable track of the bottom navigation row: the auto toggle and
+     the numbered post buttons scroll inside it while the count chip stays
+     fixed beside it. min-width: 0 lets the flex track shrink to the row so
+     overflow-x actually scrolls instead of spilling past the screen edges. */
+  position: static;
   display: flex;
   gap: 6px;
-  justify-content: center;
+  justify-content: safe center;
   /* When the buttons overflow a narrow screen, safe alignment falls back to
      start so the first buttons and the auto toggle stay reachable by the
      horizontal scroll; plain center would clip them beyond it. */
-  justify-content: safe center;
   align-items: center;
-  padding: 8px 16px;
-  overflow-x: auto;
   flex: 1;
+  min-width: 0;
+  /* Balanced breathing room at both ends; scroll padding keeps the first
+     and last buttons inside the same spacing when they scroll into view. */
+  padding: 8px 16px;
+  scroll-padding-inline: 16px;
+  overflow-x: auto;
   flex-wrap: nowrap;
   scrollbar-width: none;
   background: transparent;
@@ -718,6 +711,12 @@
   min-width: 44px;
   min-height: 44px;
   padding: 0 10px;
+  /* The play/pause SVG sits dead-center; line-height 0 avoids stray baseline
+     space from the inline box around the icon. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
   border: 0;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.08);
@@ -781,10 +780,10 @@
   #redditp-presentation .redditp__close {
     right: 10px;
   }
-  #redditp-presentation .redditp__fullscreen {
+  #redditp-presentation .redditp__hide {
     right: 58px;
   }
-  #redditp-presentation .redditp__hide {
+  #redditp-presentation .redditp__fullscreen {
     right: 106px;
   }
   #redditp-presentation .redditp__settings-button {

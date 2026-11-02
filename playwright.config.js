@@ -7,7 +7,6 @@ module.exports = defineConfig({
     timeout: 10 * 1000,
   },
   use: {
-    baseURL: "http://127.0.0.1:8080",
     trace: "on-first-retry",
   },
   projects: [
@@ -27,10 +26,5 @@ module.exports = defineConfig({
       },
     },
   ],
-  webServer: {
-    command: "node server.js",
-    url: "http://127.0.0.1:8080",
-    reuseExistingServer: true,
-    timeout: 30 * 1000,
-  },
+
 });
