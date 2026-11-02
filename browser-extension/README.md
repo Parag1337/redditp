@@ -63,14 +63,15 @@ Add `redditp=1` to any Reddit URL to start presentation mode automatically, for
 example https://old.reddit.com/r/pics/?redditp=1 or
 https://www.reddit.com/search/?q=formula1&redditp=1.
 
-- Right arrow, Page Down, or Space: next slide
+- Right arrow or Page Down: next slide
 - Left arrow or Page Up: previous slide
+- Space: toggle auto-advance (the same as A)
 - G: skip the rest of the current gallery; otherwise advance one slide
 - Escape: close
 - F: enter or leave browser fullscreen, when available
 - M: toggle video sound; the choice is remembered for the next presentation
 - T: show or hide the title panel (the same saved setting as in the gear panel)
-- P: show or hide the bottom-left control panel (the same as its − / + button)
+- P: show or hide the bottom panel (the count strip above the numbered bar)
 - C: open the current post's comments in a new tab
 - I: open the current slide's original media in a new tab
 - A: toggle auto-advance (the same as the **Auto** button)
@@ -87,14 +88,12 @@ last image.
 - Tab: cycle the controls; focus stays inside the presentation
 - **Auto**: advance using the saved time-per-slide setting
 
-Open the gear button's settings panel for a keyboard shortcut reference. Use the
-gear button in the bottom-left controls to choose the auto-advance duration,
-hide the title panel, navigation arrows, or close button, and show or hide the
-bottom panel. The gear is part of the expandable panel, so compact mode leaves
-only a small expand button. If the close button is hidden, press Escape from the
-slideshow to close presentation mode. These preferences are saved by your
-browser and used the next time presentation mode opens. The **redditp** link
-opens this README on GitHub.
+Open the settings gear (top right) for the settings panel, which includes a
+keyboard shortcut reference. Use it to choose the auto-advance duration, hide
+the title panel, navigation arrows, or close button, and show or hide the bottom
+panel. If the close button is hidden, press Escape from the slideshow to close
+presentation mode. These preferences are saved by your browser and used the next
+time presentation mode opens.
 
 Two video options are enabled by default: **Let videos play at least once** lets
 a playing video finish its first pass when it exceeds the slide timer; **Loop
@@ -152,8 +151,8 @@ Reddit.
 Presentation mode starts with the posts currently rendered in the page and loads
 more as it reaches the end. Images, galleries, and video hosted by Reddit are
 shown, along with the media of the few link hosts Reddit posts commonly use.
-Video starts muted and can be unmuted from the compact control bar or with M,
-which is remembered for later presentations.
+Video starts muted and can be unmuted with M, which is remembered for later
+presentations.
 
 Media played inside a host's own player frame is opened autoplaying. The frame
 URL requests the viewer's saved sound preference using the common mute and sound

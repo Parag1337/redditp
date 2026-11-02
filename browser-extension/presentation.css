@@ -1,3 +1,15 @@
+#redditp-presentation .redditp__count {
+  position: absolute;
+  left: 0;
+  bottom: 12px;
+  z-index: 5;
+  flex-shrink: 0;
+  width: auto;
+  padding: 5px 7px;
+  color: #aaa;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 #redditp-presentation[hidden] {
   display: none !important;
 }
@@ -25,6 +37,10 @@
   color-scheme: dark;
   overscroll-behavior: contain;
   touch-action: pan-y;
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
 }
 
 #redditp-presentation *,
@@ -33,11 +49,20 @@
   box-sizing: border-box;
 }
 
+#redditp-presentation {
+  user-select: none;
+}
+
+#redditp-presentation img {
+  -webkit-user-drag: none;
+}
+
 #redditp-presentation .redditp__stage,
 #redditp-presentation .redditp__media {
   position: absolute;
   inset: 0;
-  width: 100%;
+  flex-shrink: 0;
+  width: auto;
   height: 100%;
   min-width: 0;
   min-height: 0;
@@ -53,39 +78,48 @@
 #redditp-presentation .redditp__media {
   display: grid;
   place-items: center;
+  background: #000;
+}
+
+#redditp-presentation .redditp__media > * {
+  display: block;
+  max-flex-shrink: 0;
+  width: auto;
+  max-height: 100%;
+  margin: 0;
 }
 
 #redditp-presentation .redditp__video,
 #redditp-presentation .redditp__embed {
-  display: block;
-  width: 100%;
+  flex-shrink: 0;
+  width: auto;
   height: 100%;
   min-width: 0;
   min-height: 0;
-  max-width: none;
-  max-height: none;
-  margin: 0;
+  max-flex-shrink: 0;
+  width: auto;
+  max-height: 100%;
   border: 0;
   object-fit: contain;
   background: #000;
 }
 
 #redditp-presentation .redditp__image {
-  display: block;
   width: auto;
   height: auto;
   min-width: 0;
   min-height: 0;
-  max-width: 100%;
+  max-flex-shrink: 0;
+  width: auto;
   max-height: 100%;
-  margin: 0;
   border: 0;
   object-fit: contain;
   background: #000;
 }
 
 #redditp-presentation .redditp__image--expand {
-  width: 100%;
+  flex-shrink: 0;
+  width: auto;
   height: 100%;
 }
 
@@ -95,7 +129,6 @@
   max-width: 480px;
   padding: 28px;
   color: #aaa;
-  text-align: center;
 }
 
 #redditp-presentation .redditp__empty h2 {
@@ -163,37 +196,32 @@
 }
 
 #redditp-presentation .redditp__controls {
-  bottom: max(0px, env(safe-area-inset-bottom));
+  /* Sit above the numbered bar so the count never collides with the auto
+     toggle at the bar's start (narrow screens align the bar to start when it
+     overflows). 12px matches the bar's own gap above the screen edge. */
+  bottom: 74px;
+  bottom: calc(74px + max(0px, env(safe-area-inset-bottom)));
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0;
-  /* Grow past the usual width for "pause", "(2/7)" or "· loading more"
-     rather than wrapping onto a second row. */
-  width: max-content;
-  min-width: min(450px, calc(100vw - 48px));
+  /* Shrink to the count ("1 / 5 · loading more") now that the legacy
+     redditp/comments/media buttons and the mute control are gone. */
   max-width: calc(100vw - 48px);
   padding: 5px 7px;
 }
 
-#redditp-presentation .redditp__brand {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 7px;
-  color: #fff;
-  font-weight: 700;
-  text-decoration: none;
-}
-
 #redditp-presentation .redditp__count {
-  margin-left: auto;
+  position: absolute;
+  left: 0;
+  bottom: 12px;
+  z-index: 5;
+  flex-shrink: 0;
+  width: auto;
   padding: 5px 7px;
   color: #aaa;
   font-variant-numeric: tabular-nums;
-}
-
-#redditp-presentation .redditp__count + .redditp__gallery {
-  margin-left: -5px;
+  white-space: nowrap;
 }
 
 #redditp-presentation .redditp__button.redditp__gallery {
@@ -300,29 +328,10 @@
 
 #redditp-presentation .redditp__arrow[hidden],
 #redditp-presentation .redditp__button[hidden],
-#redditp-presentation .redditp__details[hidden] {
+#redditp-presentation .redditp__details[hidden],
+#redditp-presentation .redditp__controls[hidden],
+#redditp-presentation .redditp__numbers[hidden] {
   display: none !important;
-}
-
-#redditp-presentation .redditp__gear {
-  width: 34px;
-  font-size: 18px;
-  font-weight: 400;
-}
-
-#redditp-presentation .redditp__collapse {
-  font-size: 18px;
-  font-weight: 400;
-}
-
-#redditp-presentation .redditp__controls--collapsed {
-  width: auto;
-  min-width: 0;
-}
-
-#redditp-presentation .redditp__controls--collapsed .redditp__control-item,
-#redditp-presentation .redditp__controls--collapsed .redditp__count {
-  display: none;
 }
 
 #redditp-presentation .redditp__settings-overlay {
@@ -589,11 +598,22 @@
   }
 
   #redditp-presentation .redditp__button,
-  #redditp-presentation .redditp__brand,
   #redditp-presentation .redditp__count {
     min-height: 36px;
     padding: 7px 6px;
     font-size: 12px;
+  }
+}
+
+/* On narrow screens the title panel is wide enough to run underneath the
+   top-right control stack (fullscreen/hide/settings/rotate and, on gallery
+   slides, the gallery indicator at right: 164px), hiding the first lines of
+   long titles or metadata. Cap the panel short of that ~198px stack zone
+   wherever it could reach it (up to ~970px viewport width). */
+@media (max-width: 969px) {
+  #redditp-presentation .redditp__details {
+    width: min(800px, calc(100vw - 210px));
+    max-width: none;
   }
 }
 
@@ -603,3 +623,208 @@
     background: rgba(0, 0, 0, 0.82);
   }
 }
+
+#redditp-presentation .redditp__hide,
+#redditp-presentation .redditp__fullscreen,
+#redditp-presentation .redditp__settings-button,
+#redditp-presentation .redditp__rotate {
+  position: absolute;
+  top: 12px;
+  z-index: 5;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+#redditp-presentation .redditp__hide {
+  right: 52px;
+}
+#redditp-presentation .redditp__rotate {
+  right: 128px;
+}
+#redditp-presentation .redditp__settings-button {
+  right: 90px;
+}
+#redditp-presentation .redditp__fullscreen {
+  right: 12px;
+}
+
+#redditp-presentation.redditp__interface-hidden .redditp__details,
+#redditp-presentation.redditp__interface-hidden .redditp__controls,
+#redditp-presentation.redditp__interface-hidden .redditp__prev,
+#redditp-presentation.redditp__interface-hidden .redditp__next,
+#redditp-presentation.redditp__interface-hidden .redditp__count,
+#redditp-presentation.redditp__interface-hidden .redditp__gallery,
+#redditp-presentation.redditp__interface-hidden .redditp__close,
+#redditp-presentation.redditp__interface-hidden .redditp__fullscreen,
+#redditp-presentation.redditp__interface-hidden .redditp__settings-button,
+#redditp-presentation.redditp__interface-hidden .redditp__rotate {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#redditp-presentation .redditp__numbers {
+  position: absolute;
+  left: 0;
+
+  bottom: 12px;
+  z-index: 5;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  /* When the buttons overflow a narrow screen, safe alignment falls back to
+     start so the first buttons and the auto toggle stay reachable by the
+     horizontal scroll; plain center would clip them beyond it. */
+  justify-content: safe center;
+  align-items: center;
+  padding: 8px 16px;
+  overflow-x: auto;
+  flex: 1;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+  background: transparent;
+  /* Only the number buttons take clicks; the empty strip stays transparent to
+     the native video controls underneath and to tap zones. */
+  pointer-events: none;
+}
+#redditp-presentation .redditp__numbers::-webkit-scrollbar {
+  display: none;
+}
+#redditp-presentation .redditp__number {
+  pointer-events: auto;
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #bbb;
+  font-size: 13px;
+  cursor: pointer;
+}
+#redditp-presentation .redditp__number--active {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-weight: 600;
+}
+#redditp-presentation .redditp__numbers .redditp__auto {
+  pointer-events: auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #bbb;
+  font-size: 13px;
+  cursor: pointer;
+}
+#redditp-presentation .redditp__auto[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-weight: 600;
+}
+#redditp-presentation.redditp__interface-hidden .redditp__numbers {
+  opacity: 0;
+  pointer-events: none;
+}
+#redditp-presentation .redditp__numbers--manual .redditp__number {
+  display: none;
+}
+
+#redditp-presentation .redditp__button.redditp__gallery {
+  position: absolute;
+  top: 12px;
+  z-index: 5;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+#redditp-presentation .redditp__gallery {
+  right: 164px;
+}
+
+@media (max-width: 600px) {
+  /* ---- Mobile touch targets (phase 4a) ----------------------------------
+     Narrow, touch-oriented screens get a properly sized control row without
+     changing the desktop UI: the visible chips grow from 34px to 40px and
+     every row control reaches a 48x48 effective tap area through an
+     invisible ::after zone instead of extra visual padding. The row was
+     respaced to a 48px pitch so the enlarged tap zones exactly abut rather
+     than overlap, and the close button joins the row (it previously sat on
+     top of the fullscreen button's corner). */
+
+  #redditp-presentation .redditp__hide,
+  #redditp-presentation .redditp__fullscreen,
+  #redditp-presentation .redditp__settings-button,
+  #redditp-presentation .redditp__rotate,
+  #redditp-presentation .redditp__button.redditp__gallery,
+  #redditp-presentation .redditp__close {
+    top: 10px;
+    width: 40px;
+    height: 40px;
+  }
+  #redditp-presentation .redditp__close {
+    right: 10px;
+  }
+  #redditp-presentation .redditp__fullscreen {
+    right: 58px;
+  }
+  #redditp-presentation .redditp__hide {
+    right: 106px;
+  }
+  #redditp-presentation .redditp__settings-button {
+    right: 154px;
+  }
+  #redditp-presentation .redditp__rotate {
+    right: 202px;
+  }
+  #redditp-presentation .redditp__button.redditp__gallery {
+    right: 250px;
+  }
+
+  /* Invisible hit-area extensions: they belong to their button for pointer
+     purposes, keep icons at 18px, and stay inside the 48px pitch. */
+  #redditp-presentation .redditp__control-item::after,
+  #redditp-presentation .redditp__close::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+  }
+
+  /* Previous/next arrows keep their rounded-pill look and gain the missing
+     width; 48px wide at touch weight, still one control per screen edge. */
+  #redditp-presentation .redditp__arrow {
+    width: 48px;
+  }
+
+  /* The title panel must clear the wider control row, including the gallery
+     button that only exists on gallery slides. */
+  #redditp-presentation .redditp__details {
+    width: min(800px, calc(100vw - 260px));
+  }
+  #redditp-presentation:has(.redditp__gallery:not([hidden])) .redditp__details {
+    width: min(800px, calc(100vw - 306px));
+  }
+
+  /* Settings: full-height exit and a finger-sized duration input. */
+  #redditp-presentation .redditp__settings-close {
+    height: 48px;
+  }
+  #redditp-presentation .redditp__duration-control input {
+    min-height: 44px;
+  }

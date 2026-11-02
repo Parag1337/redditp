@@ -37,14 +37,17 @@
   const VIDEO_URL_RE = /\.(?:m3u8|mp4|webm)(?:$|[?#])/i;
   const MIN_EXPAND_IMAGE_LONG_EDGE = 1000;
   const MIN_EXPAND_IMAGE_SHORT_EDGE = 600;
+  // Videos cost decoders and buffers, so only this many speculative video
+  // elements may sit in the cache or in flight at the same time. The video
+  // window itself stays inside the ordinary preloadPosts horizon.
+  const VIDEO_PRELOAD_LIMIT = 2;
+  const VIDEO_PRELOAD_WINDOW = 2;
   const SETTINGS_KEY = "redditpPresentationSettings";
   // The one embed origin that publishes a message protocol for controlling
   // its player. Every other player keeps its own sound control.
   const JS_API_EMBED_ORIGIN = "https://www.youtube.com";
-  const README_URL =
-    "https://github.com/ubershmekel/redditp/blob/main/browser-extension/README.md";
   const DEFAULT_SETTINGS = {
-    slideDurationSeconds: 6,
+    slideDurationSeconds: 5,
     finishMediaOnce: true,
     loopShortMedia: true,
     showDetails: true,
@@ -52,6 +55,13 @@
     showClose: true,
     showControls: true,
     sound: false,
+    autoAdvance: true,
+    tapZones: true,
+    swipeNavigation: true,
+    startHidden: false,
+    startFullscreen: false,
+    preloadPosts: 5,
+    preloadConcurrency: 3,
   };
   const state = {
     open: false,
@@ -73,7 +83,27 @@
     settings: Object.assign({}, DEFAULT_SETTINGS),
     settingsLoaded: false,
     settingsOpen: false,
-    embedKeepsOwnSound: false,
+    interfaceHidden: false,
+    rotation: 0,
+    preloadQueue: [],
+    preloadInFlight: new Map(),
+    preloadCache: new Map(),
+    preloadRetry: new Map(),
+    preloadRetryLimit: 2,
+    scanFailures: 0,
+    preloadStats: {
+      started: 0,
+      loaded: 0,
+      decoded: 0,
+      decodeFailed: 0,
+      failed: 0,
+      evicted: 0,
+      canceled: 0,
+      hits: 0,
+      misses: 0,
+    },
+    lastNavigation: null,
+    debugLog: [],
   };
 
   function absoluteUrl(value) {
@@ -798,7 +828,13 @@
           Boolean(
             node.getAttribute("post-type") === "link" &&
             media[0]?.kind === "image",
-          ));
+          ) ||
+          // A card that carries no playable media at all may still have some:
+          // Reddit's feed lazy-loads its players and gallery carousels, so
+          // hosted-video and gallery posts can arrive without either. The
+          // post page holds the real media; a genuine external link stays a
+          // card after enrichment comes back empty.
+          media[0]?.kind === "link");
       media.forEach((item, mediaIndex) => {
         const key = `${comments || base.title}|${item.url}`;
         if (!seenPostMedia.has(key)) {
@@ -825,6 +861,172 @@
     return new DOMParser().parseFromString(await response.text(), "text/html");
   }
 
+  // The HTML fetch is not guaranteed to describe the post: Reddit serves
+  // challenge pages and hydration-only shells with a 200 status. Its JSON
+  // endpoint answers with the same post's media fields instead, so it backs
+  // up the DOM path for link, hosted-video, and gallery cards.
+  function redditJsonUrl(url) {
+    const [pathPart, queryPart = ""] = url.split("?");
+    const base = pathPart.endsWith("/") ? pathPart : `${pathPart}/`;
+    return `${base}.json${queryPart ? `?${queryPart}` : ""}`;
+  }
+
+  async function fetchRedditJson(url) {
+    const response = await fetch(redditJsonUrl(url), {
+      credentials: "include",
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) throw new Error(`Reddit returned ${response.status}`);
+    // A challenge page is still a 200 but HTML; parsing it rejects here.
+    return await response.json();
+  }
+
+  // Reddit escapes ampersands in URLs stored in its JSON payloads.
+  function unescapedUrl(value) {
+    if (!value) return "";
+    return absoluteUrl(String(value).replace(/&amp;/g, "&"));
+  }
+
+  function redditPostFromJson(payload) {
+    const listings = Array.isArray(payload) ? payload : [payload];
+    for (const listing of listings) {
+      for (const child of listing?.data?.children || []) {
+        if (child?.kind === "t3" && child.data) return child.data;
+      }
+    }
+    return null;
+  }
+
+  function redditJsonPoster(data) {
+    const images = data?.preview?.images;
+    if (!images?.length) return "";
+    const resolutions = images[0].resolutions || [];
+    return unescapedUrl(
+      resolutions[resolutions.length - 1]?.url || images[0].source?.url,
+    );
+  }
+
+  function redditJsonVideoItem(data) {
+    const video =
+      data?.secure_media?.reddit_video ||
+      data?.media?.reddit_video ||
+      data?.preview?.reddit_video_preview;
+    if (!video) return null;
+    const dashUrl = unescapedUrl(video.dash_url);
+    const hlsUrl = unescapedUrl(video.hls_url);
+    const fallbackUrl = unescapedUrl(video.fallback_url);
+    // Native HLS keeps the sound where it plays at all; elsewhere the DASH
+    // fallback only offers a video track, so the page's dash.js (via
+    // page-bridge.js) must join video and audio whenever the MPD is there.
+    const url = (canPlayHls() && hlsUrl) || fallbackUrl || hlsUrl;
+    if (!url) return null;
+    return {
+      kind: "video",
+      url,
+      poster: redditJsonPoster(data),
+      postMedia: true,
+      mpdUrl: dashUrl && dashUrl !== url ? dashUrl : "",
+    };
+  }
+
+  // One media_metadata entry for one gallery item, in gallery_data order.
+  function redditJsonGalleryItem(entry) {
+    if (!entry || entry.status !== "valid") return null;
+    const source = entry.s || {};
+    if (entry.e === "Image" || entry.e === "AnimatedImage") {
+      // Animated images publish an mp4 variant that actually loops in every
+      // browser; a plain gif may crawl in Chromium and Safari shows it fine
+      // either way, so mp4 first, source image second.
+      const animated = unescapedUrl(source.mp4 || source.gif);
+      if (animated)
+        return { kind: "video", url: animated, poster: "", postMedia: true };
+      const url = unescapedUrl(source.u);
+      return url ? { kind: "image", url, poster: "", postMedia: true } : null;
+    }
+    if (entry.e === "Video") {
+      const dashUrl = unescapedUrl(source.dash_url);
+      const hlsUrl = unescapedUrl(source.hls_url);
+      const fallbackUrl = unescapedUrl(source.fallback_url);
+      const url = (canPlayHls() && hlsUrl) || fallbackUrl || hlsUrl;
+      return url
+        ? {
+            kind: "video",
+            url,
+            poster: "",
+            postMedia: true,
+            mpdUrl: dashUrl && dashUrl !== url ? dashUrl : "",
+          }
+        : null;
+    }
+    return null;
+  }
+
+  function redditJsonGalleryItems(data) {
+    const items = data?.gallery_data?.items;
+    const metadata = data?.media_metadata;
+    if (!items?.length || !metadata) return null;
+    const media = [];
+    for (const item of items) {
+      const resolved = redditJsonGalleryItem(metadata[item.media_id]);
+      if (resolved) media.push(resolved);
+    }
+    return media.length ? media : null;
+  }
+
+  function redditJsonImageItem(data) {
+    const dest = unescapedUrl(data?.url_overridden_by_dest || data?.url);
+    if (!dest) return null;
+    if (/\.gif(?:$|[?#])/i.test(dest)) {
+      // A gif synthesised from a still image; Reddit publishes its playing
+      // mp4 rendition beside it.
+      const mp4 = unescapedUrl(
+        data?.preview?.images?.[0]?.variants?.mp4?.source?.url,
+      );
+      return mp4
+        ? { kind: "video", url: mp4, poster: "", postMedia: true }
+        : null;
+    }
+    if (IMAGE_URL_RE.test(dest)) {
+      return { kind: "image", url: dest, poster: "", postMedia: true };
+    }
+    if ((data?.post_hint || "").toLowerCase() === "image") {
+      // No extension to check on, but Reddit says this post is an image; its
+      // preview carries the original resolution.
+      const source = unescapedUrl(data?.preview?.images?.[0]?.source?.url);
+      return source
+        ? { kind: "image", url: source, poster: "", postMedia: true }
+        : null;
+    }
+    return null;
+  }
+
+  // Media and body from a post listing's JSON. Returns null when the post is
+  // not recognised; an empty items list with a body stands for a text post.
+  function mediaFromRedditJson(payload) {
+    const post = redditPostFromJson(payload);
+    if (!post) return null;
+    const items = [];
+    const galleryItems = redditJsonGalleryItems(post);
+    if (galleryItems) items.push(...galleryItems);
+    else {
+      const videoItem = redditJsonVideoItem(post);
+      if (videoItem) items.push(videoItem);
+      const imageItem = redditJsonImageItem(post);
+      if (imageItem) items.push(imageItem);
+    }
+    const body = String(post.selftext || "")
+      .replace(/\r\n?/g, "\n")
+      .trim();
+    const sourceUrl = unescapedUrl(post.url_overridden_by_dest || post.url);
+    if (!items.length && !body) return null;
+    return {
+      items: items.length ? items : [{}],
+      body,
+      sourceUrl: sourceUrl || "",
+      isGallery: Boolean(galleryItems && galleryItems.length),
+    };
+  }
+
   // Old Reddit listings and search results page with a "next ›" link instead
   // of infinite scroll. Listings wrap the link in .next-button and search
   // results do not, so match on rel. A search page can list communities above
@@ -839,6 +1041,35 @@
     return url && new URL(url).origin === location.origin ? url : "";
   }
 
+  function finishEnrichment(slide, key, detail) {
+    const replacements = detail.items.map((item, index) =>
+      Object.assign({}, slide, item, {
+        body: detail.body || slide.body,
+        sourceUrl: detail.sourceUrl || slide.sourceUrl,
+        galleryItem: detail.isGallery ? index + 1 : 0,
+        galleryTotal: detail.isGallery ? detail.items.length : 0,
+        needsEnrichment: false,
+      }),
+    );
+
+    const slideIndex = state.slides.findIndex(
+      (candidate) =>
+        candidate.needsEnrichment &&
+        (candidate.postKey || candidate.commentsUrl) === key,
+    );
+    if (slideIndex < 0) return;
+    const wasCurrent = state.index === slideIndex;
+    if (slideIndex < state.index) {
+      state.index += replacements.length - 1;
+    }
+    state.slides.splice(slideIndex, 1, ...replacements);
+    state.enrichments.set(key, "done");
+    if (wasCurrent && state.open) {
+      state.index = slideIndex;
+      render();
+    }
+  }
+
   async function enrichSlide(slide) {
     if (!slide.needsEnrichment || !slide.commentsUrl) return;
     const key = slide.postKey || slide.commentsUrl;
@@ -846,52 +1077,50 @@
     state.enrichments.set(key, "pending");
 
     try {
-      const doc = await fetchRedditDocument(slide.commentsUrl);
-      const safePostKey = /^[\w-]+$/.test(slide.postKey || "")
-        ? slide.postKey
-        : "";
-      const detailNode =
-        (safePostKey &&
-          doc.querySelector(`shreddit-post[id="${safePostKey}"]`)) ||
-        doc.querySelector("shreddit-post, .thing.link");
-      if (!detailNode)
-        throw new Error("Post media was not present in the response");
+      let detail;
+      try {
+        const doc = await fetchRedditDocument(slide.commentsUrl);
+        const safePostKey = /^[\w-]+$/.test(slide.postKey || "")
+          ? slide.postKey
+          : "";
+        const detailNode =
+          (safePostKey &&
+            doc.querySelector(`shreddit-post[id="${safePostKey}"]`)) ||
+          doc.querySelector("shreddit-post, .thing.link");
+        if (!detailNode)
+          throw new Error("Post media was not present in the response");
 
-      const detailSource = contentUrl(detailNode, slide.commentsUrl);
-      const detailMedia = mediaFromNode(detailNode, detailSource);
-      // Search cards carry only a title, so a text post's body is worth the
-      // fetch even when the post has no media; it then stays a link card.
-      const detailBody = postBodyText(detailNode);
-      if (!detailMedia.length && !detailBody)
-        throw new Error("Post had no supported media");
-      const items = detailMedia.length ? detailMedia : [{}];
-      const isGallery = isGalleryPost(detailNode);
-      const replacements = items.map((item, index) =>
-        Object.assign({}, slide, item, {
-          body: detailBody || slide.body,
+        const detailSource = contentUrl(detailNode, slide.commentsUrl);
+        const detailMedia = mediaFromNode(detailNode, detailSource);
+        // Search cards carry only a title, so a text post's body is worth the
+        // fetch even when the post has no media; it then stays a link card.
+        const detailBody = postBodyText(detailNode);
+        if (!detailMedia.length && !detailBody)
+          throw new Error("Post had no supported media");
+        detail = {
+          items: detailMedia.length ? detailMedia : [{}],
+          body: detailBody,
           sourceUrl: detailSource || slide.sourceUrl,
-          galleryItem: isGallery ? index + 1 : 0,
-          galleryTotal: isGallery ? items.length : 0,
-          needsEnrichment: false,
-        }),
-      );
-
-      const slideIndex = state.slides.findIndex(
-        (candidate) =>
-          candidate.needsEnrichment &&
-          (candidate.postKey || candidate.commentsUrl) === key,
-      );
-      if (slideIndex < 0) return;
-      const wasCurrent = state.index === slideIndex;
-      if (slideIndex < state.index) {
-        state.index += replacements.length - 1;
+          isGallery: isGalleryPost(detailNode),
+        };
+      } catch (htmlError) {
+        // The HTML fetch can succeed with a 200 and still hold nothing:
+        // Reddit serves challenges and hydration-only shells that way. The
+        // JSON endpoint answers for the same post from the same origin.
+        let jsonDetail = null;
+        try {
+          jsonDetail = mediaFromRedditJson(
+            await fetchRedditJson(slide.commentsUrl),
+          );
+        } catch (_jsonError) {
+          // A challenge page can come back over JSON too; treat it as no
+          // detail so the HTML error decides the outcome.
+          jsonDetail = null;
+        }
+        if (!jsonDetail) throw htmlError;
+        detail = jsonDetail;
       }
-      state.slides.splice(slideIndex, 1, ...replacements);
-      state.enrichments.set(key, "done");
-      if (wasCurrent && state.open) {
-        state.index = slideIndex;
-        render();
-      }
+      finishEnrichment(slide, key, detail);
     } catch (_error) {
       // Keep the visible thumbnail/link card and allow another attempt if the
       // user revisits this slide. Reddit may return a challenge or gated page.
@@ -930,6 +1159,14 @@
         }
       } else if (typeof value[key] === "boolean") {
         result[key] = value[key];
+      } else if (key === "preloadPosts" || key === "preloadConcurrency") {
+        const numeric = Number(value[key]);
+        if (Number.isFinite(numeric)) {
+          result[key] = Math.min(
+            key === "preloadPosts" ? 10 : 6,
+            Math.max(1, Math.round(numeric)),
+          );
+        }
       }
     });
     // Before 2026-09 this was stored inverted as `controlsCollapsed`.
@@ -1000,6 +1237,8 @@
   stage.append(mediaBox, empty);
 
   const count = element("div", "redditp__count", "");
+  const numberBar = element("nav", "redditp__numbers", "");
+  numberBar.setAttribute("aria-label", "Post navigation");
   const galleryButton = element(
     "button",
     "redditp__button redditp__gallery redditp__control-item",
@@ -1011,6 +1250,46 @@
   closeButton.type = "button";
   closeButton.setAttribute("aria-label", "Close presentation mode");
   closeButton.title = "Close presentation mode (Esc)";
+  const settingsButton = element(
+    "button",
+    "redditp__button redditp__settings-button redditp__control-item",
+    "",
+  );
+  settingsButton.innerHTML =
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>';
+  settingsButton.type = "button";
+  settingsButton.setAttribute("aria-label", "Open presentation settings");
+  settingsButton.title = "Settings";
+  const rotateButton = element(
+    "button",
+    "redditp__button redditp__rotate redditp__control-item",
+    "",
+  );
+  rotateButton.innerHTML =
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>';
+  rotateButton.type = "button";
+  rotateButton.setAttribute("aria-label", "Rotate viewer");
+  rotateButton.title = "Rotate viewer (R)";
+  const hideButton = element(
+    "button",
+    "redditp__button redditp__hide redditp__control-item",
+    "",
+  );
+  hideButton.innerHTML =
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.442 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>';
+  hideButton.type = "button";
+  hideButton.setAttribute("aria-label", "Hide interface");
+  hideButton.title = "Hide interface (H)";
+  const fullscreenButton = element(
+    "button",
+    "redditp__button redditp__fullscreen redditp__control-item",
+    "",
+  );
+  fullscreenButton.innerHTML =
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+  fullscreenButton.type = "button";
+  fullscreenButton.setAttribute("aria-label", "Enter fullscreen");
+  fullscreenButton.title = "Toggle fullscreen (F)";
   const details = element("div", "redditp__details", "");
   const title = element("h1", "redditp__title", "");
   const meta = element("div", "redditp__meta", "");
@@ -1021,71 +1300,25 @@
   const prevButton = element("button", "redditp__arrow redditp__prev", "‹");
   prevButton.setAttribute("aria-label", "Previous slide");
   prevButton.title = "Previous slide (←)";
-  const settingsButton = element(
-    "button",
-    "redditp__button redditp__gear redditp__control-item",
-    "⚙",
-  );
-  settingsButton.setAttribute("aria-label", "Open presentation settings");
-  settingsButton.title = "Presentation settings";
-  const brand = element("a", "redditp__brand redditp__control-item", "redditp");
-  brand.href = README_URL;
-  brand.target = "_blank";
-  brand.rel = "noopener noreferrer";
-  brand.title = "Open the browser extension README on GitHub";
-  const autoButton = element(
-    "button",
-    "redditp__button redditp__playback-control redditp__control-item",
-    "auto",
-  );
+  const autoButton = element("button", "redditp__auto", "");
   autoButton.title = "Advance slides automatically (A)";
-  const soundButton = element(
-    "button",
-    "redditp__button redditp__playback-control redditp__control-item redditp__sound",
-    "sound off",
-  );
+  // Insert a play SVG icon for the stopped state.
+  const playSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+  const pauseSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+  autoButton.innerHTML = playSvg;
+  // Accessible name is set when state changes; initial text hidden but accessible.
+  autoButton.setAttribute("aria-label", "Start slideshow");
   const nextButton = element("button", "redditp__arrow redditp__next", "›");
   nextButton.setAttribute("aria-label", "Next slide");
   nextButton.title = "Next slide (→)";
-  const sourceLink = element(
-    "a",
-    "redditp__button redditp__link-control redditp__control-item",
-    "media",
-  );
-  sourceLink.title = "Open the original media in a new tab (I)";
-  const commentsLink = element(
-    "a",
-    "redditp__button redditp__link-control redditp__control-item",
-    "comments",
-  );
-  commentsLink.title = "Open comments in a new tab (C)";
-  const collapseButton = element(
-    "button",
-    "redditp__button redditp__collapse",
-    "−",
-  );
-  collapseButton.setAttribute("aria-label", "Collapse bottom controls");
   prevButton.type =
     settingsButton.type =
     autoButton.type =
-    soundButton.type =
-    nextButton.type =
     galleryButton.type =
-    collapseButton.type =
+    hideButton.type =
+    fullscreenButton.type =
       "button";
-  sourceLink.target = commentsLink.target = "_blank";
-  sourceLink.rel = commentsLink.rel = "noopener noreferrer";
-  controls.append(
-    settingsButton,
-    brand,
-    commentsLink,
-    sourceLink,
-    autoButton,
-    soundButton,
-    count,
-    galleryButton,
-    collapseButton,
-  );
+  controls.append(count);
 
   const settingsOverlay = element("div", "redditp__settings-overlay", "");
   settingsOverlay.hidden = true;
@@ -1135,6 +1368,7 @@
     [["←", "PgUp"], "Previous slide"],
     [["G"], "Skip gallery / next post"],
     [["F"], "Toggle fullscreen (if available)"],
+    [["H"], "Hide / show the interface"],
     [["M"], "Toggle video sound"],
     [["T"], "Show / hide the title panel"],
     [["P"], "Show / hide the bottom-left controls"],
@@ -1177,6 +1411,10 @@
       "Show the close button (press Esc instead when hidden)",
     ),
     checkboxSetting("showControls", "Show the bottom panel"),
+    checkboxSetting("tapZones", "Enable tap zones"),
+    checkboxSetting("swipeNavigation", "Enable swipe navigation"),
+    checkboxSetting("startHidden", "Start with interface hidden"),
+    checkboxSetting("startFullscreen", "Start in fullscreen where supported"),
     shortcutHelp,
   );
   settingsOverlay.append(settingsPanel);
@@ -1187,6 +1425,12 @@
     details,
     controls,
     closeButton,
+    settingsButton,
+    rotateButton,
+    hideButton,
+    fullscreenButton,
+    galleryButton,
+    numberBar,
     settingsOverlay,
   );
 
@@ -1210,7 +1454,6 @@
       }
       state.nativeRestores.delete(video);
     });
-    state.embedKeepsOwnSound = false;
     mediaBox.replaceChildren();
   }
 
@@ -1342,8 +1585,11 @@
   function syncPresentationUi() {
     const hasSlides = state.slides.length > 0;
     empty.hidden = hasSlides;
-    details.hidden = !hasSlides || !state.settings.showDetails;
-    controls.hidden = !hasSlides;
+    details.hidden =
+      !hasSlides || !state.settings.showDetails || state.interfaceHidden;
+    meta.hidden = true;
+    controls.hidden = !hasSlides || !state.settings.showControls;
+    settingsButton.hidden = !state.settings.showControls;
     prevButton.hidden = nextButton.hidden =
       !hasSlides || !state.settings.showArrows;
     prevButton.disabled = !hasSlides || state.index === 0;
@@ -1351,31 +1597,114 @@
       !hasSlides ||
       (isSinglePostPage() && state.index === state.slides.length - 1);
     closeButton.hidden = !state.settings.showClose;
-    controls.classList.toggle(
-      "redditp__controls--collapsed",
-      !state.settings.showControls,
-    );
-    collapseButton.textContent = state.settings.showControls ? "−" : "+";
-    collapseButton.setAttribute(
-      "aria-label",
-      state.settings.showControls
-        ? "Collapse bottom controls"
-        : "Expand bottom controls",
-    );
-    soundButton.textContent = state.settings.sound ? "sound on" : "sound off";
-    soundButton.setAttribute("aria-pressed", String(state.settings.sound));
-    soundButton.title = state.embedKeepsOwnSound
-      ? "This embedded player answers only to its own sound control"
-      : "Toggle video sound (M)";
-    collapseButton.title = state.settings.showControls
-      ? "Collapse controls (P)"
-      : "Expand controls (P)";
     updateCount(state.loadingMore && isOnLastPost());
     const slide = hasSlides ? state.slides[state.index] : null;
     galleryButton.hidden = !slide?.galleryItem;
-    galleryButton.textContent = slide?.galleryItem
-      ? `(${slide.galleryItem}/${slide.galleryTotal})`
-      : "";
+// Gallery counter shown only in title; toolbar button is the "Skip gallery" control.
+// Remove the duplicate counter from the toolbar button while preserving its function.
+galleryButton.textContent = "";
+    numberBar.replaceChildren();
+    // The auto-advance toggle lives in the same bottom strip as the numbered
+    // post buttons, ahead of them.
+    numberBar.append(autoButton);
+    const starts = [];
+    let previous = null;
+    state.slides.forEach((item, index) => {
+      const identity = postIdentity(item);
+      if (identity !== previous) starts.push(index);
+      previous = identity;
+    });
+    let currentPost = 1;
+    starts.forEach((startIndex, i) => {
+      if (state.index >= startIndex) currentPost = i + 1;
+    });
+    starts.forEach((startIndex, i) => {
+      const button = element("button", "redditp__number", String(i + 1));
+      button.type = "button";
+      button.setAttribute("aria-label", `Post ${i + 1}`);
+      if (i + 1 === currentPost)
+        button.classList.add("redditp__number--active");
+      button.addEventListener("click", () => {
+        state.index = startIndex;
+        render();
+      });
+      numberBar.append(button);
+    });
+    const activeButton = numberBar.querySelector(".redditp__number--active");
+    if (activeButton && typeof activeButton.scrollIntoView === "function") {
+      activeButton.scrollIntoView({ inline: "nearest", block: "nearest" });
+    }
+    // The auto-advance toggle stays reachable even when the rest of the
+    // numbered bar is hidden with the other controls (P). Only a hidden
+    // interface (H) takes the whole strip away.
+    numberBar.classList.toggle(
+      "redditp__numbers--manual",
+      !state.settings.showControls,
+    );
+    numberBar.hidden = !hasSlides || state.interfaceHidden;
+    root.classList.toggle("redditp__interface-hidden", state.interfaceHidden);
+    root.classList.toggle("redditp__rotated", state.rotation % 180 !== 0);
+
+    const viewportWidth = Math.max(
+      root.clientWidth || window.innerWidth || 0,
+      1,
+    );
+    const viewportHeight = Math.max(
+      root.clientHeight || window.innerHeight || 0,
+      1,
+    );
+    const rotated = state.rotation % 180 !== 0;
+    const mediaWidth = rotated ? viewportHeight : viewportWidth;
+    const mediaHeight = rotated ? viewportWidth : viewportHeight;
+    const mediaElement = mediaBox.firstElementChild;
+    const shouldSizeDirectMedia =
+      mediaElement &&
+      mediaElement.matches(".redditp__image, .redditp__video, .redditp__embed");
+    if (rotated) {
+      mediaBox.style.left = "50%";
+      mediaBox.style.top = "50%";
+      mediaBox.style.width = `${mediaWidth}px`;
+      mediaBox.style.height = `${mediaHeight}px`;
+      mediaBox.style.transform = `translate(-50%, -50%) rotate(${state.rotation}deg)`;
+      if (shouldSizeDirectMedia) {
+        mediaElement.style.width = `${mediaWidth}px`;
+        mediaElement.style.height = `${mediaHeight}px`;
+        mediaElement.style.maxWidth = "none";
+        mediaElement.style.maxHeight = "none";
+      }
+    } else {
+      mediaBox.style.left = "0";
+      mediaBox.style.top = "0";
+      mediaBox.style.width = "100%";
+      mediaBox.style.height = "100%";
+      mediaBox.style.transform = "none";
+      if (shouldSizeDirectMedia) {
+        mediaElement.style.width = "";
+        mediaElement.style.height = "";
+        mediaElement.style.maxWidth = "";
+        mediaElement.style.maxHeight = "";
+      }
+    }
+    if (state.interfaceHidden) settingsOverlay.hidden = true;
+    hideButton.setAttribute(
+      "aria-label",
+      state.interfaceHidden ? "Show interface" : "Hide interface",
+    );
+    hideButton.title = state.interfaceHidden
+      ? "Show interface (H)"
+      : "Hide interface (H)";
+    const fullscreenActive = document.fullscreenElement === root;
+    fullscreenButton.setAttribute(
+      "aria-label",
+      fullscreenActive ? "Exit fullscreen" : "Enter fullscreen",
+    );
+    fullscreenButton.title = fullscreenActive
+      ? "Exit fullscreen (F)"
+      : "Toggle fullscreen (F)";
+    fullscreenButton.setAttribute("aria-pressed", String(fullscreenActive));
+    fullscreenButton.innerHTML = fullscreenActive
+      ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>'
+      : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
   }
 
   // Counts posts rather than slides, so a gallery advances only its own
@@ -1397,6 +1726,543 @@
     count.textContent = `${current} / ${total}${loading ? " · loading more" : ""}`;
   }
 
+  function mediaPreloadKey(slide) {
+    if (!slide) return "";
+    const url = slide.url || slide.sourceUrl || slide.commentsUrl || "";
+    const identity = slide.postKey || slide.commentsUrl || slide.title || "";
+    return `${identity}|${slide.galleryItem || 0}|${url}`;
+  }
+
+  function preloadReadyImage(slide) {
+    if (!slide || slide.kind !== "image") return null;
+    const cached =
+      slide.preloadedImage || state.preloadCache.get(mediaPreloadKey(slide));
+    if (!cached || !(cached instanceof Image)) return null;
+    if (!cached.complete || !cached.naturalWidth || !cached.naturalHeight)
+      return null;
+    return cached;
+  }
+
+  // Releases the browser resources a preloaded media object holds (decoded
+  // image data, video buffers) so eviction actually frees memory.
+  function releasePreloadResource(cached) {
+    if (!cached) return;
+    try {
+      if (cached instanceof Image) {
+        cached.removeAttribute("src");
+        return;
+      }
+      if (
+        typeof HTMLVideoElement !== "undefined" &&
+        cached instanceof HTMLVideoElement
+      ) {
+        cached.pause();
+        cached.removeAttribute("src");
+        if (typeof cached.load === "function") cached.load();
+        return;
+      }
+    } catch (_error) {
+      // Eviction is best-effort and must never break the preload queue.
+    }
+  }
+
+  function debugLogEvent(event, detail) {
+    try {
+      if (!localStorage.getItem("redditpDebug")) return;
+    } catch (_error) {
+      return;
+    }
+    try {
+      state.debugLog.push({
+        t: Date.now(),
+        event,
+        detail: detail === undefined ? null : detail,
+      });
+      if (state.debugLog.length > 200) state.debugLog.splice(0, 100);
+    } catch (_error) {
+      // Diagnostics must not affect playback.
+    }
+  }
+
+  // A cache entry is kept while its slide is on screen, worth showing on a
+  // step back, or inside the preload horizon (including a dangling gallery).
+  function activePreloadKeys() {
+    const keys = new Set();
+    if (!state.slides.length) return keys;
+    const current = state.slides[state.index];
+    const identity = postIdentity(current);
+    for (
+      let offset = -2;
+      offset <= state.settings.preloadPosts;
+      offset += 1
+    ) {
+      const index = state.index + offset;
+      if (index < 0) continue;
+      const slide = state.slides[index];
+      if (slide) keys.add(mediaPreloadKey(slide));
+    }
+    // A dangling gallery keeps its cache alive past the offset horizon.
+    let tail = state.index + state.settings.preloadPosts;
+    while (tail >= 0 && tail < state.slides.length) {
+      const slide = state.slides[tail];
+      if (!slide || postIdentity(slide) !== identity) break;
+      keys.add(mediaPreloadKey(slide));
+      tail += 1;
+    }
+    return keys;
+  }
+
+  function evictPreloadCache() {
+    const activeKeys = activePreloadKeys();
+    for (const key of Array.from(state.preloadCache.keys())) {
+      if (activeKeys.has(key)) continue;
+      releasePreloadResource(state.preloadCache.get(key));
+      state.preloadCache.delete(key);
+      state.preloadRetry.delete(key);
+      state.preloadStats.evicted += 1;
+      debugLogEvent("preload-evict", key);
+    }
+    // Drop per-slide shortcuts to released entries so a stale revisit cannot
+    // re-use media whose resources were freed.
+    for (const slide of state.slides) {
+      if (
+        slide.preloadedImage &&
+        !activeKeys.has(mediaPreloadKey(slide))
+      ) {
+        slide.preloadedImage = null;
+      }
+    }
+  }
+
+  // "" when a video slide can be speculatively prepared; otherwise the
+  // diagnostic reason it was excluded. Why nothing was fetched matters when
+  // such a slide later fails to play, so the answer is recorded once — the
+  // flag rides on the slide object and leaves nothing to clean up.
+  function videoPreloadExclusionReason(slide) {
+    if (slide.mpdUrl) return "dash-delegated";
+    if (!canPlayHls() && /\.m3u8(?:$|[?#])/i.test(slide.url))
+      return "unsupported-hls";
+    return "";
+  }
+
+  function notePreloadSkip(slide, reason) {
+    if (!slide || !reason || slide.redditpPreloadSkip === reason) return;
+    slide.redditpPreloadSkip = reason;
+    debugLogEvent("preload-skip", {
+      key: mediaPreloadKey(slide),
+      reason,
+    });
+  }
+
+  // A slide is worth preparing at metadata depth when this browser could
+  // accept its URL: an HLS playlist a browser cannot play natively would
+  // only churn failed metadata attempts, and DASH slides keep the MPD path
+  // that must not share a src-tagged element.
+  function preloadableVideoSlide(slide) {
+    return (
+      slide.kind === "video" &&
+      Boolean(slide.url) &&
+      !videoPreloadExclusionReason(slide)
+    );
+  }
+
+  // The rolling preload window, ordered by how soon the user is likely to
+  // see the media (lower priority = fetched sooner):
+  //   0        remaining images of the gallery currently on screen
+  //   1..horizon  the near posts' primary media; videos only in the first
+  //            window positions, and subject to the video budget
+  //   5..6     the slides just left behind, so stepping back is free
+  function preloadCandidateEntries() {
+    if (!state.slides.length) return [];
+    const entries = [];
+    const push = (slide, priority, kind) => {
+      if (slide && slide.url) entries.push({ slide, priority, kind });
+    };
+    const current = state.slides[state.index];
+    const currentIdentity = postIdentity(current);
+    if (current?.galleryItem) {
+      for (let i = state.index + 1; i < state.slides.length; i += 1) {
+        const candidate = state.slides[i];
+        if (postIdentity(candidate) !== currentIdentity) break;
+        if (candidate.kind === "image") {
+          push(candidate, 0, "gallery");
+        }
+      }
+    }
+    for (let offset = 1; offset <= state.settings.preloadPosts; offset += 1) {
+      const index = state.index + offset;
+      if (index >= state.slides.length) break;
+      const candidate = state.slides[index];
+      const candidateIdentity = postIdentity(candidate);
+      if (candidateIdentity === currentIdentity) continue;
+      if (candidate.kind === "image" && candidate.url) {
+        push(candidate, offset, "post");
+      } else if (
+        offset <= VIDEO_PRELOAD_WINDOW &&
+        preloadableVideoSlide(candidate)
+      ) {
+        push(candidate, offset, "post-video");
+      } else if (
+        offset <= VIDEO_PRELOAD_WINDOW &&
+        candidate.kind === "video" &&
+        candidate.url
+      ) {
+        // Inside the window but never queued: say why in the diagnostics.
+        notePreloadSkip(
+          candidate,
+          videoPreloadExclusionReason(candidate),
+        );
+      }
+    }
+    // Keep the slides just behind the current ones cached so stepping back
+    // reuses the network responses instead of refetching the media.
+    for (let offset = 2; offset >= 1; offset -= 1) {
+      const index = state.index - offset;
+      if (index < 0) break;
+      const candidate = state.slides[index];
+      if (candidate.kind === "image" && candidate.url) {
+        push(candidate, 4 + offset, "revisit");
+      } else if (preloadableVideoSlide(candidate)) {
+        push(candidate, 4 + offset, "revisit-video");
+      }
+    }
+    return entries;
+  }
+
+  // The preload job that is still fetching this slide's media, if any.
+  // Its element can serve the display directly, so a navigation that races
+  // the preload never issues a second request for the same identity.
+  function inflightPreloadJob(slide) {
+    if (!slide) return null;
+    const job = state.preloadInFlight.get(mediaPreloadKey(slide));
+    return job && !job.canceled && job.slide === slide ? job : null;
+  }
+
+  function inflightImageFor(slide) {
+    const job = inflightPreloadJob(slide);
+    return job && job.media instanceof Image ? job.media : null;
+  }
+
+  function inflightVideoFor(slide) {
+    const job = inflightPreloadJob(slide);
+    return job &&
+      typeof HTMLVideoElement !== "undefined" &&
+      job.media instanceof HTMLVideoElement
+      ? job.media
+      : null;
+  }
+
+  function videoPreloadReady(video) {
+    return Boolean(
+      video &&
+        typeof HTMLVideoElement !== "undefined" &&
+        video instanceof HTMLVideoElement &&
+        video.readyState >= HTMLMediaElement.HAVE_METADATA &&
+        !video.error,
+    );
+  }
+
+  // How many speculative video elements exist right now, across the cache
+  // and still-running jobs. The one being displayed counts when it was
+  // prepared by the preloader, so it still occupies its budget slot.
+  function heldVideoPreloads() {
+    let count = 0;
+    for (const value of state.preloadCache.values()) {
+      if (
+        typeof HTMLVideoElement !== "undefined" &&
+        value instanceof HTMLVideoElement
+      )
+        count += 1;
+    }
+    for (const job of state.preloadInFlight.values()) {
+      if (job.slide?.kind === "video") count += 1;
+    }
+    return count;
+  }
+
+  // Cache outcomes for the displayed media, one per navigation render.
+  function noteCacheRead(usedCache, slide) {
+    if (usedCache) {
+      state.preloadStats.hits += 1;
+      debugLogEvent("cache-hit", mediaPreloadKey(slide));
+    } else {
+      state.preloadStats.misses += 1;
+      debugLogEvent("cache-miss", mediaPreloadKey(slide));
+    }
+  }
+
+  // Single-slot navigation diagnostics: what the navigation ended on,
+  // whether it reused prepared media, and how long fresh media took from
+  // the navigation input to being usable. One object keeps this O(1) no
+  // matter how navigation spins, while the ring buffer records the events.
+  function recordNavigation(slide, ready) {
+    state.lastNavigation = {
+      index: state.index,
+      key: mediaPreloadKey(slide),
+      kind: slide ? slide.kind : "",
+      ready,
+      startedAt: performance.now(),
+      readyAfterMs: ready ? 0 : null,
+    };
+    debugLogEvent("navigate", {
+      to: state.index,
+      key: state.lastNavigation.key,
+      ready,
+    });
+  }
+
+  // Called by a displayed-but-still-loading media element's own readiness
+  // event, so navigation-to-display time is measured once per navigation.
+  function noteMediaReady(key) {
+    const navigation = state.lastNavigation;
+    if (
+      navigation &&
+      !navigation.ready &&
+      navigation.key === key &&
+      navigation.readyAfterMs === null
+    ) {
+      navigation.readyAfterMs = Math.max(
+        0,
+        Math.round(performance.now() - navigation.startedAt),
+      );
+      debugLogEvent("navigate-ready", {
+        key,
+        ms: navigation.readyAfterMs,
+      });
+    }
+  }
+
+  function schedulePreloadQueue() {
+    if (!state.open) return;
+    evictPreloadCache();
+    // Speculative work steps aside while the tab is hidden; a later render
+    // or explicit refresh re-runs the scheduler.
+    if (document.hidden) return;
+    const currentKey = state.slides.length
+      ? mediaPreloadKey(state.slides[state.index])
+      : "";
+    const seen = new Set();
+    const queue = [];
+    for (const entry of preloadCandidateEntries()) {
+      const slide = entry.slide;
+      if (!slide || !slide.url || slide.kind === "link") continue;
+      const key = mediaPreloadKey(slide);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      // The slide being displayed fetches itself; a queued twin would only
+      // duplicate that request.
+      if (key === currentKey) continue;
+      if (slide.preloadFailed || state.preloadInFlight.has(key)) continue;
+      if (state.preloadCache.has(key)) continue;
+      queue.push({ key, slide, priority: entry.priority });
+      debugLogEvent("preload-scheduled", {
+        key,
+        priority: entry.priority,
+      });
+    }
+
+    // Drop queued jobs that left the horizon. Jobs that are already running
+    // keep their own callbacks; releasing their in-flight markers here would
+    // let a second job start for the same key.
+    state.preloadQueue = state.preloadQueue.filter((job) => seen.has(job.key));
+    for (const job of queue) {
+      const existing = state.preloadQueue.find(
+        (candidate) => candidate.key === job.key,
+      );
+      if (!existing) state.preloadQueue.push(job);
+    }
+
+    const capacity = Math.max(
+      0,
+      state.settings.preloadConcurrency - state.preloadInFlight.size,
+    );
+    for (let i = 0; i < capacity && state.preloadQueue.length; i += 1) {
+      const choices = state.preloadQueue
+        .map((job, index) => ({ job, index }))
+        .sort(
+          (a, b) => a.job.priority - b.job.priority || a.index - b.index,
+        );
+      // Video jobs wait while their budget is full so speculative videos
+      // can never crowd the image pipeline or create extra decoders.
+      const eligible = choices.find(
+        (choice) =>
+          choice.job.slide.kind !== "video" ||
+          heldVideoPreloads() < VIDEO_PRELOAD_LIMIT,
+      );
+      if (!eligible) break;
+      state.preloadQueue.splice(eligible.index, 1);
+      runPreload(eligible.job);
+    }
+  }
+
+  function runPreload(job) {
+    if (!job || !job.slide || !job.slide.url) return;
+    const key = job.key;
+    if (!state.open) return;
+    if (state.preloadInFlight.has(key) || state.preloadCache.has(key)) return;
+    state.preloadInFlight.set(key, job);
+    state.preloadStats.started += 1;
+    const guarded = (callback) => () => {
+      // A job canceled by close() or eviction (or fired after the viewer
+      // closed) must not fill the cache or restart the scheduler.
+      if (job.canceled || !state.open) {
+        releasePreloadResource(job.media);
+        state.preloadInFlight.delete(key);
+        return;
+      }
+      callback();
+    };
+    if (job.slide.kind === "image") {
+      const image = new Image();
+      job.media = image;
+      image.decoding = "async";
+      image.redditpPreloaded = true;
+      const finish = () => {
+        job.slide.preloadedImage = image;
+        job.slide.preloadFailed = false;
+        state.preloadCache.set(key, image);
+        state.preloadStats.loaded += 1;
+        state.preloadRetry.delete(key);
+        debugLogEvent("preload-loaded", key);
+        state.preloadInFlight.delete(key);
+        schedulePreloadQueue();
+      };
+      image.addEventListener(
+        "load",
+        guarded(() => {
+          // Bytes are only half the story: decode upcoming images here so
+          // display never waits for another decode. A decode failure is
+          // recorded separately from a load failure and never poisons the
+          // finished entry, since the browser still holds complete bytes.
+          if (typeof image.decode === "function") {
+            image
+              .decode()
+              .then(
+                () => {
+                  if (job.canceled || !state.open) return;
+                  job.decoded = true;
+                  image.redditpDecoded = true;
+                  state.preloadStats.decoded += 1;
+                  debugLogEvent("preload-decoded", key);
+                },
+                () => {
+                  if (job.canceled || !state.open) return;
+                  state.preloadStats.decodeFailed += 1;
+                  debugLogEvent("preload-decode-failed", key);
+                },
+              )
+              // A cancel that lands during the decode must not cache the
+              // job; release and clear the in-flight marker like the other
+              // guarded callbacks do.
+              .then(() => {
+                if (job.canceled || !state.open) {
+                  releasePreloadResource(job.media);
+                  state.preloadInFlight.delete(key);
+                  return;
+                }
+                finish();
+              });
+          } else {
+            // No decode support (very old engines): the load event plus the
+            // natural-size check is the readiness signal, as before.
+            finish();
+          }
+        }),
+        { once: true },
+      );
+      image.addEventListener(
+        "error",
+        guarded(() => {
+          job.slide.preloadFailed = true;
+          const retries = (state.preloadRetry.get(key) || 0) + 1;
+          state.preloadRetry.set(key, retries);
+          state.preloadStats.failed += 1;
+          state.preloadInFlight.delete(key);
+          if (retries <= state.preloadRetryLimit) {
+            state.preloadQueue.push({
+              key,
+              slide: job.slide,
+              priority: job.priority + 1,
+            });
+            debugLogEvent("preload-retry", { key, retries });
+          }
+          debugLogEvent("preload-failed", { key, retries });
+          schedulePreloadQueue();
+        }),
+        { once: true },
+      );
+      debugLogEvent("preload-start", key);
+      image.src = job.slide.url;
+      return;
+    }
+    if (job.slide.kind === "video") {
+      const video = document.createElement("video");
+      job.media = video;
+      video.redditpPreloaded = true;
+      video.preload = "metadata";
+      video.muted = true;
+      video.playsInline = true;
+      video.addEventListener(
+        "loadedmetadata",
+        guarded(() => {
+          state.preloadCache.set(key, video);
+          state.preloadStats.loaded += 1;
+          state.preloadRetry.delete(key);
+          debugLogEvent("preload-loaded", { key, media: "metadata" });
+          state.preloadInFlight.delete(key);
+          schedulePreloadQueue();
+        }),
+        { once: true },
+      );
+      video.addEventListener(
+        "error",
+        guarded(() => {
+          // Without a failure marker this error handler would re-queue the
+          // same URL forever (an HLS playlist on a browser that cannot play
+          // it, removed media, a network outage). Retry a limited number of
+          // times like the image path before parking the slide.
+          const retries = (state.preloadRetry.get(key) || 0) + 1;
+          state.preloadRetry.set(key, retries);
+          state.preloadStats.failed += 1;
+          state.preloadInFlight.delete(key);
+          if (retries <= state.preloadRetryLimit) {
+            state.preloadQueue.push({
+              key,
+              slide: job.slide,
+              priority: job.priority + 1,
+            });
+            debugLogEvent("preload-retry", { key, retries });
+          } else {
+            job.slide.preloadFailed = true;
+          }
+          debugLogEvent("preload-failed", { key, retries });
+          schedulePreloadQueue();
+        }),
+        { once: true },
+      );
+      debugLogEvent("preload-start", key);
+      video.src = job.slide.url;
+      return;
+    }
+    state.preloadInFlight.delete(key);
+  }
+
+  // Drops queued work and marks running jobs canceled on close; the running
+  // callbacks release their own media elements when the set() above lets them
+  // through the guard.
+  function cancelPreloads() {
+    for (const job of state.preloadQueue) {
+      debugLogEvent("preload-cancel", job.key);
+    }
+    state.preloadQueue = [];
+    for (const job of state.preloadInFlight.values()) {
+      job.canceled = true;
+      if (job.media) releasePreloadResource(job.media);
+    }
+    state.preloadStats.canceled += state.preloadInFlight.size;
+    state.preloadInFlight.clear();
+  }
+
   function render() {
     stopMedia();
     syncPresentationUi();
@@ -1406,7 +2272,10 @@
     // Revisiting a slide retries its media, so a past failure must not keep
     // forcing the timer path.
     slide.mediaFailed = false;
-    title.textContent = slide.title;
+    slide.preloadFailed = false;
+    title.textContent = slide.galleryItem
+      ? `(${slide.galleryItem}/${slide.galleryTotal}) ${slide.title}`
+      : slide.title;
     const metaItems = [];
     if (slide.community) {
       const communityLink = element("a", "redditp__meta-link", slide.community);
@@ -1425,41 +2294,143 @@
       if (index) meta.append(document.createTextNode(" · "));
       meta.append(item);
     });
-    const sourceHref = mediaHref(slide);
-    sourceLink.hidden = !sourceHref;
-    if (sourceHref) sourceLink.href = sourceHref;
-    commentsLink.hidden = !slide.commentsUrl;
-    if (slide.commentsUrl) commentsLink.href = slide.commentsUrl;
+    meta.hidden =
+      !state.settings.showDetails ||
+      state.interfaceHidden ||
+      metaItems.length === 0;
+    // The media and comments destinations no longer render as buttons; the
+    // keyboard shortcuts I and C open them in a new tab.
 
     if (slide.kind === "image") {
-      const img = element("img", "redditp__image", "");
-      img.alt = slide.title;
-      img.addEventListener("load", () => expandLargeImage(img, slide), {
-        once: true,
-      });
-      img.addEventListener("error", () => showMediaFailure(img, slide), {
-        once: true,
-      });
-      img.src = slide.url;
+      const navKey = mediaPreloadKey(slide);
+      const cachedImage = preloadReadyImage(slide);
+      // A preload that is still fetching keeps its element. Displaying that
+      // same element costs no second request, and it completes on the spot.
+      const inflightImage = cachedImage ? null : inflightImageFor(slide);
+      const img =
+        cachedImage || inflightImage || element("img", "redditp__image", "");
+      if (!cachedImage && !inflightImage) {
+        img.alt = slide.title;
+        img.addEventListener(
+          "load",
+          () => {
+            expandLargeImage(img, slide);
+            noteMediaReady(navKey);
+          },
+          { once: true },
+        );
+        img.addEventListener("error", () => showMediaFailure(img, slide), {
+          once: true,
+        });
+        img.src = slide.url;
+        recordNavigation(slide, false);
+        noteCacheRead(false, slide);
+      } else {
+        img.className = "redditp__image";
+        img.alt = slide.title;
+        img.removeAttribute("width");
+        img.removeAttribute("height");
+        if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+          expandLargeImage(img, slide);
+        }
+        if (inflightImage) {
+          // The shared element is still loading; class and failure handling
+          // settle with its events, and its src must not be touched again.
+          if (!img.complete) {
+            img.addEventListener(
+              "load",
+              () => {
+                if (mediaBox.firstElementChild === img) {
+                  expandLargeImage(img, slide);
+                }
+                noteMediaReady(navKey);
+              },
+              { once: true },
+            );
+          }
+          img.addEventListener("error", () => showMediaFailure(img, slide), {
+            once: true,
+          });
+        }
+        recordNavigation(slide, Boolean(cachedImage || img.complete));
+        noteCacheRead(true, slide);
+      }
       mediaBox.append(img);
     } else if (slide.kind === "video") {
-      const video = element("video", "redditp__video", "");
+      const navKey = mediaPreloadKey(slide);
+      // DASH slides keep their fresh element: dash.js needs one without a
+      // src-tagged stream behind it. Other videos reuse a prepared element
+      // so metadata and the first frame are already there.
+      const cachedVideo = slide.mpdUrl
+        ? null
+        : state.preloadCache.get(navKey);
+      const inflightVideo = cachedVideo
+        ? null
+        : slide.mpdUrl
+          ? null
+          : inflightVideoFor(slide);
+      // Reuse an in-flight video element even before its metadata arrives so
+      // navigation does not issue a second request for the same resource.
+      const reusable = cachedVideo
+        ? cachedVideo
+        : inflightVideo && !inflightVideo.error
+          ? inflightVideo
+          : null;
+      let fresh = false;
+      let video;
+      if (reusable) {
+        video = reusable;
+      } else {
+        fresh = true;
+        video = element("video", "redditp__video", "");
+        video.preload = "metadata";
+      }
+      video.className = "redditp__video";
       video.poster = slide.poster || "";
       video.controls = true;
       video.playsInline = true;
       video.autoplay = true;
       video.muted = !state.settings.sound;
-      video.preload = "metadata";
       trackMedia(video);
-      video.addEventListener("error", () => {
-        // Changing src resets video.error, so an error queued by the attempt
-        // being replaced must not fail the fallback.
-        if (video.error) playVideoFallback(video, slide);
-      });
+      // A reused element was registered the same way on an earlier display;
+      // an identity mark keeps one error handler on it no matter how often
+      // it comes back to the stage. The slide it falls back with is rebound
+      // on every display so a stale slide can never set the wrong src.
+      video.redditpErrorSlide = slide;
+      if (!video.redditpErrorHooked) {
+        video.redditpErrorHooked = true;
+        video.addEventListener("error", () => {
+          // Changing src resets video.error, so an error queued by the
+          // attempt being replaced must not fail the fallback.
+          if (video.error) playVideoFallback(video, video.redditpErrorSlide);
+        });
+      }
+      if (fresh) {
+        video.addEventListener(
+          "loadedmetadata",
+          () => noteMediaReady(navKey),
+          { once: true },
+        );
+        recordNavigation(slide, false);
+        noteCacheRead(false, slide);
+      } else if (videoPreloadReady(video)) {
+        recordNavigation(slide, true);
+        noteCacheRead(true, slide);
+      } else {
+        video.addEventListener(
+          "loadedmetadata",
+          () => noteMediaReady(navKey),
+          { once: true },
+        );
+        recordNavigation(slide, false);
+        noteCacheRead(true, slide);
+      }
       mediaBox.append(video);
       if (!slide.mpdUrl || !attachRedditDash(video, slide)) {
         video.redditpPlayingFallback = true;
-        video.src = slide.url;
+        // Reusing an element that already carries the right src must not
+        // reset it: assigning .src always restarts the element.
+        if (video.getAttribute("src") !== slide.url) video.src = slide.url;
         playVideo(video);
       }
     } else if (slide.kind === "pending-native-video") {
@@ -1505,10 +2476,6 @@
       iframe.addEventListener("load", () => initializeEmbed(iframe));
       iframe.src = embedUrl(slide.url, !state.settings.sound);
       mediaBox.append(iframe);
-      // Say so plainly when the toggle cannot reach this player, rather than
-      // leaving a control that looks live and does nothing.
-      state.embedKeepsOwnSound = !commandableEmbed();
-      syncPresentationUi();
     } else {
       mediaBox.append(
         linkCard(
@@ -1519,6 +2486,7 @@
       );
     }
     scheduleAuto();
+    schedulePreloadQueue();
     void enrichSlide(slide);
     void upgradePendingAdaptiveSlide(slide);
     // Start loading on the last post's first slide so the next post is ready
@@ -1585,6 +2553,38 @@
     move(1);
   }
 
+  function previousPost() {
+    if (!state.slides.length || state.index === 0) return;
+    const identity = postIdentity(state.slides[state.index]);
+    let start = state.index;
+    while (start > 0 && postIdentity(state.slides[start - 1]) === identity) {
+      start -= 1;
+    }
+    if (start === 0) return;
+    let previous = start - 1;
+    const previousIdentity = postIdentity(state.slides[previous]);
+    while (
+      previous > 0 &&
+      postIdentity(state.slides[previous - 1]) === previousIdentity
+    ) {
+      previous -= 1;
+    }
+    state.index = previous;
+    render();
+  }
+
+  function previousPostLast() {
+    if (!state.slides.length || state.index === 0) return;
+    const identity = postIdentity(state.slides[state.index]);
+    let start = state.index;
+    while (start > 0 && postIdentity(state.slides[start - 1]) === identity) {
+      start -= 1;
+    }
+    if (start === 0) return;
+    state.index = start - 1;
+    render();
+  }
+
   function lastPostStart() {
     const lastIndex = state.slides.length - 1;
     const identity = postIdentity(state.slides[lastIndex]);
@@ -1610,13 +2610,24 @@
     const additions = extractSlides(root).filter(
       (slide) => !existingPosts.has(postIdentity(slide)),
     );
-    if (additions.length) state.slides.push(...additions);
+    if (additions.length) {
+      // Posts may keep arriving later than the scan gave up, so finding any
+      // re-arms the end-of-feed loader.
+      state.scanFailures = 0;
+      state.slides.push(...additions);
+      schedulePreloadQueue();
+    }
     return additions.length;
   }
 
   function wait(milliseconds) {
     return new Promise((resolve) => setTimeout(resolve, milliseconds));
   }
+
+  // Consecutive exhausting scans end the loading attempts for a while. It
+  // resets when posts appear anywhere, when the viewer reopens, and when a
+  // wrap-advance asks for the feed again, so live reddits keep loading.
+  const SCAN_FAILURE_LIMIT = 2;
 
   async function loadMoreAtEnd(advanceWhenReady) {
     if (isSinglePostPage()) return;
@@ -1628,6 +2639,23 @@
       return;
     }
     if (!state.open || !isOnLastPost()) return;
+
+    if (state.scanFailures >= SCAN_FAILURE_LIMIT) {
+      if (advanceWhenReady || state.advanceAfterLoad) {
+        // The user asked to move past the end, so the feed gets a fresh
+        // scan now instead of an instant wrap; passive arrivals stay cheap.
+        state.scanFailures = 0;
+        state.advanceAfterLoad = false;
+      } else {
+        // Do not burn four seconds of scrolling probes on a flowless
+        // listing; still answer the navigation request immediately. The
+        // counter resets when posts appear anywhere, when the viewer
+        // reopens, and when a wrap-advance asks for the feed again.
+        updateCount(false);
+        return;
+      }
+    }
+
     state.loadingMore = true;
     state.advanceAfterLoad = Boolean(advanceWhenReady);
     const request = ++state.loadRequest;
@@ -1660,18 +2688,31 @@
       if (state.open && request === state.loadRequest) {
         document.documentElement.style.overflow = "hidden";
         state.loadingMore = false;
+        state.scanFailures = added ? 0 : state.scanFailures + 1;
       }
     }
 
     if (!state.open || request !== state.loadRequest) return;
+    debugLogEvent("load-more-scan", {
+      request,
+      added,
+      scanFailures: state.scanFailures,
+      advance: Boolean(state.advanceAfterLoad),
+    });
     const shouldAdvance = state.advanceAfterLoad;
     state.advanceAfterLoad = false;
     if (added && shouldAdvance) {
       state.index += 1;
       render();
     } else if (!added && shouldAdvance) {
+      // Start the next lap with a fresh scan budget.
+      state.scanFailures = 0;
       state.index = 0;
       render();
+    } else if (added) {
+      // The appended posts do not advance the current slide, but the count
+      // and the numbered bar must reflect them right away.
+      syncPresentationUi();
     } else {
       updateCount(false);
     }
@@ -1851,7 +2892,7 @@
     if (!state.settingsOpen) return;
     state.settingsOpen = false;
     settingsOverlay.hidden = true;
-    (state.settings.showControls ? settingsButton : collapseButton).focus({
+    (state.settings.showControls ? settingsButton : settingsButton).focus({
       preventScroll: true,
     });
   }
@@ -1870,9 +2911,41 @@
 
   function toggleAuto() {
     state.autoPlaying = !state.autoPlaying;
-    autoButton.textContent = state.autoPlaying ? "pause" : "auto";
+    state.settings.autoAdvance = state.autoPlaying;
+    saveSettings();
+    if (state.autoPlaying) {
+      autoButton.innerHTML = pauseSvg;
+      autoButton.setAttribute("aria-label", "Pause slideshow");
+    } else {
+      autoButton.innerHTML = playSvg;
+      autoButton.setAttribute("aria-label", "Start slideshow");
+    }
     autoButton.setAttribute("aria-pressed", String(state.autoPlaying));
     scheduleAuto();
+  }
+
+  function toggleRotate() {
+    state.rotation = (state.rotation + 90) % 360;
+    syncPresentationUi();
+  }
+
+  function toggleHideInterface() {
+    if (state.interfaceHidden === false && state.settingsOpen) closeSettings();
+    state.interfaceHidden = !state.interfaceHidden;
+    if (state.interfaceHidden) {
+      state.settingsOpen = false;
+      settingsOverlay.hidden = true;
+    }
+    syncPresentationUi();
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenEnabled) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      root.requestFullscreen().catch(() => {});
+    }
   }
 
   function playVideo(video) {
@@ -2021,10 +3094,12 @@
     state.loadRequest += 1;
     state.openRequest += 1;
     state.settingsOpen = false;
+    state.interfaceHidden = false;
     settingsOverlay.hidden = true;
     clearTimeout(state.autoTimer);
     autoButton.textContent = "auto";
     stopMedia();
+    cancelPreloads();
     root.hidden = true;
     document.documentElement.style.overflow = state.oldOverflow;
     document.removeEventListener("keydown", onKeyDown, true);
@@ -2049,8 +3124,17 @@
     state.opening = false;
     state.oldOverflow = document.documentElement.style.overflow;
     state.open = true;
+    // A fresh feed may be able to load more posts again.
+    state.scanFailures = 0;
+    state.autoPlaying = Boolean(state.settings.autoAdvance);
+    autoButton.textContent = state.autoPlaying ? "pause" : "auto";
+    autoButton.setAttribute("aria-pressed", String(state.autoPlaying));
+    state.interfaceHidden = Boolean(state.settings.startHidden);
     root.hidden = false;
     document.documentElement.style.overflow = "hidden";
+    if (state.settings.startFullscreen && document.fullscreenEnabled) {
+      root.requestFullscreen().catch(() => {});
+    }
     document.addEventListener("keydown", onKeyDown, true);
     // Slides are rebuilt from the live page on every open, so the previous
     // run's enrichment results no longer refer to anything. Keeping them would
@@ -2072,7 +3156,7 @@
     const initialFocus = closeButton.hidden
       ? state.settings.showControls
         ? settingsButton
-        : collapseButton
+        : settingsButton
       : closeButton;
     initialFocus.focus({ preventScroll: true });
   }
@@ -2108,6 +3192,14 @@
     // Never swallow browser and OS shortcuts such as Ctrl+F or Cmd+M; every
     // binding below is a bare key.
     if (event.ctrlKey || event.metaKey || event.altKey) return;
+    const active = document.activeElement;
+    if (
+      active &&
+      (active.tagName === "INPUT" ||
+        active.tagName === "TEXTAREA" ||
+        active.isContentEditable)
+    )
+      return;
     if (state.settingsOpen) {
       if (event.key === "Tab") {
         trapFocus(event);
@@ -2122,18 +3214,52 @@
       trapFocus(event);
       return;
     }
-    if (
-      event.key === "ArrowRight" ||
-      event.key === "PageDown" ||
-      event.key === " "
-    ) {
+    if (event.key === "ArrowRight") {
       event.preventDefault();
       event.stopPropagation();
       move(1);
-    } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+    } else if (event.key === "ArrowLeft") {
       event.preventDefault();
       event.stopPropagation();
       move(-1);
+    } else if (event.key === "ArrowDown") {
+      event.preventDefault();
+      event.stopPropagation();
+      if (state.slides[state.index]?.galleryItem) {
+        // In a gallery: advance to next gallery image
+        if (state.slides[state.index].galleryItem < state.slides[state.index].galleryTotal) {
+          state.slides[state.index].galleryItem += 1;
+        } else {
+          // At last image: stay within current post
+        }
+        render();
+      } else {
+        // Not in a gallery: advance to next post
+        move(1);
+      }
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      event.stopPropagation();
+      if (state.slides[state.index]?.galleryItem && state.slides[state.index].galleryItem > 1) {
+        // In a gallery: go back one gallery image
+        state.slides[state.index].galleryItem -= 1;
+        render();
+      } else {
+        // Not in a gallery or at first image: stay within current post
+        // (do not navigate to previous post via Up arrow in this implementation)
+      }
+    } else if (event.key === "PageDown") {
+      event.preventDefault();
+      event.stopPropagation();
+      move(1);
+    } else if (event.key === "PageUp") {
+      event.preventDefault();
+      event.stopPropagation();
+      move(-1);
+    } else if (event.key === " ") {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleAuto();
     } else if (event.key.toLowerCase() === "g") {
       event.preventDefault();
       event.stopPropagation();
@@ -2141,11 +3267,23 @@
     } else if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
-      close();
+      if (state.settingsOpen) {
+        closeSettings();
+      } else if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else {
+        close();
+      }
     } else if (event.key.toLowerCase() === "f" && document.fullscreenEnabled) {
       event.preventDefault();
-      if (document.fullscreenElement) document.exitFullscreen();
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
       else root.requestFullscreen().catch(() => {});
+    } else if (event.key.toLowerCase() === "h") {
+      event.preventDefault();
+      toggleHideInterface();
+    } else if (event.key.toLowerCase() === "r") {
+      event.preventDefault();
+      toggleRotate();
     } else if (event.key.toLowerCase() === "m") {
       event.preventDefault();
       toggleSound();
@@ -2191,9 +3329,6 @@
       updateSetting(key, settingCheckboxes[key].checked);
     });
   });
-  collapseButton.addEventListener("click", () => {
-    updateSetting("showControls", !state.settings.showControls);
-  });
   mediaBox.addEventListener("click", toggleVideoFromSurface, true);
   // After clicking "mute" and "unmute" the right-left arows failed to change
   // the current slide in Chrome (seemed to work in Firefox).
@@ -2206,27 +3341,80 @@
   prevButton.addEventListener("click", () => move(-1));
   nextButton.addEventListener("click", () => move(1));
   autoButton.addEventListener("click", toggleAuto);
-  soundButton.addEventListener("click", toggleSound);
+  settingsButton.addEventListener("click", openSettings);
+  rotateButton.addEventListener("click", toggleRotate);
+  hideButton.addEventListener("click", toggleHideInterface);
+  fullscreenButton.addEventListener("click", toggleFullscreen);
+  document.addEventListener("fullscreenchange", () => {
+    syncPresentationUi();
+  });
+  window.addEventListener("resize", () => {
+    syncPresentationUi();
+  });
   galleryButton.addEventListener("click", skipGallery);
   root.addEventListener("pointerdown", (event) => {
     state.pointerStart = {
       x: event.clientX,
       y: event.clientY,
       id: event.pointerId,
+      target: event.target,
     };
   });
   root.addEventListener("pointerup", (event) => {
     if (!state.pointerStart || state.pointerStart.id !== event.pointerId)
       return;
-    const dx = event.clientX - state.pointerStart.x;
-    const dy = event.clientY - state.pointerStart.y;
+    const start = state.pointerStart;
     state.pointerStart = null;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    // Check if the tap target is the video element itself.
+    const video = event.target.closest?.("video.redditp__video");
+    const isVideoTarget = !!video;
+    if (isVideoTarget) {
+      // Determine if the tap is on the video's control strip (bottom area)
+      // or on the video picture area. Controls should not navigate;
+      // the picture area may navigate.
+      const vidBounds = video.getBoundingClientRect();
+      const tapY = event.clientY;
+      // If the tap is on the lower 56px strip (native controls), do not navigate.
+      if (tapY >= vidBounds.bottom - 56) return;
+      // If the tap is on the video picture (above the controls), allow navigation.
+      // Fall through to the zone-checking logic below.
+    }
+    // If the target is an interactive element that is not the video, skip navigation.
+    const interactive = event.target.closest(
+      "button, a, input, textarea, select, iframe",
+    );
+    // Allow navigation even if the target is a video, as long as it wasn't a control-tap
+    // (handled above). For other interactive elements, still skip.
+    if (interactive && !isVideoTarget) return;
     if (
+      state.settings.swipeNavigation &&
       Math.abs(dx) > 55 &&
-      Math.abs(dx) > Math.abs(dy) &&
-      !event.target.closest("button, a, video")
+      Math.abs(dx) > Math.abs(dy)
     ) {
       move(dx < 0 ? 1 : -1);
+      return;
+    }
+    if (!state.settings.tapZones) return;
+    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) return;
+    const rect = root.getBoundingClientRect();
+    const ratio = (event.clientX - rect.left) / rect.width;
+    if (ratio < 0.33) {
+      previousPostLast();
+    } else if (ratio > 0.67) {
+      skipGallery();
+    } else {
+      const slide = state.slides[state.index];
+      if (slide?.galleryItem && slide.galleryItem < slide.galleryTotal) {
+        move(1);
+      } else if (
+        slide?.galleryItem &&
+        slide.galleryItem === slide.galleryTotal
+      ) {
+        move(1);
+      }
+      // Single-image posts: no gallery transition.
     }
   });
 
@@ -2236,6 +3424,52 @@
       if (state.open || state.opening) close();
       else open();
     },
+    debug: {
+      queue() {
+        return state.preloadQueue.map((job) => ({
+          key: job.key,
+          title: job.slide?.title,
+          galleryItem: job.slide?.galleryItem,
+          kind: job.slide?.kind,
+          url: job.slide?.url,
+        }));
+      },
+      cache() {
+        return Array.from(state.preloadCache.keys());
+      },
+      refresh() {
+        schedulePreloadQueue();
+        return state.preloadQueue.length;
+      },
+      // The most recent navigation render: destination identity, whether it
+      // reused prepared media, and the navigation-to-usable-media time (0
+      // for prepared media, measured milliseconds for a fresh fetch).
+      lastNavigation() {
+        return state.lastNavigation && {
+          index: state.lastNavigation.index,
+          key: state.lastNavigation.key,
+          kind: state.lastNavigation.kind,
+          ready: state.lastNavigation.ready,
+          readyAfterMs: state.lastNavigation.readyAfterMs,
+        };
+      },
+      // Recent diagnostics, written only while localStorage.redditpDebug is
+      // set; capped so a debug session cannot grow without bound.
+      log() {
+        return state.debugLog.slice();
+      },
+      stats() {
+        return {
+          ...state.preloadStats,
+          inFlight: state.preloadInFlight.size,
+          cacheSize: state.preloadCache.size,
+          scanFailures: state.scanFailures,
+        };
+      },
+    },
   };
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && state.open) schedulePreloadQueue();
+  });
   open();
 })();
