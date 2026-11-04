@@ -47,6 +47,10 @@
   // eligible navigation sequence. Images are never filtered, and an unknown
   // duration is an explicit unknown — provisionally eligible, not zero.
   const MAX_ELIGIBLE_VIDEO_SECONDS = 60;
+  // Media mode (Part C): one cycling filter over the extracted slides.
+  // `both` is the default so every user who never touched the control keeps
+  // the exact behavior shipped before the mode existed.
+  const MEDIA_MODE_KEYS = ["both", "images", "videos"];
   const SETTINGS_KEY = "redditpPresentationSettings";
   // The one embed origin that publishes a message protocol for controlling
   // its player. Every other player keeps its own sound control.
@@ -67,6 +71,7 @@
     startFullscreen: false,
     preloadPosts: 5,
     preloadConcurrency: 3,
+    mediaMode: "both",
   };
   const state = {
     open: false,
@@ -110,6 +115,10 @@
       // v.redd.it DASH sources prepared ahead of navigation.
       longSkipped: 0,
       dashPrepared: 0,
+      // RedGIFs direct-media accounting: metadata resolutions that produced a
+      // playable URL, and ones that ended in the embed fallback.
+      redgifsPrepared: 0,
+      redgifsFailed: 0,
     },
     lastNavigation: null,
     debugLog: [],
@@ -346,6 +355,20 @@
       return null;
     }
     const hostname = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    // RedGIFs watch links already travel to an /ifr player frame through the
+    // generic convention below; carrying the media id along is what lets the
+    // direct-media resolver skip the embed player entirely when it can.
+    if (hostname === "redgifs.com" || hostname.endsWith(".redgifs.com")) {
+      const id = redgifsMediaId(parsed);
+      if (id) {
+        return {
+          kind: "embed",
+          url: `https://www.redgifs.com/ifr/${id}`,
+          redgifsId: id,
+        };
+      }
+      return null;
+    }
     if (hostname === "imgur.com" || hostname === "i.imgur.com") {
       const match = parsed.pathname.match(
         /(?:\/gallery|\/a)?\/([\w]+)(?:\.(\w+))?$/i,
@@ -438,6 +461,171 @@
       (Number(match[2]) || 0) * 60 +
       (Number(match[3]) || 0)
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // RedGIFs direct-media resolution (Part B)
+  //
+  // RedGIFs posts traditionally display through the host's /ifr embed player,
+  // which resolves its own metadata and streams inside a cross-origin frame.
+  // The v2 JSON API is reachable cross-origin from this script (it answers
+  // preflights for reddit.com origins), hands out an anonymous short-lived
+  // token, and returns direct MP4 renditions that play through a plain video
+  // element. Resolution upgrades slide kinds from `embed` to `video` so every
+  // existing piece of the pipeline (duration policy, preloader, prepared
+  // element reuse) keeps working unchanged; when direct resolution or
+  // playback fails the slide stays an embed and the old behavior applies.
+  // ---------------------------------------------------------------------------
+
+  const REDGIFS_API_ORIGIN = "https://api.redgifs.com";
+  // The temporary token outlives this viewer but is anonymous and unbound to
+  // any user credential; refreshing is cheap, so cache it well under its life.
+  const REDGIFS_TOKEN_TTL_MS = 55 * 60 * 1000;
+  // Bounded re-resolution: a media id that failed returns to the network at
+  // most this many times per page load.
+  const REDGIFS_FAILURE_LIMIT = 2;
+  const redgifsResolutions = new Map();
+  const redgifsFailures = new Map();
+  let redgifsToken = null;
+  let redgifsTokenRequest = null;
+
+  // RedGIFs publishes the same media under several URL shapes; the watch page,
+  // the player frame, and the direct thumbnails link all carry the bare id.
+  function redgifsMediaId(parsedUrl) {
+    const path = parsedUrl.pathname.replace(/^\/+/, "").replace(/\/+$/, "");
+    const match = path.match(/^(?:watch|ifr|g|gallerys?)\//);
+    if (match) {
+      const id = path.slice(match[0].length).split("/")[0];
+      return /^[\w-]+$/.test(id) ? id.toLowerCase() : "";
+    }
+    // i.redgifs.com/i/<id> and thumbs2.redgifs.com/Thumbs/<id>.mp4 forms.
+    if (path.startsWith("i/")) {
+      const id = path.slice(2).split(".")[0];
+      return /^[\w-]+$/.test(id) && !/\//.test(id) ? id.toLowerCase() : "";
+    }
+    return "";
+  }
+
+  async function redgifsTokenValue(forceNew) {
+    if (!forceNew && redgifsToken && Date.now() < redgifsToken.expiresAt) {
+      return redgifsToken.value;
+    }
+    if (!redgifsTokenRequest) {
+      redgifsTokenRequest = (async () => {
+        try {
+          const response = await fetch(
+            `${REDGIFS_API_ORIGIN}/v2/auth/temporary`,
+            { credentials: "omit", headers: { Accept: "application/json" } },
+          );
+          if (!response.ok) {
+            throw new Error(`RedGIFs auth returned ${response.status}`);
+          }
+          const data = await response.json();
+          if (!data?.token) throw new Error("RedGIFs auth gave no token");
+          redgifsToken = {
+            value: data.token,
+            expiresAt: Date.now() + REDGIFS_TOKEN_TTL_MS,
+          };
+          return data.token;
+        } finally {
+          redgifsTokenRequest = null;
+        }
+      })();
+    }
+    return redgifsTokenRequest;
+  }
+
+  async function redgifsApiGet(path, refreshed) {
+    const token = await redgifsTokenValue(Boolean(refreshed) && true);
+    const response = await fetch(`${REDGIFS_API_ORIGIN}${path}`, {
+      credentials: "omit",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    // A 401 can mean the anonymous token aged out between calls; one fresh
+    // token (and only one per request) is the recovery.
+    if (response.status === 401 && !refreshed) return redgifsApiGet(path, true);
+    if (!response.ok) {
+      let code = String(response.status);
+      try {
+        const body = await response.json();
+        if (body?.error?.code) code = String(body.error.code);
+      } catch (_parseError) {
+        // A non-JSON error body keeps the status as the reason.
+      }
+      throw new Error(`RedGIFs ${code}`);
+    }
+    return response.json();
+  }
+
+  // One in-flight resolution per media id: concurrent previews of the same
+  // RedGIFs post share a single API request. The promise settles with
+  // { ok, ... } and never rejects, so callers do not need their own handlers.
+  // Each id may hit the network at most REDGIFS_FAILURE_LIMIT times per page
+  // load; after that only the embed fallback remains. A success stays cached,
+  // a failure clears its cache slot but keeps its counted attempt.
+  function resolveRedgifsMedia(id, forceNew) {
+    if (!id) return Promise.resolve({ ok: false, reason: "no-media-id" });
+    const failure = redgifsFailures.get(id);
+    if (failure && failure.attempts >= REDGIFS_FAILURE_LIMIT) {
+      return Promise.resolve({ ok: false, reason: "redgifs-cooldown" });
+    }
+    if (forceNew !== true) {
+      const pending = redgifsResolutions.get(id);
+      if (pending) return pending;
+    }
+    const promise = (async () => {
+      try {
+        const payload = await redgifsApiGet(
+          `/v2/gifs/${encodeURIComponent(id)}`,
+        );
+        const gif = payload?.gif || payload || {};
+        const urls = gif.urls || {};
+        // hd always carries the sound track, so an unmuted viewer is never
+        // stuck with a silent rendition; sd/mobile and silent are the
+        // progressively smaller fallbacks.
+        const url = absoluteUrl(urls.hd || urls.sd || urls.silent || "");
+        if (!url) {
+          return { ok: false, reason: "no-playable-variant" };
+        }
+        const duration = Number(gif.duration);
+        return {
+          ok: true,
+          url,
+          duration: Number.isFinite(duration) && duration > 0 ? duration : null,
+          poster: absoluteUrl(urls.poster || "") || "",
+          embedUrl: absoluteUrl(urls.html || "") || "",
+        };
+      } catch (error) {
+        const failure = redgifsFailures.get(id) || { attempts: 0, lastAt: 0 };
+        failure.attempts += 1;
+        failure.lastAt = Date.now();
+        redgifsFailures.set(id, failure);
+        debugLogEvent("redgifs-resolve-failed", {
+          id,
+          attempts: failure.attempts,
+          reason: String(error?.message || error),
+        });
+        return { ok: false, reason: "resolution-failed" };
+      }
+    })();
+    redgifsResolutions.set(id, promise);
+    // Bounded memory: entries are tiny strings but the map must not grow
+    // with the feed's every RedGIFs post over a long session.
+    while (redgifsResolutions.size > 300) {
+      redgifsResolutions.delete(redgifsResolutions.keys().next().value);
+    }
+    while (redgifsFailures.size > 300) {
+      redgifsFailures.delete(redgifsFailures.keys().next().value);
+    }
+    promise.then((result) => {
+      // A settled failure frees its cache slot (bounded re-attempt); a
+      // success is worth reusing for every later look of the same id.
+      if (!result.ok) redgifsResolutions.delete(id);
+    });
+    return promise;
   }
 
   function packagedVideoUrl(player) {
@@ -581,18 +769,25 @@
     const seen = new Set();
     // postMedia marks the post's own media, as opposed to a preview image
     // scraped out of a listing card for a post that links somewhere else.
-    function add(kind, url, poster, postMedia) {
+    function add(kind, url, poster, postMedia, source) {
       const normalized = absoluteUrl(url);
       const key = canonicalMediaKey(normalized);
       if (!normalized || seen.has(key)) return;
       if (kind === "image" && isBlurredImageUrl(normalized)) return;
       seen.add(key);
-      media.push({
+      const item = {
         kind,
         url: normalized,
         poster: absoluteUrl(poster),
         postMedia: Boolean(postMedia),
-      });
+      };
+      media.push(item);
+      // RedGIFs ids ride along so the resolver can find them later.
+      if (source && source.redgifsId) {
+        item.redgifsId = source.redgifsId;
+        item.embedUrl = source.url;
+      }
+      return item;
     }
 
     // On old Reddit post pages the real adaptive player is already attached
@@ -719,12 +914,13 @@
     // still be escaped markup when Reddit has not loaded its player component.
     if (isVideoUrl(sourceUrl)) add("video", sourceUrl, "", true);
     const external = externalMedia(sourceUrl);
-    if (external) add(external.kind, external.url, "", true);
+    if (external) add(external.kind, external.url, "", true, external);
     function addFrame(iframe) {
       const url = absoluteUrl(iframe.getAttribute("src"));
       if (!/^https?:\/\//i.test(url)) return;
       const iframeMedia = externalMedia(url);
-      if (iframeMedia) add(iframeMedia.kind, iframeMedia.url, "", true);
+      if (iframeMedia)
+        add(iframeMedia.kind, iframeMedia.url, "", true, iframeMedia);
     }
     node.querySelectorAll("iframe[src]").forEach(addFrame);
     node.querySelectorAll("shreddit-embed[html]").forEach((embed) => {
@@ -1176,6 +1372,10 @@
             Math.max(1, Math.round(numeric)),
           );
         }
+      } else if (key === "mediaMode") {
+        // An outdated or corrupt stored value must not strand the viewer in
+        // a mode it cannot reason about; fall back to the default instead.
+        if (MEDIA_MODE_KEYS.includes(value[key])) result[key] = value[key];
       }
     });
     // Before 2026-09 this was stored inverted as `controlsCollapsed`.
@@ -1248,6 +1448,14 @@
   const count = element("div", "redditp__count", "");
   const numberBar = element("nav", "redditp__numbers", "");
   numberBar.setAttribute("aria-label", "Post navigation");
+  // Media mode (Part C): one compact cycling control in the bottom control
+  // row. The cycle is images+videos → images → videos → back.
+  const mediaModeButton = element(
+    "button",
+    "redditp__button redditp__media-mode",
+    "",
+  );
+  mediaModeButton.type = "button";
   const galleryButton = element(
     "button",
     "redditp__button redditp__gallery redditp__control-item",
@@ -1446,6 +1654,7 @@
     galleryButton,
     settingsOverlay,
   );
+  controls.insertBefore(mediaModeButton, count);
 
   function stopMedia() {
     untrackMedia();
@@ -1589,6 +1798,13 @@
 
   function playVideoFallback(video, slide) {
     if (video.parentNode !== mediaBox) return;
+    // RedGIFs video failed with its resolved URL. One bounded re-resolution
+    // is allowed; beyond that the host's embed player (the pre-existing
+    // display for these posts) takes over for this display.
+    if (slide?.redgifsId) {
+      void redgifsDisplayRecovery(video, slide);
+      return;
+    }
     if (video.redditpPlayingFallback) {
       showMediaFailure(video, slide);
       return;
@@ -1597,6 +1813,63 @@
     releaseRedditDash(video);
     video.src = slide.url;
     playVideo(video);
+  }
+
+  // Bounded RedGIFs play-failure recovery: re-resolve once per display, then
+  // commit to the embed fallback. A resolution that answers the same URL the
+  // element already failed with cannot produce pixels either, so it counts
+  // as the failure it is. Stale navigations never act on the old media box.
+  function redgifsDisplayRecovery(video, slide) {
+    if (slide.redgifsRefreshed) {
+      showRedgifsEmbedFallback(video, slide);
+      return;
+    }
+    slide.redgifsRefreshed = true;
+    void resolveRedgifsMedia(slide.redgifsId, true).then((result) => {
+      if (
+        video.parentNode !== mediaBox ||
+        state.slides[state.index] !== slide
+      ) {
+        return;
+      }
+      if (!result.ok || result.url === slide.url) {
+        showRedgifsEmbedFallback(video, slide);
+        return;
+      }
+      slide.url = result.url;
+      video.src = result.url;
+      playVideo(video);
+    });
+  }
+
+  function showRedgifsEmbedFallback(video, slide) {
+    slide.redgifsFallback = true;
+    debugLogEvent("redgifs-fallback", mediaPreloadKey(slide));
+    if (
+      state.open &&
+      state.slides[state.index] === slide &&
+      video.parentNode === mediaBox
+    ) {
+      mediaBox.replaceChildren(embedElement(slide));
+    }
+  }
+
+  // One place builds the host's player frame, so the embed slide and the
+  // RedGIFs fallback below cannot drift apart.
+  function embedElement(slide) {
+    const iframe = element("iframe", "redditp__embed", "");
+    iframe.title = slide.title;
+    iframe.allow =
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
+    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+    iframe.addEventListener("load", () => initializeEmbed(iframe));
+    // An upgraded RedGIFs slide keeps its original /ifr player URL beside
+    // the resolved direct one; the fallback must use it, not the stream.
+    iframe.src = embedUrl(
+      slide.redgifsEmbedUrl || slide.url,
+      !state.settings.sound,
+    );
+    return iframe;
   }
 
   function showMediaFailure(mediaElement, slide) {
@@ -1640,10 +1913,8 @@
     if (maxScroll <= 0) return;
     const trackLeft = track.getBoundingClientRect().left;
     const rect = button.getBoundingClientRect();
-    const padLeft =
-      parseFloat(getComputedStyle(track).paddingLeft) || 0;
-    const padRight =
-      parseFloat(getComputedStyle(track).paddingRight) || 0;
+    const padLeft = parseFloat(getComputedStyle(track).paddingLeft) || 0;
+    const padRight = parseFloat(getComputedStyle(track).paddingRight) || 0;
     const left = track.scrollLeft + (rect.left - trackLeft);
     const right = track.scrollLeft + (rect.right - trackLeft);
     if (left < track.scrollLeft) {
@@ -1655,19 +1926,36 @@
 
   function syncPresentationUi() {
     const hasSlides = state.slides.length > 0;
-    empty.hidden = hasSlides;
+    const hasVisible = hasSlides && hasVisibleSlides();
+    if (hasSlides && !hasVisible) {
+      // The current mode matches nothing the feed currently holds: an
+      // explicit no-matching-media state instead of a stale frame.
+      const mode = currentMediaMode();
+      emptyTitle.textContent =
+        mode === "videos"
+          ? "No videos match the media filter"
+          : mode === "images"
+            ? "No images match the media filter"
+            : "No media matches the current filter";
+      emptyText.textContent =
+        "No picture slides to show for the current media mode. Switch modes or keep scrolling; posts that arrive later appear here.";
+    }
+    empty.hidden = !hasSlides || hasVisible;
     details.hidden =
-      !hasSlides || !state.settings.showDetails || state.interfaceHidden;
+      !hasSlides ||
+      !hasVisible ||
+      !state.settings.showDetails ||
+      state.interfaceHidden;
     meta.hidden = true;
     // The bottom-nav row itself follows the interface's visibility; the
     // count chip specifically also keeps the compact-controls behavior of
     // old (`P` hides the count and the numbered buttons but never the auto
     // toggle, which stays reachable).
-    controls.hidden = !hasSlides || state.interfaceHidden;
-    count.hidden = !hasSlides || !state.settings.showControls;
+    controls.hidden = !hasSlides || !hasVisible || state.interfaceHidden;
+    count.hidden = !hasSlides || !hasVisible || !state.settings.showControls;
     settingsButton.hidden = !state.settings.showControls;
     prevButton.hidden = nextButton.hidden =
-      !hasSlides || !state.settings.showArrows;
+      !hasSlides || !hasVisible || !state.settings.showArrows;
     prevButton.disabled = !hasSlides || state.index === 0;
     nextButton.disabled =
       !hasSlides ||
@@ -1676,9 +1964,9 @@
     updateCount(state.loadingMore && isOnLastPost());
     const slide = hasSlides ? state.slides[state.index] : null;
     galleryButton.hidden = !slide?.galleryItem;
-// Gallery counter shown only in title; toolbar button is the "Skip gallery" control.
-// Remove the duplicate counter from the toolbar button while preserving its function.
-galleryButton.textContent = "";
+    // Gallery counter shown only in title; toolbar button is the "Skip gallery" control.
+    // Remove the duplicate counter from the toolbar button while preserving its function.
+    galleryButton.textContent = "";
     numberBar.replaceChildren();
     // The auto-advance toggle lives in the same bottom strip as the numbered
     // post buttons, ahead of them.
@@ -1686,6 +1974,9 @@ galleryButton.textContent = "";
     const starts = [];
     let previous = null;
     state.slides.forEach((item, index) => {
+      // Numbering follows the count chip: duration-excluded posts keep their
+      // number (5A feed semantics) while media-mode-excluded kinds take none.
+      if (!slideMediaModeEligible(item)) return;
       const identity = postIdentity(item);
       if (identity !== previous) starts.push(index);
       previous = identity;
@@ -1723,7 +2014,7 @@ galleryButton.textContent = "";
       "redditp__numbers--manual",
       !state.settings.showControls,
     );
-    numberBar.hidden = !hasSlides || state.interfaceHidden;
+    numberBar.hidden = !hasSlides || !hasVisible || state.interfaceHidden;
     root.classList.toggle("redditp__interface-hidden", state.interfaceHidden);
     root.classList.toggle("redditp__rotated", state.rotation % 180 !== 0);
 
@@ -1801,6 +2092,11 @@ galleryButton.textContent = "";
     let total = 0;
     let previous = null;
     state.slides.forEach((slide, index) => {
+      // Duration-excluded posts keep their numbers (Phase 5A: the counters
+      // stay feed-based; exclusion is a navigation filter, not a rewrite).
+      // Only the media-mode filter renumbers: an excluded kind claims
+      // neither a post number nor the current position.
+      if (!slideMediaModeEligible(slide)) return;
       const identity = postIdentity(slide);
       if (identity !== previous) total += 1;
       previous = identity;
@@ -1887,11 +2183,7 @@ galleryButton.textContent = "";
     if (!state.slides.length) return keys;
     const current = state.slides[state.index];
     const identity = postIdentity(current);
-    for (
-      let offset = -2;
-      offset <= state.settings.preloadPosts;
-      offset += 1
-    ) {
+    for (let offset = -2; offset <= state.settings.preloadPosts; offset += 1) {
       const index = state.index + offset;
       if (index < 0) continue;
       const slide = state.slides[index];
@@ -1921,10 +2213,7 @@ galleryButton.textContent = "";
     // Drop per-slide shortcuts to released entries so a stale revisit cannot
     // re-use media whose resources were freed.
     for (const slide of state.slides) {
-      if (
-        slide.preloadedImage &&
-        !activeKeys.has(mediaPreloadKey(slide))
-      ) {
+      if (slide.preloadedImage && !activeKeys.has(mediaPreloadKey(slide))) {
         slide.preloadedImage = null;
       }
     }
@@ -1935,6 +2224,10 @@ galleryButton.textContent = "";
   // such a slide later fails to play, so the answer is recorded once — the
   // flag rides on the slide object and leaves nothing to clean up.
   function videoPreloadExclusionReason(slide) {
+    // A slide the current media mode excludes is never worth network work;
+    // the scheduler re-asks this on every pass so a mode change stops the
+    // speculative fetches at the next boundary without touching the cache.
+    if (!slideMediaModeEligible(slide)) return "filtered-media-mode";
     // Known long videos never enter the eager-preparation queues (5G).
     const duration = slideVideoDuration(slide);
     if (duration !== null && duration > MAX_ELIGIBLE_VIDEO_SECONDS)
@@ -1964,7 +2257,19 @@ galleryButton.textContent = "";
   // the cache is consulted as a fallback so eviction cannot falsify a
   // settled answer.
   function slideVideoDuration(slide) {
-    if (!slide || slide.kind !== "video") return null;
+    if (!slide) return null;
+    // A RedGIFs slide keeps its embed player until it resolves; once
+    // metadata came back the duration is real knowledge and rides on the
+    // slide even before the kind upgrade happens.
+    if (
+      slide.kind === "embed" &&
+      slide.redgifsId &&
+      Number.isFinite(slide.videoDuration) &&
+      slide.videoDuration > 0
+    ) {
+      return slide.videoDuration;
+    }
+    if (slide.kind !== "video") return null;
     if (Number.isFinite(slide.videoDuration) && slide.videoDuration > 0)
       return slide.videoDuration;
     const cached = state.preloadCache.get(mediaPreloadKey(slide));
@@ -1976,11 +2281,7 @@ galleryButton.textContent = "";
     )
       return cached.duration;
     const inflight = inflightVideoFor(slide);
-    if (
-      inflight &&
-      Number.isFinite(inflight.duration) &&
-      inflight.duration > 0
-    )
+    if (inflight && Number.isFinite(inflight.duration) && inflight.duration > 0)
       return inflight.duration;
     return null;
   }
@@ -2013,7 +2314,14 @@ galleryButton.textContent = "";
     let knownLong = false;
     for (const slide of state.slides) {
       if (!slide || postIdentity(slide) !== identity) continue;
-      if (slide.kind !== "video") return "";
+      // A RedGIFs embed whose metadata resolved is a known-duration video
+      // for policy purposes (4C): the duration rule must survive the host
+      // Player's frame. Other embeds have no duration knowledge and stay
+      // provisionally eligible, exactly as before.
+      const isDurationVideo =
+        slide.kind === "video" ||
+        (slide.kind === "embed" && Boolean(slide.redgifsId));
+      if (!isDurationVideo) return "";
       videoOnly = true;
       const duration = slideVideoDuration(slide);
       if (duration === null) return "";
@@ -2033,39 +2341,102 @@ galleryButton.textContent = "";
     debugLogEvent(slug, { from: fromIndex, to: destIndex });
   }
 
-  // The first slide at or after `index` whose post passes the duration
-  // policy. Excluded posts are stepped over whole (bounded by the feed
-  // length); null means nothing eligible lies in that direction (5.2).
+  // Media classification (Part C): every playable slide reduces to image or
+  // video, everything of unknown type (link cards, text posts) stays outside
+  // the filter. RedGIFs slides are video hosts from the moment they are
+  // recognized, whether or not a direct rendition has been resolved yet.
+  function slideMediaType(slide) {
+    if (!slide) return "";
+    if (slide.kind === "image") return "image";
+    if (
+      slide.kind === "video" ||
+      slide.kind === "native-video" ||
+      slide.kind === "pending-native-video" ||
+      slide.kind === "embed"
+    ) {
+      return "video";
+    }
+    return "";
+  }
+
+  // The single media-mode eligibility decision used by navigation, counters,
+  // the numbered bar, and the preload scheduler alike. `both` keeps every
+  // media kind (the pre-existing behavior); `images`/`videos` keep their one
+  // kind, and unknown types never disappear because of the mode.
+  function slideMediaModeEligible(slide) {
+    const type = slideMediaType(slide);
+    if (!type) return true;
+    const mode = MEDIA_MODE_KEYS.includes(state.settings.mediaMode)
+      ? state.settings.mediaMode
+      : "both";
+    // The mode keys are plural ("images"/"videos") while the media type is
+    // singular ("image"/"video"); compare by meaning, not by string.
+    return (
+      mode === "both" ||
+      (mode === "images" && type === "image") ||
+      (mode === "videos" && type === "video")
+    );
+  }
+
+  // The full slide-level exclusion answer: the media mode first, then the
+  // Phase 5A duration policy, which is applied at post granularity exactly
+  // as before and is never bypassed by the mode.
+  function slideEligibilityReason(slide) {
+    if (!slideMediaModeEligible(slide)) return "filtered-media-mode";
+    return postDurationExclusionReason(postIdentity(slide));
+  }
+
+  function hasVisibleSlides() {
+    return state.slides.some((slide) => !slideEligibilityReason(slide));
+  }
+
+  // The first slide at or after `index` that the viewer may show: the whole
+  // duration-excluded post is stepped over in the travelled direction
+  // (bounded by the feed length), and within a partially filtered group the
+  // scan walks single slides while media-mode filtering hides some types.
+  // null means nothing eligible lies in that direction (5.2).
   function forwardEligibleSlide(index) {
     while (index >= 0 && index < state.slides.length) {
-      const identity = postIdentity(state.slides[index]);
-      if (!postDurationExclusionReason(identity)) return index;
-      let next = index;
-      while (
-        next < state.slides.length &&
-        postIdentity(state.slides[next]) === identity
-      ) {
-        next += 1;
+      const slide = state.slides[index];
+      const identity = postIdentity(slide);
+      if (postDurationExclusionReason(identity)) {
+        let next = index;
+        while (
+          next < state.slides.length &&
+          postIdentity(state.slides[next]) === identity
+        ) {
+          next += 1;
+        }
+        index = next;
+        continue;
       }
-      index = next;
+      if (slideMediaModeEligible(slide)) return index;
+      index += 1;
     }
     return null;
   }
 
-  // First slide strictly behind `index` whose post passes the policy.
+  // First slide strictly behind `index` whose post and media type pass, in
+  // the same bounded whole-post / single-slide pattern as forward.
   function backwardEligibleSlide(index) {
     while (index >= 0 && index < state.slides.length) {
-      const identity = postIdentity(state.slides[index]);
-      if (!postDurationExclusionReason(identity)) return index;
-      let start = index;
-      while (
-        start > 0 &&
-        postIdentity(state.slides[start - 1]) === identity
-      ) {
-        start -= 1;
+      const slide = state.slides[index];
+      const identity = postIdentity(slide);
+      if (postDurationExclusionReason(identity)) {
+        let start = index;
+        while (
+          start > 0 &&
+          postIdentity(state.slides[start - 1]) === identity
+        ) {
+          start -= 1;
+        }
+        if (start === 0) return null;
+        index = start - 1;
+        continue;
       }
-      if (start === 0) return null;
-      index = start - 1;
+      if (slideMediaModeEligible(slide)) return index;
+      if (index === 0) return null;
+      index -= 1;
     }
     return null;
   }
@@ -2128,7 +2499,11 @@ galleryButton.textContent = "";
     if (!state.slides.length) return [];
     const entries = [];
     const push = (slide, priority, kind) => {
-      if (slide && slide.url) entries.push({ slide, priority, kind });
+      // Media the mode excludes never enters the speculative pipeline; its
+      // cached resource stays put for when the mode turns back.
+      if (slide && slide.url && slideMediaModeEligible(slide)) {
+        entries.push({ slide, priority, kind });
+      }
     };
     const current = state.slides[state.index];
     const currentIdentity = postIdentity(current);
@@ -2150,6 +2525,17 @@ galleryButton.textContent = "";
       if (candidate.kind === "image" && candidate.url) {
         push(candidate, offset, "post");
       } else if (
+        candidate.redgifsId &&
+        candidate.kind === "embed" &&
+        !candidate.redditpRedgifsSkip
+      ) {
+        // RedGIFs metadata resolution: a tiny JSON fetch that upgrades the
+        // slide into a plain video slide when it succeeds, so the ordinary
+        // video path (with its own budget) does the heavy work afterwards.
+        // A slide whose earlier resolution failed stops being queued until
+        // it is displayed again (one bounded retry per revisit).
+        push(candidate, offset, "redgifs");
+      } else if (
         offset <= VIDEO_PRELOAD_WINDOW &&
         preloadableVideoSlide(candidate)
       ) {
@@ -2160,10 +2546,7 @@ galleryButton.textContent = "";
         candidate.url
       ) {
         // Inside the window but never queued: say why in the diagnostics.
-        notePreloadSkip(
-          candidate,
-          videoPreloadExclusionReason(candidate),
-        );
+        notePreloadSkip(candidate, videoPreloadExclusionReason(candidate));
       }
     }
     // Keep the slides just behind the current ones cached so stepping back
@@ -2207,10 +2590,10 @@ galleryButton.textContent = "";
   function videoPreloadReady(video) {
     return Boolean(
       video &&
-        typeof HTMLVideoElement !== "undefined" &&
-        video instanceof HTMLVideoElement &&
-        video.readyState >= HTMLMediaElement.HAVE_METADATA &&
-        !video.error,
+      typeof HTMLVideoElement !== "undefined" &&
+      video instanceof HTMLVideoElement &&
+      video.readyState >= HTMLMediaElement.HAVE_METADATA &&
+      !video.error,
     );
   }
 
@@ -2334,7 +2717,12 @@ galleryButton.textContent = "";
       if (key === currentKey) continue;
       if (slide.preloadFailed || state.preloadInFlight.has(key)) continue;
       if (state.preloadCache.has(key)) continue;
-      queue.push({ key, slide, priority: entry.priority });
+      queue.push({
+        key,
+        slide,
+        priority: entry.priority,
+        jobKind: entry.kind,
+      });
       debugLogEvent("preload-scheduled", {
         key,
         priority: entry.priority,
@@ -2359,9 +2747,7 @@ galleryButton.textContent = "";
     for (let i = 0; i < capacity && state.preloadQueue.length; i += 1) {
       const choices = state.preloadQueue
         .map((job, index) => ({ job, index }))
-        .sort(
-          (a, b) => a.job.priority - b.job.priority || a.index - b.index,
-        );
+        .sort((a, b) => a.job.priority - b.job.priority || a.index - b.index);
       // Video jobs wait while their budget is full so speculative videos
       // can never crowd the image pipeline or create extra decoders.
       const eligible = choices.find(
@@ -2392,6 +2778,13 @@ galleryButton.textContent = "";
       }
       callback();
     };
+    if (job.jobKind === "redgifs") {
+      // RedGIFs metadata resolution: no element of its own, so nothing to
+      // attach; the resolution is awaited and the successful upgrade hands
+      // the slide to the ordinary video pipeline on the next pass.
+      void runRedgifsPreload(job);
+      return;
+    }
     if (job.slide.kind === "image") {
       const image = new Image();
       job.media = image;
@@ -2619,7 +3012,10 @@ galleryButton.textContent = "";
     video.addEventListener(
       "loadeddata",
       () => {
-        debugLogEvent("preload-firstframe", { key, readyState: video.readyState });
+        debugLogEvent("preload-firstframe", {
+          key,
+          readyState: video.readyState,
+        });
       },
       { once: true },
     );
@@ -2645,6 +3041,92 @@ galleryButton.textContent = "";
     schedulePreloadQueue();
   }
 
+  // RedGIFs direct-media preparation (Part B): resolve the media metadata
+  // (deduplicated per media id), then upgrade the slide from its embed
+  // player into a plain video slide so the ordinary pipeline (duration
+  // policy, speculative metadata/first-frame preloading, prepared-element
+  // reuse) takes over unchanged. Failures leave the embed path in place.
+  async function runRedgifsPreload(job) {
+    const slide = job.slide;
+    const result = await resolveRedgifsMedia(slide.redgifsId);
+    state.preloadInFlight.delete(job.key);
+    if (job.canceled || !state.open) {
+      releasePreloadResource(job.media);
+      return;
+    }
+    if (state.preloadCache.has(job.key)) return;
+    if (!result.ok) {
+      // Persist the reason on the slide so the candidate generator stops
+      // re-queueing this slide; the resolver's counted attempts are the
+      // actual bound on further network work.
+      slide.redditpRedgifsSkip = result.reason;
+      state.preloadStats.redgifsFailed += 1;
+      debugLogEvent("redgifs-still-embed", {
+        key: job.key,
+        why: result.reason,
+      });
+      schedulePreloadQueue();
+      return;
+    }
+    absorbRedgifsResult(slide, result);
+    schedulePreloadQueue();
+  }
+
+  // The tail a settled RedGIFs resolution shares with the display path
+  // below: record the duration knowledge the API handed over, apply the
+  // Phase 5A duration policy to it, and upgrade the slide in place. The
+  // upgrade's own render() swaps the embed the viewer is looking at.
+  function absorbRedgifsResult(slide, result) {
+    const duration = slideVideoDuration(slide);
+    if (
+      result.duration !== null &&
+      (duration === null || duration !== result.duration) &&
+      Number.isFinite(result.duration) &&
+      result.duration > 0
+    ) {
+      slide.videoDuration = Math.round(result.duration * 100) / 100;
+      debugLogEvent("video-duration", {
+        key: mediaPreloadKey(slide),
+        duration: slide.videoDuration,
+        source: "redgifs",
+      });
+      if (state.open) schedulePreloadQueue();
+    }
+    if (
+      slideVideoDuration(slide) !== null &&
+      slideVideoDuration(slide) > MAX_ELIGIBLE_VIDEO_SECONDS
+    ) {
+      // Known-long RedGIFs media: the duration policy applies (4C), so no
+      // direct element is prepared and the slide leaves the eligible
+      // navigation sequence with its diagnostic reason.
+      slide.redditpRedgifsSkip = "long-video";
+      debugLogEvent("redgifs-long-video", {
+        key: mediaPreloadKey(slide),
+        duration: slideVideoDuration(slide),
+      });
+      schedulePreloadQueue();
+      return;
+    }
+    upgradeRedgifsSlide(slide, result);
+  }
+
+  // Swaps a RedGIFs embed slide over to a direct video slide in place. The
+  // original /ifr URL is kept on the slide for the fallback to reuse.
+  function upgradeRedgifsSlide(slide, result) {
+    if (slide.kind !== "embed" || !slide.redgifsId) return;
+    slide.redgifsEmbedUrl = slide.url;
+    slide.kind = "video";
+    slide.url = result.url;
+    if (result.poster) slide.poster = result.poster;
+    slide.mpdUrl = "";
+    slide.redditpPreloadSkip = null;
+    state.preloadStats.redgifsPrepared += 1;
+    debugLogEvent("redgifs-prepared", mediaPreloadKey(slide));
+    if (state.open && state.slides[state.index] === slide && !document.hidden) {
+      render();
+    }
+  }
+
   // Drops queued work and marks running jobs canceled on close; the running
   // callbacks release their own media elements when the set() above lets them
   // through the guard.
@@ -2661,19 +3143,45 @@ galleryButton.textContent = "";
     state.preloadInFlight.clear();
   }
 
+  // Renders the explicit no-matching-media stage (sync already un-hid the
+  // empty panel with the mode's copy) and parks any slideshow timer, so an
+  // empty filter cannot keep advancing through excluded slides on its own.
+  function renderNoMatchingMedia() {
+    clearTimeout(state.autoTimer);
+    state.autoTimer = null;
+  }
+
+  // The active index can become ineligible outside navigation: a newly known
+  // video duration, an enrichment upgrade, a media-mode change. Landing on
+  // the next eligible slide deterministically (forward first, then backward)
+  // keeps out the exclusion reason of ever painting a filtered slide.
+  function resolveIneligibleIndex() {
+    const slide = state.slides[state.index];
+    if (!slide || !slideEligibilityReason(slide)) return;
+    const dest =
+      forwardEligibleSlide(state.index) ??
+      backwardEligibleSlide(state.index - 1);
+    if (dest !== null && dest !== state.index) state.index = dest;
+  }
+
   function render() {
     stopMedia();
+    resolveIneligibleIndex();
     syncPresentationUi();
     if (!state.slides.length) return;
+    if (!hasVisibleSlides()) {
+      renderNoMatchingMedia();
+      return;
+    }
 
     const slide = state.slides[state.index];
     // Revisiting a slide retries its media, so a past failure must not keep
     // forcing the timer path.
     slide.mediaFailed = false;
     slide.preloadFailed = false;
-    title.textContent = slide.galleryItem
-      ? `(${slide.galleryItem}/${slide.galleryTotal}) ${slide.title}`
-      : slide.title;
+    slide.redgifsRefreshed = false;
+    slide.redditpRedgifsSkip = "";
+    title.textContent = visibleGalleryLabel(slide);
     const metaItems = [];
     if (slide.community) {
       const communityLink = element("a", "redditp__meta-link", slide.community);
@@ -2754,6 +3262,14 @@ galleryButton.textContent = "";
         noteCacheRead(true, slide);
       }
       mediaBox.append(img);
+    } else if (
+      slide.kind === "video" &&
+      slide.redgifsId &&
+      slide.redgifsFallback
+    ) {
+      // The resolved URL kept failing even after the bounded refresh: the
+      // host's own /ifr player is the remaining way to watch this media.
+      mediaBox.append(embedElement(slide));
     } else if (slide.kind === "video") {
       const navKey = mediaPreloadKey(slide);
       // DASH slides keep a src-free element: dash.js needs one without a
@@ -2897,14 +3413,26 @@ galleryButton.textContent = "";
       mediaBox.append(video);
       playVideo(video);
     } else if (slide.kind === "embed") {
-      const iframe = element("iframe", "redditp__embed", "");
-      iframe.title = slide.title;
-      iframe.allow =
-        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
-      iframe.referrerPolicy = "strict-origin-when-cross-origin";
-      iframe.addEventListener("load", () => initializeEmbed(iframe));
-      iframe.src = embedUrl(slide.url, !state.settings.sound);
-      mediaBox.append(iframe);
+      mediaBox.append(embedElement(slide));
+      // A RedGIFs slide opened on directly resolves here: the scheduler only
+      // looks ahead, so the first slide of a feed (or one reached while its
+      // resolution was stopped) gets the same shared, counted resolution
+      // and the same upgrade path. Its embed frame is already on screen,
+      // so the viewer never waits with an empty stage either way.
+      if (slide.redgifsId && !slide.redditpRedgifsSkip) {
+        void resolveRedgifsMedia(slide.redgifsId).then((result) => {
+          if (result.ok) {
+            absorbRedgifsResult(slide, result);
+          } else {
+            slide.redditpRedgifsSkip = result.reason;
+            state.preloadStats.redgifsFailed += 1;
+            debugLogEvent("redgifs-still-embed", {
+              key: mediaPreloadKey(slide),
+              why: result.reason,
+            });
+          }
+        });
+      }
     } else {
       mediaBox.append(
         linkCard(
@@ -2958,17 +3486,11 @@ galleryButton.textContent = "";
     // plain step (the picture case) resolves to a plain step.
     const target = state.index + delta;
     const dest =
-      delta > 0
-        ? forwardEligibleSlide(target)
-        : backwardEligibleSlide(target);
+      delta > 0 ? forwardEligibleSlide(target) : backwardEligibleSlide(target);
     if (dest === null) {
       // Nothing eligible ahead in this direction until the feed grows; the
       // last-post advance still starts the scan like the unfiltered path.
-      noteDurationSkips(
-        "navigation-skipped-long",
-        state.index,
-        target,
-      );
+      noteDurationSkips("navigation-skipped-long", state.index, target);
       if (delta > 0) void loadMoreAtEnd(true);
       return;
     }
@@ -2995,9 +3517,10 @@ galleryButton.textContent = "";
     // Skipping a post with an excluded video must jump the whole post, so
     // the hop goes through move(), which resolves the duration policy
     // together with its loading and single-post bookkeeping.
-    const dest = nextIndex <= state.slides.length - 1
-      ? forwardEligibleSlide(nextIndex)
-      : null;
+    const dest =
+      nextIndex <= state.slides.length - 1
+        ? forwardEligibleSlide(nextIndex)
+        : null;
     if (dest !== null) {
       move(dest - state.index);
       return;
@@ -3065,6 +3588,42 @@ galleryButton.textContent = "";
     if (slide.postKey) return `post:${slide.postKey}`;
     if (slide.commentsUrl) return `comments:${slide.commentsUrl}`;
     return `fallback:${slide.title}|${slide.sourceUrl}`;
+  }
+
+  // The title's ("(2/7)") gallery counter. The extraction numbering (the
+  // post's own media order) is used whenever the mode filter leaves the
+  // gallery intact; when some of its slides are excluded the counter counts
+  // the slidably visible subsequence instead, so the indicator always
+  // describes what next/previous actually walk through.
+  function visibleGalleryLabel(slide) {
+    if (!slide || !slide.galleryItem) return slide ? slide.title : "";
+    const identity = postIdentity(slide);
+    let start = state.index;
+    while (
+      start > 0 &&
+      state.slides[start - 1] &&
+      postIdentity(state.slides[start - 1]) === identity
+    ) {
+      start -= 1;
+    }
+    let end = state.index + 1;
+    while (
+      end < state.slides.length &&
+      postIdentity(state.slides[end]) === identity
+    ) {
+      end += 1;
+    }
+    let position = 0;
+    let total = 0;
+    for (let i = start; i < end; i += 1) {
+      if (slideEligibilityReason(state.slides[i])) continue;
+      total += 1;
+      if (i < state.index) position += 1;
+    }
+    if (total > 0) {
+      return `(${position + 1}/${total}) ${slide.title}`;
+    }
+    return `(${slide.galleryItem}/${slide.galleryTotal}) ${slide.title}`;
   }
 
   function appendNewPosts(root) {
@@ -3166,15 +3725,28 @@ galleryButton.textContent = "";
     if (added && shouldAdvance) {
       // The appended posts are brand new, so their durations are unknown and
       // provisionally eligible; the resolver only guards against an identity
-      // that somehow arrived pre-excluded.
+      // that somehow arrived pre-excluded. When nothing in the additions is
+      // eligible yet, stay put instead of parking the viewer on excluded
+      // media — the next navigation or completed scan resolves again.
       const dest = forwardEligibleSlide(state.index + 1);
-      state.index = dest === null ? state.index + 1 : dest;
-      render();
+      if (dest !== null) {
+        state.index = dest;
+        render();
+      } else {
+        syncPresentationUi();
+      }
     } else if (!added && shouldAdvance) {
-      // Start the next lap with a fresh scan budget.
+      // Start the next lap with a fresh scan budget. Wrapping resolves the
+      // whole feed's eligibility; without any eligible slide the viewer
+      // stays in its explicit no-matching-media state rather than looping.
       state.scanFailures = 0;
-      state.index = 0;
-      render();
+      const wrapDest = forwardEligibleSlide(0);
+      if (wrapDest !== null) {
+        state.index = wrapDest;
+        render();
+      } else {
+        syncPresentationUi();
+      }
     } else if (added) {
       // The appended posts do not advance the current slide, but the count
       // and the numbered bar must reflect them right away.
@@ -3393,6 +3965,72 @@ galleryButton.textContent = "";
     autoButton.setAttribute("aria-pressed", String(state.autoPlaying));
   }
 
+  const MEDIA_MODE_ICONS = {
+    both: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M13 19v-1.5a3 3 0 0 1 6 0V19"/></svg>`,
+    images: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`,
+    videos: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>`,
+  };
+  const MEDIA_MODE_TITLES = {
+    both: "Show images and videos",
+    images: "Show images only",
+    videos: "Show videos only",
+  };
+
+  function currentMediaMode() {
+    return MEDIA_MODE_KEYS.includes(state.settings.mediaMode)
+      ? state.settings.mediaMode
+      : "both";
+  }
+
+  function renderMediaModeButton() {
+    const mode = currentMediaMode();
+    mediaModeButton.innerHTML = MEDIA_MODE_ICONS[mode];
+    mediaModeButton.title = `${MEDIA_MODE_TITLES[mode]} (cycle mode)`;
+    mediaModeButton.setAttribute("aria-label", MEDIA_MODE_TITLES[mode]);
+    mediaModeButton.dataset.mediaMode = mode;
+  }
+
+  // Cycling the mode keeps the feed where it is whenever the framed slide is
+  // still allowed, and otherwise lands deterministically on the next
+  // eligible slide (forward first, then backward, then the explicit
+  // no-matching-media stage). Media that stays eligible is never restarted
+  // and the preload cache is not cleared: eviction remains horizon-based.
+  function cycleMediaMode() {
+    const index = MEDIA_MODE_KEYS.indexOf(state.settings.mediaMode);
+    state.settings.mediaMode =
+      MEDIA_MODE_KEYS[(index + 1) % MEDIA_MODE_KEYS.length] || "both";
+    saveSettings();
+    renderMediaModeButton();
+    debugLogEvent("media-mode", state.settings.mediaMode);
+    reconcileMediaMode();
+  }
+
+  function reconcileMediaMode() {
+    if (!state.open) {
+      syncPresentationUi();
+      return;
+    }
+    const current = state.slides[state.index];
+    if (
+      current &&
+      !postDurationExclusionReason(postIdentity(current)) &&
+      slideMediaModeEligible(current)
+    ) {
+      // Stay on the eligible slide: only the counters and the preload
+      // priorities change, nothing about the displayed media does.
+      syncPresentationUi();
+      schedulePreloadQueue();
+      return;
+    }
+    const dest =
+      forwardEligibleSlide(state.index) ??
+      backwardEligibleSlide(state.index - 1);
+    if (dest !== null && dest !== state.index) {
+      state.index = dest;
+    }
+    render();
+  }
+
   function toggleAuto() {
     state.autoPlaying = !state.autoPlaying;
     state.settings.autoAdvance = state.autoPlaying;
@@ -3605,6 +4243,7 @@ galleryButton.textContent = "";
     state.scanFailures = 0;
     state.autoPlaying = Boolean(state.settings.autoAdvance);
     renderAutoButton();
+    renderMediaModeButton();
     state.interfaceHidden = Boolean(state.settings.startHidden);
     root.hidden = false;
     document.documentElement.style.overflow = "hidden";
@@ -3702,13 +4341,11 @@ galleryButton.textContent = "";
       event.preventDefault();
       event.stopPropagation();
       if (state.slides[state.index]?.galleryItem) {
-        // In a gallery: advance to next gallery image
-        if (state.slides[state.index].galleryItem < state.slides[state.index].galleryTotal) {
-          state.slides[state.index].galleryItem += 1;
-        } else {
-          // At last image: stay within current post
-        }
-        render();
+        // In a gallery: advance to the next gallery image. Gallery items are
+        // first-class slides, so the advance goes through move() — mutating
+        // only the counter used to drift the (1/7) indicator while the
+        // displayed media stayed put.
+        move(1);
       } else {
         // Not in a gallery: advance to next post
         move(1);
@@ -3716,13 +4353,12 @@ galleryButton.textContent = "";
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
       event.stopPropagation();
-      if (state.slides[state.index]?.galleryItem && state.slides[state.index].galleryItem > 1) {
+      if (state.slides[state.index]?.galleryItem) {
         // In a gallery: go back one gallery image
-        state.slides[state.index].galleryItem -= 1;
-        render();
+        move(-1);
       } else {
-        // Not in a gallery or at first image: stay within current post
-        // (do not navigate to previous post via Up arrow in this implementation)
+        // Not in a gallery: keep the summary screen behavior
+        move(-1);
       }
     } else if (event.key === "PageDown") {
       event.preventDefault();
@@ -3817,6 +4453,7 @@ galleryButton.textContent = "";
   prevButton.addEventListener("click", () => move(-1));
   nextButton.addEventListener("click", () => move(1));
   autoButton.addEventListener("click", toggleAuto);
+  mediaModeButton.addEventListener("click", cycleMediaMode);
   settingsButton.addEventListener("click", openSettings);
   rotateButton.addEventListener("click", toggleRotate);
   hideButton.addEventListener("click", toggleHideInterface);
@@ -3922,14 +4559,16 @@ galleryButton.textContent = "";
       // navigation-to-usable-media time (0 for prepared media, measured
       // milliseconds for a fresh fetch).
       lastNavigation() {
-        return state.lastNavigation && {
-          index: state.lastNavigation.index,
-          key: state.lastNavigation.key,
-          kind: state.lastNavigation.kind,
-          ready: state.lastNavigation.ready,
-          reuse: state.lastNavigation.reuse || "",
-          readyAfterMs: state.lastNavigation.readyAfterMs,
-        };
+        return (
+          state.lastNavigation && {
+            index: state.lastNavigation.index,
+            key: state.lastNavigation.key,
+            kind: state.lastNavigation.kind,
+            ready: state.lastNavigation.ready,
+            reuse: state.lastNavigation.reuse || "",
+            readyAfterMs: state.lastNavigation.readyAfterMs,
+          }
+        );
       },
       // Recent diagnostics, written only while localStorage.redditpDebug is
       // set; capped so a debug session cannot grow without bound.
@@ -3942,6 +4581,31 @@ galleryButton.textContent = "";
           inFlight: state.preloadInFlight.size,
           cacheSize: state.preloadCache.size,
           scanFailures: state.scanFailures,
+          redgifsPending: redgifsResolutions.size,
+        };
+      },
+      // Test/diagnostic snapshot: one immutable view of the state the
+      // eligibility helpers see, so suites can assert on filtering reasons
+      // instead of guessing from titles.
+      snapshot() {
+        return {
+          open: state.open,
+          index: state.index,
+          mediaMode: state.settings.mediaMode,
+          slides: state.slides.map((slide, i) => {
+            const identity = postIdentity(slide);
+            return {
+              i,
+              kind: slide.kind,
+              redgifsId: slide.redgifsId || "",
+              identity,
+              durationReason: postDurationExclusionReason(identity),
+              modeEligible: slideMediaModeEligible(slide),
+              mediaMode: slideMediaModeEligible(slide)
+                ? ""
+                : "filtered-media-mode",
+            };
+          }),
         };
       },
     },

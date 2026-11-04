@@ -261,6 +261,33 @@
   color: #fff;
 }
 
+/* Media mode control (Part C): a cycling chip left of the post counter in
+   the bottom control row. Mirror the count chip's look and the auto
+   toggle's sizing so it reads as part of the same strip, with its own
+   pointer-events because the row itself is a transparent pass-through. */
+#redditp-presentation button.redditp__media-mode {
+  pointer-events: auto;
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #bbb;
+  cursor: pointer;
+  appearance: none;
+}
+#redditp-presentation button.redditp__media-mode:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
 #redditp-presentation .redditp__button:focus-visible,
 #redditp-presentation .redditp__arrow:focus-visible {
   outline: 2px solid #5ff;
