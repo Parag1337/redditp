@@ -559,14 +559,17 @@ test("current Reddit reuses adaptive video inside an open player shadow root", a
   if (browserName !== "firefox") {
     await page
       .locator("#shadow-adaptive-video")
-      .click({ position: { x: 300, y: 300 } });
+      // Click the element itself. The stub video has no metadata, so its
+      // adopted box is the browser-default 300px object size; a fixed offset
+      // can land outside that box and get swallowed by the media container.
+      .click();
     await expect
       .poll(() => page.evaluate(() => window.__redditVideoPaused))
       .toBe(true);
     expect(await page.evaluate(() => window.__redditTargetClicks)).toBe(1);
     await page
       .locator("#shadow-adaptive-video")
-      .click({ position: { x: 300, y: 300 } });
+      .click();
     await expect
       .poll(() => page.evaluate(() => window.__redditVideoPaused))
       .toBe(false);
@@ -1549,7 +1552,9 @@ for (const expanded of [false, true]) {
         "src",
         oldGalleryImage(oldGalleryIds[index]),
       );
-      await expect(page.locator(".redditp__gallery")).toHaveText(
+      // The counter lives in the title; the toolbar button is only the
+      // "Skip gallery" control since the duplicate label was removed.
+      await expect(page.locator(".redditp__title")).toContainText(
         `(${index + 1}/5)`,
       );
       if (index < oldGalleryIds.length - 1) {
@@ -1576,7 +1581,7 @@ for (const expanded of [false, true]) {
       await expect(previous).toBeInViewport();
       await expect(page.locator(".redditp__controls")).toBeInViewport();
       await previous.click();
-      await expect(page.locator(".redditp__gallery")).toHaveText("(4/5)");
+      await expect(page.locator(".redditp__title")).toContainText("(4/5");
       // Exercise the touch-pointer swipe handler without relying on Chromium's
       // touch-only emulation, so this also runs in Firefox.
       const stage = page.locator(".redditp__stage");
@@ -1592,7 +1597,7 @@ for (const expanded of [false, true]) {
         clientX: 100,
         clientY: 300,
       });
-      await expect(page.locator(".redditp__gallery")).toHaveText("(5/5)");
+      await expect(page.locator(".redditp__title")).toContainText("(5/5");
     }
     expect(
       await page.evaluate(() => window.cachedGalleryScriptRan),
@@ -1640,14 +1645,14 @@ test("G skips only the current gallery and advances ordinary posts", async ({
   await expect(page.locator(".redditp__title")).toHaveText(
     "(1/2) Next gallery",
   );
-  await expect(page.locator(".redditp__gallery")).toHaveText("(1/2)");
+  await expect(page.locator(".redditp__title")).toContainText("(1/2");
   await expect(page.locator(".redditp__count")).toHaveText("2 / 4");
   // The gallery counter must not wrap the controls onto a second row.
   const controlsBox = await page.locator(".redditp__controls").boundingBox();
   const countBox = await page.locator(".redditp__count").boundingBox();
   expect(controlsBox.height).toBeLessThan(countBox.height * 2);
   await page.keyboard.press("ArrowLeft");
-  await expect(page.locator(".redditp__gallery")).toHaveText("(5/5)");
+  await expect(page.locator(".redditp__title")).toContainText("(5/5");
   await expect(page.locator(".redditp__count")).toHaveText("1 / 4");
   await page.keyboard.press("ArrowLeft");
   await page.keyboard.press("Shift+G");
@@ -1681,7 +1686,7 @@ test("G at the final gallery waits for more posts and otherwise wraps", async ({
   await expect(page.locator(".redditp__title")).toHaveText("Newly loaded post");
   await page.keyboard.press("g");
   await expect(page.locator(".redditp__count")).toHaveText("1 / 2");
-  await expect(page.locator(".redditp__gallery")).toHaveText("(1/5)");
+  await expect(page.locator(".redditp__title")).toContainText("(1/5");
   // Skipping a gallery with no next post must also wrap safely.
   await page.keyboard.press("Escape");
   await page.evaluate(() =>
@@ -1700,11 +1705,11 @@ test("the last gallery starts loading more posts from its first image", async ({
   await expect(page.locator(".redditp__count")).toHaveText(
     "1 / 1 · loading more",
   );
-  await expect(page.locator(".redditp__gallery")).toHaveText("(1/5)");
+  await expect(page.locator(".redditp__title")).toContainText("(1/5");
 
   // Browsing the gallery keeps working while the next posts load.
   await page.keyboard.press("ArrowRight");
-  await expect(page.locator(".redditp__gallery")).toHaveText("(2/5)");
+  await expect(page.locator(".redditp__title")).toContainText("(2/5");
   await pinAutoAdvance(page, false);
   await page.locator(".redditp__auto").click();
   // The toggle now paints the pause icon instead of the old "pause" text.
@@ -1723,7 +1728,7 @@ test("the last gallery starts loading more posts from its first image", async ({
     );
   });
   await expect(page.locator(".redditp__count")).toHaveText("1 / 2");
-  await expect(page.locator(".redditp__gallery")).toHaveText("(2/5)");
+  await expect(page.locator(".redditp__title")).toContainText("(2/5");
 });
 
 test("G on a single-post gallery stops at its last image", async ({ page }) => {
@@ -1736,12 +1741,12 @@ test("G on a single-post gallery stops at its last image", async ({ page }) => {
   await page.addScriptTag({ path: extensionScript });
   await page.keyboard.press("g");
   await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
-  await expect(page.locator(".redditp__gallery")).toHaveText("(5/5)");
+  await expect(page.locator(".redditp__title")).toContainText("(5/5");
   await expect(page.locator(".redditp__next")).toBeDisabled();
   await page.keyboard.press("g");
   await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
   await page.keyboard.press("ArrowLeft");
-  await expect(page.locator(".redditp__gallery")).toHaveText("(4/5)");
+  await expect(page.locator(".redditp__title")).toContainText("(4/5");
 });
 
 test("old Reddit search enrichment recognizes cached galleries", async ({
@@ -1756,7 +1761,7 @@ test("old Reddit search enrichment recognizes cached galleries", async ({
     `<div class="search-result search-result-link" data-fullname="t3_1vy9ca0"><a class="search-title" href="${oldGalleryComments}">Apple pie gallery</a><a class="search-comments" href="${oldGalleryComments}">comments</a><a class="search-link" href="${oldGalleryUrl}">gallery</a></div>`,
   );
   await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
-  await expect(page.locator(".redditp__gallery")).toHaveText("(1/5)");
+  await expect(page.locator(".redditp__title")).toContainText("(1/5");
 });
 
 test("old Reddit galleries without usable cached media keep their link fallback", async ({
@@ -1803,9 +1808,9 @@ test("extension expands lazy Reddit galleries in order without decorative duplic
   // the gallery manually and can otherwise race the 5-second slide timer.
   await pinAutoAdvance(page, false);
   await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
-  await expect(page.locator(".redditp__gallery")).toHaveText("(1/3)");
+  await expect(page.locator(".redditp__title")).toContainText("(1/3");
   await page.keyboard.press("ArrowRight");
-  await expect(page.locator(".redditp__gallery")).toHaveText("(2/3)");
+  await expect(page.locator(".redditp__title")).toContainText("(2/3");
   await expect(page.locator(".redditp__image")).toHaveAttribute(
     "src",
     /gallery-2\.jpg\?width=1080/,
@@ -2990,14 +2995,14 @@ test("post JSON resolves galleries in order one item per slide", async ({
 
   await expect(page.locator(".redditp__image")).toHaveAttribute("src", first);
   await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
-  await expect(page.locator(".redditp__gallery")).toHaveText("(1/3)");
+  await expect(page.locator(".redditp__title")).toContainText("(1/3");
   // The failed entry is skipped, not a blank slide.
   await page.keyboard.press("ArrowDown");
   await expect(page.locator(".redditp__video")).toHaveAttribute("src", third);
-  await expect(page.locator(".redditp__gallery")).toHaveText("(2/3)");
+  await expect(page.locator(".redditp__title")).toContainText("(2/3");
   await page.keyboard.press("ArrowDown");
   await expect(page.locator(".redditp__image")).toHaveAttribute("src", fourth);
-  await expect(page.locator(".redditp__gallery")).toHaveText("(3/3)");
+  await expect(page.locator(".redditp__title")).toContainText("(3/3");
 });
 
 test("a hydration shell for an external link still leaves the link card", async ({
@@ -3072,9 +3077,10 @@ test("a block-page channel page response cannot resolve and the retry stays card
   expect(jsonRequests).toBe(1);
 
   // A previously failed slide is retried rather than stuck forever.
+  // PageUp back: the committed deck keeps ArrowUp gallery-internal only.
   await page.keyboard.press("ArrowDown");
   await expect(page.locator(".redditp__title")).toHaveText("Second post");
-  await page.keyboard.press("ArrowUp");
+  await page.keyboard.press("PageUp");
   await expect(page.locator(".redditp__link-icon")).toHaveText(
     "Loading video…",
   );
@@ -3241,12 +3247,17 @@ test("the numbered bar keeps its first items reachable on narrow screens", async
   await pinAutoAdvance(page, false);
 
   // The auto toggle lives at the bar's start and stays clickable.
+  // Positions are measured relative to the bar's own left edge: the strip
+  // starts after the count chip, so raw viewport coordinates would fail
+  // `>= 0` checks for the wrong reason.
   const barStats = await page.evaluate(() => {
     const bar = document.querySelector(".redditp__numbers");
     return {
       overflow: bar.scrollWidth > bar.clientWidth + 1,
       overflowX: getComputedStyle(bar).overflowX,
-      firstLeft: bar.firstElementChild.getBoundingClientRect().left,
+      firstLeft:
+        bar.firstElementChild.getBoundingClientRect().left -
+        bar.getBoundingClientRect().left,
       clientWidth: bar.clientWidth,
       scrollWidth: bar.scrollWidth,
     };
@@ -3258,13 +3269,16 @@ test("the numbered bar keeps its first items reachable on narrow screens", async
   // Scrolling the bar reaches both edges: nothing is clipped beyond reach.
   const bothEnds = await page.evaluate(() => {
     const bar = document.querySelector(".redditp__numbers");
+    const barLeft = bar.getBoundingClientRect().left;
     bar.scrollLeft = bar.scrollWidth;
     const last = bar.lastElementChild.getBoundingClientRect();
     const lastOk =
-      last.right <= bar.clientWidth + 1 && last.left > 0;
+      last.right - barLeft <= bar.clientWidth + 1 &&
+      last.left >= barLeft - 0.5;
     bar.scrollLeft = 0;
     const first = bar.firstElementChild.getBoundingClientRect();
-    const firstOk = first.left >= 0 && first.right > 0;
+    const firstOk =
+      first.left - barLeft >= 0 && first.right - barLeft > 0;
     return { lastOk, firstOk };
   });
   expect(bothEnds.lastOk).toBe(true);
@@ -5428,8 +5442,13 @@ test.describe("phase 4a mobile touch targets", () => {
     await startPresentation(page, touchFeed());
     await pinAutoAdvance(page, false);
     await expect(page.locator(".redditp__count")).toHaveText("1 / 4");
-    // The gallery controls (and its "(1/5)" label) are present on slide 1.
-    await expect(page.locator(".redditp__gallery")).toHaveText("(1/5)");
+    // Slide 1 is a gallery: the counter shows in the title and the "Skip
+    // gallery" toolbar button is present.
+    await expect(page.locator(".redditp__title")).toContainText("(1/5");
+    await expect(page.locator(".redditp__gallery")).toHaveAttribute(
+      "aria-label",
+      "Skip gallery",
+    );
   }
 
   // Measures the interactive controls from the live layout. The visible box
@@ -5735,7 +5754,7 @@ test.describe("phase 4a mobile touch targets", () => {
     // Arrows still navigate after the width gain, including back into the
     // gallery's last image.
     await clickTouchTarget(page, page.locator(".redditp__prev"), "center");
-    await expect(page.locator(".redditp__gallery")).toHaveText("(5/5)");
+    await expect(page.locator(".redditp__title")).toContainText("(5/5");
     await clickTouchTarget(page, page.locator(".redditp__next"), "center");
     await expect(page.locator(".redditp__title")).toHaveText("Image one");
 
@@ -5831,7 +5850,7 @@ test.describe("phase 4a mobile touch targets", () => {
       expect(layout.arrows.next.width).toBeCloseTo(50, 1);
       expect(layout.arrows.next.height).toBeCloseTo(64, 1);
       await page.keyboard.press("ArrowRight");
-      await expect(page.locator(".redditp__gallery")).toHaveText("(2/5)");
+      await expect(page.locator(".redditp__title")).toContainText("(2/5");
     });
   }
 });
@@ -5858,7 +5877,13 @@ test.describe("phase 4b bottom bar polish", () => {
         body: '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"/>',
       }),
     );
-    await startPresentation(page, simpleFeed());
+    const url = "https://www.reddit.com/r/pics/?redditp=1";
+    await page.route(url, (route) =>
+      route.fulfill({ contentType: "text/html", body: simpleFeed() }),
+    );
+    await page.goto(url);
+    await page.addStyleTag({ path: extensionStyles });
+    await page.addScriptTag({ path: extensionScript });
     await pinAutoAdvance(page, false);
     await expect(page.locator(".redditp__count")).toHaveText("1 / 3");
   }
@@ -6051,14 +6076,19 @@ test.describe("phase 4b bottom bar polish", () => {
       ).toBeLessThanOrEqual(2);
 
       // The chip owns a fixed slot: fully visible, before the toggle, with a
-      // small gap and left breathing room.
+      // small gap and left breathing room. The toggle-vs-chip layout check
+      // applies when the toggle is visible at the track's start; after end
+      // (or mid) navigation the track is scrolled and the toggle is off
+      // screen, so the row still holds together without that pair.
       expect(m.countVisible, `${width}: chip visible`).toBe(true);
       expect(m.count.left, `${width}: chip left breathing`).toBeGreaterThanOrEqual(
         11.5,
       );
-      expect(m.count.right, `${width}: chip clear of toggle`).toBeLessThanOrEqual(
-        m.auto.left + 0.5,
-      );
+      if (m.auto.left >= m.bar.left - 0.5) {
+        expect(m.count.right, `${width}: chip clear of toggle`).toBeLessThanOrEqual(
+          m.auto.left + 0.5,
+        );
+      }
       expect(m.count.bottom, `${width}: chip on screen`).toBeLessThanOrEqual(
         height + 0.5,
       );
@@ -6104,7 +6134,9 @@ test.describe("phase 4b bottom bar polish", () => {
       await expect(page.locator(".redditp__title")).toHaveText("Post 100");
       m = await measureBottomBar(page);
       expect(m.countVisible, `${width}: chip visible at feed end`).toBe(true);
-      expect(m.countText, `${width}: count at feed end`).toBe("100 / 100");
+      expect(m.countText, `${width}: count at feed end`).toContain(
+        "100 / 100",
+      );
       const last = m.numbers[m.numbers.length - 1];
       expect(
         last.right,
@@ -6169,7 +6201,13 @@ test.describe("anchored viewer during rapid navigation", () => {
         body: '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"/>',
       }),
     );
-    await startPresentation(page, body);
+    const url = "https://www.reddit.com/r/pics/?redditp=1";
+    await page.route(url, (route) =>
+      route.fulfill({ contentType: "text/html", body }),
+    );
+    await page.goto(url);
+    await page.addStyleTag({ path: extensionStyles });
+    await page.addScriptTag({ path: extensionScript });
     await pinAutoAdvance(page, false);
   }
 
@@ -6276,7 +6314,7 @@ test.describe("anchored viewer during rapid navigation", () => {
       page,
       `${oldGalleryPost(true)}${anchorPost("g1")}${anchorPost("g2")}`,
     );
-    await expect(page.locator(".redditp__gallery")).toHaveText("(1/5)");
+    await expect(page.locator(".redditp__title")).toContainText("(1/5");
     for (let step = 0; step < 6; step++) {
       await page.keyboard.press("ArrowRight");
       await page.waitForTimeout(40);
@@ -6304,8 +6342,8 @@ test.describe("anchored viewer during rapid navigation", () => {
       page,
       `${Array.from({ length: 100 }, (_, i) => anchorPost(`p${i + 1}`)).join("")}`,
     );
-    await page.getByRole("button", { name: "Post 100" }).click();
-    await expect(page.locator(".redditp__title")).toHaveText("Post 100");
+    await page.locator(".redditp__number").nth(99).click();
+    await expect(page.locator(".redditp__title")).toHaveText("Post p100");
     // The next advance starts the load-more scan; during and after the scan
     // the viewer must never drift horizontally.
     await page.keyboard.press("ArrowRight");
@@ -6361,4 +6399,815 @@ test.describe("anchored viewer during rapid navigation", () => {
 function waitFor(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+// ---------------------------------------------------------------------------
+// Phase 5A — v.redd.it / preview.redd.it preload optimization.
+//
+// Three groups follow: duration eligibility, v.redd.it DASH preparation,
+// preview.redd.it direct-video preparation, plus deterministic perf
+// instrumentation on the same fixtures. Duration knowledge comes from a
+// per-URL override of HTMLMediaElement.duration so every case is
+// deterministic on any engine; "null" maps an URL to NaN (an explicit
+// unknown), and tests can reveal a duration late through
+// window.__setVideoDurations to model late discovery.
+// ---------------------------------------------------------------------------
+
+const durationStubFeed = "https://www.reddit.com/r/pics/?redditp=5a";
+const svgImage5a =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"/>';
+const webm5a = fs.readFileSync(
+  path.resolve(__dirname, "../../test-data/browser-extension-sound.webm"),
+);
+
+const imagePost5a = (id, title) =>
+  `<div class="thing link" data-fullname="t3_${id}" data-url="https://i.redd.it/${id}.jpg" data-permalink="/r/pics/comments/${id}/post/" data-author="p1" data-subreddit="pics"><a class="title">${title}</a></div>`;
+
+const videoPost5a = (id, title, videoUrl) =>
+  `<div class="thing link" data-fullname="t3_${id}" data-url="${videoUrl}" data-permalink="/r/pics/comments/${id}/post/" data-author="p1" data-subreddit="pics"><a class="title">${title}</a></div>`;
+
+const vRedditPost5a = (id, title) =>
+  `<div class="thing link" data-fullname="t3_${id}" data-url="https://v.redd.it/${id}" data-permalink="/r/videos/comments/${id}/post/" data-author="fan" data-subreddit="videos"><a class="title">${title}</a><div class="portrait" data-hls-url="https://v.redd.it/${id}/HLSPlaylist.m3u8" data-mpd-url="https://v.redd.it/${id}/DASHPlaylist.mpd?a=1&amp;v=1" data-seek-preview-url="https://v.redd.it/${id}/DASH_96.mp4"></div></div>`;
+
+// preview.redd.it classification fixtures. The image card is what a preview
+// URL usually is; the signed ".mp4" URL is the direct video resource with
+// sampled metadata ("?format=mp4" or gallery "s.mp4" style).
+const previewImagePost5a = (id, title) =>
+  `<div class="thing link" data-fullname="t3_${id}" data-url="https://preview.redd.it/${id}.jpg?width=1080&amp;s=sig" data-permalink="/r/pics/comments/${id}/post/" data-author="p1" data-subreddit="pics"><a class="title">${title}</a></div>`;
+
+const previewVideoPost5a = (id, title) =>
+  `<div class="thing link" data-fullname="t3_${id}" data-url="https://preview.redd.it/${id}.mp4?format=mp4&amp;s=sig" data-permalink="/r/pics/comments/${id}/post/" data-author="p1" data-subreddit="pics"><a class="title">${title}</a></div>`;
+
+async function installDurationOverrides5a(page, map) {
+  await page.evaluate((entries) => {
+    const store = {};
+    entries.forEach(([needle, seconds]) => {
+      store[needle] = seconds;
+    });
+    const descriptor = Object.getOwnPropertyDescriptor(
+      HTMLMediaElement.prototype,
+      "duration",
+    );
+    const original = descriptor ? descriptor.get : null;
+    Object.defineProperty(HTMLMediaElement.prototype, "duration", {
+      configurable: true,
+      get() {
+        const url = String(this.currentSrc || this.src || "");
+        for (const [needle, seconds] of Object.entries(store)) {
+          if (url.indexOf(needle) !== -1) {
+            if (seconds === null) return NaN;
+            return seconds;
+          }
+        }
+        return original ? original.call(this) : NaN;
+      },
+    });
+    window.__setVideoDurations = function (needle, seconds) {
+      store[needle] = seconds;
+    };
+  }, Object.entries(map || {}));
+}
+
+const stats5a = (page) =>
+  page.evaluate(() => window.__redditpPresentation.debug.stats());
+const cacheKeys5a = (page) =>
+  page.evaluate(() => window.__redditpPresentation.debug.cache());
+const navRecord5a = (page) =>
+  page.evaluate(() => window.__redditpPresentation.debug.lastNavigation());
+const debugEvents5a = (page) =>
+  page.evaluate(() =>
+    window.__redditpPresentation.debug
+      .log()
+      .map(({ event, detail }) => ({ event, detail })),
+  );
+
+async function openFeed5a(page, body, setup) {
+  await page.route(durationStubFeed, (route) =>
+    route.fulfill({ contentType: "text/html", body }),
+  );
+  await page.goto(durationStubFeed);
+  // Diagnostics only: debug mode gates logging, never playback behavior.
+  await page.evaluate(() => localStorage.setItem("redditpDebug", "1"));
+  if (setup) await setup(page);
+  await page.addStyleTag({ path: extensionStyles });
+  await page.addScriptTag({ path: extensionScript });
+  await pinAutoAdvance(page, false);
+}
+
+function trackHost5a(page, host, delay = 0) {
+  const tracker = { requested: [] };
+  page.route(`https://${host}/**`, async (route) => {
+    const url = route.request().url();
+    tracker.requested.push(url);
+    if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+    if (/\.jpe?g(?:\?|$)|\.png(?:\?|$)|\.gif(?:\?|$)/.test(url) && !/format=mp4/.test(url)) {
+      // Stand-in preview image bytes.
+      await route.fulfill({
+        status: 200,
+        contentType: "image/svg+xml",
+        body: svgImage5a,
+      });
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: "video/webm", body: webm5a });
+  });
+  return tracker;
+}
+
+const countOf5a = (tracker, needle) =>
+  tracker.requested.filter((url) => url.includes(needle)).length;
+
+const waitSettled5a = (page, timeout = 20000) =>
+  expect
+    .poll(() => stats5a(page), { timeout })
+    .toEqual(expect.objectContaining({ inFlight: 0 }));
+
+test.describe("phase 5a duration eligibility", () => {
+  test.setTimeout(70000);
+
+  test("a 60-second video stays eligible and plays when navigated onto", async ({
+    page,
+  }) => {
+    trackHost5a(page, "i.redd.it");    const videos = trackHost5a(page, "v.redd.it");
+    await openFeed5a(
+      page,
+      `${imagePost5a("d1", "Image 1")}${videoPost5a(
+        "d2",
+        "Clip 60",
+        "https://v.redd.it/dur60/DASH_480.mp4",
+      )}`,
+      (feedPage) => installDurationOverrides5a(feedPage, { "/dur60/": 60 }),
+    );
+    await waitSettled5a(page);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Clip 60");
+    await expect(page.locator(".redditp__video")).toHaveCount(1);
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => document.querySelector(".redditp__video")?.readyState),
+        { timeout: 15000 },
+      )
+      .toBeGreaterThanOrEqual(1);
+    // The boundary value is eligible, not excluded: the filter never fired
+    // and the plain next step landed on the video instead of skipping it.
+    const events = await debugEvents5a(page);
+    expect(
+      events.some(
+        ({ event, detail }) =>
+          event === "navigation-skipped-long" ||
+          (event === "preload-skip" && detail?.reason === "long-video"),
+      ),
+    ).toBe(false);
+  });
+
+  test("a 61-second video and a 2-minute video are excluded from navigation", async ({
+    page,
+  }) => {
+    const videos = trackHost5a(page, "v.redd.it");
+    await openFeed5a(
+      page,
+      `${imagePost5a("d1", "Image 1")}${videoPost5a(
+        "d2",
+        "Clip 61",
+        "https://v.redd.it/dur61/DASH_480.mp4",
+      )}${videoPost5a("d3", "Clip Two Minutes", "https://v.redd.it/dur120/DASH_480.mp4")}`,
+      (feedPage) =>
+        installDurationOverrides5a(feedPage, {
+          "/dur61/": 61,
+          "/dur120/": 120,
+        }),
+    );
+    await waitSettled5a(page);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Image 1");
+    await expect(page.locator(".redditp__video")).toHaveCount(0);
+    const events = await debugEvents5a(page);
+    expect(
+      events.some(
+        ({ event, detail }) =>
+          event === "navigation-skipped-long" ||
+          (event === "preload-skip" && detail?.reason === "long-video"),
+      ),
+    ).toBe(true);
+    // Exclusion is not an eager-buffer invitation: at most the metadata probe
+    // happened for the long videos, and none afterwards.
+    expect(countOf5a(videos, "/dur61/")).toBeLessThanOrEqual(1);
+    expect(countOf5a(videos, "/dur120/")).toBeLessThanOrEqual(1);
+    expect(JSON.stringify(await debugEvents5a(page))).not.toContain(
+      "preload-firstframe-scheduled",
+    );
+  });
+
+  test("consecutive long videos are skipped in one bounded step and backward navigation skips them", async ({
+    page,
+  }) => {
+    const videos = trackHost5a(page, "v.redd.it");
+    await openFeed5a(
+      page,
+      `${imagePost5a("d1", "Image 1")}${videoPost5a(
+        "d2",
+        "Clip 95",
+        "https://v.redd.it/dur95/DASH_480.mp4",
+      )}${videoPost5a("d3", "Clip 120", "https://v.redd.it/dur120/DASH_480.mp4")}${videoPost5a(
+        "d4",
+        "Clip 30",
+        "https://v.redd.it/dur30/DASH_480.mp4",
+      )}`,
+      (feedPage) =>
+        installDurationOverrides5a(feedPage, {
+          "/dur95/": 95,
+          "/dur120/": 120,
+          "/dur30/": 30,
+        }),
+    );
+    await waitSettled5a(page);
+    expect(countOf5a(videos, "/dur95/")).toBeLessThanOrEqual(1);
+    expect(countOf5a(videos, "/dur120/")).toBeLessThanOrEqual(1);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Clip 30");
+    await expect(
+      page.locator(".redditp__video[src*='/dur30/']"),
+    ).toHaveCount(1);
+    // Counters keep their original feed semantics (documented: the eligible
+    // sequence is a navigation filter, not a feed rewrite).
+    await expect(page.locator(".redditp__count")).toHaveText("4 / 4");
+    const nav = await navRecord5a(page);
+    expect(nav.key).toContain("/dur30/");
+
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.locator(".redditp__title")).toHaveText("Image 1");
+    await expect(page.locator(".redditp__video")).toHaveCount(0);
+    // Bounded: at the very start, backward navigation over excluded posts
+    // cannot loop and simply stays put.
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.locator(".redditp__title")).toHaveText("Image 1");
+    const skips = (await debugEvents5a(page)).filter(
+      ({ event }) => event === "navigation-skipped-long",
+    );
+    expect(skips.length).toBeGreaterThanOrEqual(2);
+  });
+
+  test("unknown duration is not treated as zero and never hangs navigation", async ({
+    page,
+  }) => {
+    trackHost5a(page, "v.redd.it");
+    await openFeed5a(
+      page,
+      `${imagePost5a("d1", "Image 1")}${videoPost5a(
+        "d2",
+        "Clip Unknown",
+        "https://v.redd.it/durunk/DASH_480.mp4",
+      )}${videoPost5a("d3", "Clip Short", "https://v.redd.it/dur30/DASH_480.mp4")}`,
+      (feedPage) =>
+        installDurationOverrides5a(feedPage, { "/durunk/": null, "/dur30/": 30 }),
+    );
+    await waitSettled5a(page);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Clip Unknown");
+    const events = await debugEvents5a(page);
+    // Unknown is not zero: the clip was never excluded and never skipped.
+    expect(
+      events.some(
+        ({ event, detail }) =>
+          event === "navigation-skipped-long" ||
+          (event === "preload-skip" && detail?.reason === "long-video"),
+      ),
+    ).toBe(false);
+    // It was also never confirmed short, so no bounded first-frame
+    // preparation pass ran for it and no learned duration was recorded.
+    expect(
+      events.some(({ event }) => event === "preload-firstframe-scheduled"),
+    ).toBe(false);
+    expect(
+      events.some(
+        ({ event, detail }) =>
+          event === "video-duration" &&
+          String(detail?.key || "").includes("/durunk/"),
+      ),
+    ).toBe(false);
+    // Keep the navigation responsive: the whole positional system still works.
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Clip Short");
+  });
+
+  test("late duration discovery keeps active playback and excludes later navigation", async ({
+    page,
+  }) => {
+    const videos = trackHost5a(page, "v.redd.it");
+    await openFeed5a(
+      page,
+      `${imagePost5a("d1", "Image 1")}${videoPost5a(
+        "d2",
+        "Clip Late",
+        "https://v.redd.it/durlate/DASH_480.mp4",
+      )}${imagePost5a("d3", "Image After")}`,
+      (feedPage) =>
+        installDurationOverrides5a(feedPage, { "/durlate/": null }),
+    );
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Clip Late");
+    // While it was unknown the video started playing normally.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () => document.querySelector(".redditp__video")?.currentTime || 0,
+          ),
+        { timeout: 15000 },
+      )
+      .toBeGreaterThan(0);
+
+    // Reveal the duration after the slide is already on screen: the playing
+    // element must not be interrupted, but the post must stop being a
+    // navigation target.
+    await page.evaluate(() => window.__setVideoDurations("/durlate/", 95));
+    await expect
+      .poll(
+        async () =>
+          (await debugEvents5a(page)).some(
+            ({ event, detail }) =>
+              event === "video-duration" && detail?.duration === 95,
+          ),
+        { timeout: 15000 },
+      )
+      .toBe(true);
+    await page.waitForTimeout(400);
+    await expect(page.locator(".redditp__title")).toHaveText("Clip Late");
+    await expect(page.locator(".redditp__video")).toHaveCount(1);
+    expect(
+      await page.evaluate(
+        () => document.querySelector(".redditp__video")?.getAttribute("src"),
+      ),
+    ).toContain("/durlate/");
+
+    // Excluded from subsequent navigation, both directions.
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Image After");
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.locator(".redditp__title")).toHaveText("Image 1");
+    expect(countOf5a(videos, "/durlate/")).toBeLessThanOrEqual(2);
+  });
+
+  test("slideshow progression skips excluded posts", async ({ page }) => {
+    const videos = trackHost5a(page, "v.redd.it");
+    await openFeed5a(
+      page,
+      `${imagePost5a("d1", "Image 1")}${videoPost5a(
+        "d2",
+        "Clip 95",
+        "https://v.redd.it/dur95/DASH_480.mp4",
+      )}${videoPost5a("d3", "Clip 30", "https://v.redd.it/dur30/DASH_480.mp4")}`,
+      (feedPage) =>
+        installDurationOverrides5a(feedPage, { "/dur95/": 95, "/dur30/": 30 }),
+    );
+    await pinAutoAdvance(page, true);
+
+    await expect
+      .poll(
+        () => page.locator(".redditp__title").textContent(),
+        { timeout: 25000 },
+      )
+      .toBe("Clip 30");
+    // The long video was never pulled onto the stage.
+    expect(countOf5a(videos, "/dur95/")).toBeLessThanOrEqual(1);
+  });
+
+  test("numbered navigation skips excluded posts while counters stay feed-based", async ({
+    page,
+  }) => {
+    await openFeed5a(
+      page,
+      `${imagePost5a("d1", "Image 1")}${videoPost5a(
+        "d2",
+        "Clip 75",
+        "https://v.redd.it/dur75/DASH_480.mp4",
+      )}${imagePost5a("d3", "Image 3")}`,
+      (feedPage) =>
+        installDurationOverrides5a(
+          feedPage,
+          { "/dur75/": 75 },
+        ),
+    );
+    await waitSettled5a(page);
+
+    await expect(page.locator(".redditp__number")).toHaveCount(3);
+    await page.locator(".redditp__number").nth(2).click();
+    await expect(page.locator(".redditp__title")).toHaveText("Image 3");
+    await expect(page.locator(".redditp__count")).toHaveText("3 / 3");
+    await page.locator(".redditp__number").nth(0).click();
+    await expect(page.locator(".redditp__title")).toHaveText("Image 1");
+  });
+});
+
+test.describe("phase 5a v.redd.it DASH preparation", () => {
+  test.setTimeout(60000);
+
+  test("MPD resolution starts before navigation and navigation reuses the prepared player", async ({
+    page,
+  }) => {
+    trackHost5a(page, "i.redd.it");    await openFeed5a(
+      page,
+      `${imagePost5a("v1", "Image 1")}${vRedditPost5a(
+        "vda",
+        "Concert clip",
+      )}${imagePost5a("v3", "Image 3")}`,
+      (feedPage) => installRedditDash(feedPage),
+    );
+    await waitSettled5a(page);
+
+    // Resolution of the v.redd.it source happened while the image was still
+    // on screen (the MPD was handed to the page's dash.js once, pre-nav).
+    await expect
+      .poll(() => page.evaluate(() => window.__dashCalls.length), {
+        timeout: 15000,
+      })
+      .toBe(1);
+    // The cache holds the prepared player for the DASH post specifically,
+    // not just any media (an image entry would also satisfy a bare count).
+    expect(
+      (await cacheKeys5a(page)).some((key) => key.includes("/vda/")),
+    ).toBe(true);
+    expect(await page.evaluate(() => window.__dashResets)).toBe(0);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Concert clip");
+    const video = await page.evaluate(() => {
+      const element = document.querySelector(".redditp__video");
+      return {
+        attached: element?.getAttribute("data-redditp-dash"),
+        src: element?.getAttribute("src") || null,
+        preloaded: element?.redditpPreloaded === true,
+        count: document.querySelectorAll(".redditp__video").length,
+      };
+    });
+    // The prepared element is reused with its live player; no element-scoped
+    // re-initialize, no src-tagged fallback stream.
+    expect(video).toEqual({
+      attached: "attached",
+      src: null,
+      preloaded: true,
+      count: 1,
+    });
+    expect(await page.evaluate(() => window.__dashCalls.length)).toBe(1);
+    const nav = await navRecord5a(page);
+    expect(nav.reuse).toBe("prepared");
+    // Leaving the slide must stop dash.js from buffering in the background.
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Image 3");
+    expect(await page.evaluate(() => window.__dashResets)).toBe(1);
+  });
+
+  test("duplicate scheduler passes never re-resolve the same DASH source", async ({
+    page,
+  }) => {
+    await openFeed5a(
+      page,
+      `${imagePost5a("v1", "Image 1")}${vRedditPost5a("vda", "Concert clip")}${imagePost5a("v3", "Image 3")}`,
+      (feedPage) => installRedditDash(feedPage),
+    );
+    await waitSettled5a(page);
+    for (let pass = 0; pass < 6; pass += 1) {
+      await page.evaluate(() =>
+        window.__redditpPresentation.debug.refresh(),
+      );
+      await page.waitForTimeout(60);
+    }
+    await page.waitForTimeout(400);
+    expect(await page.evaluate(() => window.__dashCalls.length)).toBe(1);
+    expect(await page.evaluate(() => window.__dashResets)).toBe(0);
+  });
+
+  test("a prepared DASH entry whose resolution later fails is invalidated and navigation makes a fresh attempt", async ({
+    page,
+  }) => {
+    await openFeed5a(
+      page,
+      `${imagePost5a("v1", "Image 1")}${vRedditPost5a("vda", "Concert clip")}${imagePost5a("v3", "Image 3")}`,
+      (feedPage) => installRedditDash(feedPage, { failPlayback: true }),
+    );
+    await waitSettled5a(page);
+
+    // The prepared player failed while still speculative: the entry must
+    // leave the cache so navigation cannot inherit a broken element.
+    await expect
+      .poll(
+        async () =>
+          (await debugEvents5a(page)).some(
+            ({ event, detail }) =>
+              event === "preload-invalidated" &&
+              String(JSON.stringify(detail)).includes("/vda/"),
+          ),
+        { timeout: 15000 },
+      )
+      .toBe(true);
+    expect(
+      (await cacheKeys5a(page)).some((key) => key.includes("/vda/")),
+    ).toBe(false);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Concert clip");
+    // Navigation spent a fresh element and a fresh attach rather than the
+    // invalidated prepared one.
+    expect(await page.evaluate(() => window.__dashCalls.length)).toBe(2);
+    const video = await page.evaluate(() => ({
+      preloaded: document.querySelector(".redditp__video")?.redditpPreloaded ===
+        true,
+    }));
+    expect(video.preloaded).toBe(false);
+  });
+
+  test("stale callbacks from a superseded DASH slide cannot replace the current media", async ({
+    page,
+  }) => {
+    await openFeed5a(
+      page,
+      `${imagePost5a("v1", "Image 1")}${vRedditPost5a("vda", "Concert clip")}${imagePost5a("v3", "Image 3")}`,
+      (feedPage) => installRedditDash(feedPage),
+    );
+    await waitSettled5a(page);
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Concert clip");
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Image 3");
+    // The image stage survives any late dash()-sided bookkeeping.
+    await page.waitForTimeout(500);
+    await expect(page.locator(".redditp__video")).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () => document.querySelector(".redditp__image")?.src || "",
+      ),
+    ).toContain("v3.jpg");
+    expect(await page.evaluate(() => window.__dashResets)).toBe(1);
+  });
+});
+
+test.describe("phase 5a preview.redd.it preparation", () => {
+  test.setTimeout(60000);
+
+  test("a preview image is classified as media and never forced through the video pipeline", async ({
+    page,
+  }) => {
+    const preview = trackHost5a(page, "preview.redd.it");
+    await openFeed5a(
+      page,
+      `${previewImagePost5a("pa1", "Preview image")}${previewVideoPost5a(
+        "pa2",
+        "Preview clip",
+      )}`,
+    );
+    await expect(page.locator(".redditp__title")).toHaveText("Preview image");
+    await expect(page.locator(".redditp__image")).toHaveCount(1);
+    await expect(page.locator(".redditp__video")).toHaveCount(0);
+    expect(countOf5a(preview, ".mp4")).toBeLessThanOrEqual(1);
+  });
+
+  test("a direct preview video is preloaded before navigation and displays through the prepared element", async ({
+    page,
+  }) => {
+    const preview = trackHost5a(page, "preview.redd.it", 120);
+    await openFeed5a(
+      page,
+      `${previewImagePost5a("pa1", "Preview image")}${previewVideoPost5a(
+        "pa2",
+        "Preview clip",
+      )}${previewImagePost5a("pa3", "Image 3")}`,
+    );
+    await expect(page.locator(".redditp__title")).toHaveText("Preview image");
+
+    // Metadata preparation starts ahead of navigation.
+    await expect
+      .poll(
+        () => countOf5a(preview, "pa2"),
+        { timeout: 15000 },
+      )
+      .toBeGreaterThan(0);
+    const beforeNav = countOf5a(preview, "pa2");
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Preview clip");
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => document.querySelector(".redditp__video")?.readyState),
+        { timeout: 15000 },
+      )
+      .toBeGreaterThanOrEqual(1);
+    expect(
+      await page.evaluate(
+        () => document.querySelector(".redditp__video")?.redditpPreloaded === true,
+      ),
+    ).toBe(true);
+    const nav = await navRecord5a(page);
+    // One preparation pass total: navigation joined the running or finished
+    // preload instead of fetching the resource again.
+    expect(countOf5a(preview, "pa2")).toBeLessThanOrEqual(beforeNav + 1);
+    expect(["prepared", "inflight"]).toContain(nav.reuse);
+
+    // Revisit returns to the same prepared element with zero further setup.
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Image 3");
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.locator(".redditp__title")).toHaveText("Preview clip");
+    expect(
+      await page.evaluate(
+        () => document.querySelector(".redditp__video")?.redditpPreloaded === true,
+      ),
+    ).toBe(true);
+    expect(countOf5a(preview, "pa2")).toBeLessThanOrEqual(beforeNav + 3);
+  });
+
+  test("a known long preview video is excluded from eager preparation", async ({
+    page,
+  }) => {
+    const preview = trackHost5a(page, "preview.redd.it");
+    await openFeed5a(
+      page,
+      `${previewImagePost5a("pa1", "Preview image")}${previewVideoPost5a(
+        "pa2-long",
+        "Long preview clip",
+      )}`,
+      (feedPage) =>
+        installDurationOverrides5a(feedPage, { "pa2-long": 95 }),
+    );
+    await waitSettled5a(page);
+
+    // Metadata determines duration; after that, no further eager work.
+    await expect
+      .poll(
+        async () =>
+          (await debugEvents5a(page)).some(
+            ({ event, detail }) =>
+              event === "video-duration" && detail?.duration === 95,
+          ),
+        { timeout: 15000 },
+      )
+      .toBe(true);
+    expect(countOf5a(preview, "pa2-long")).toBeLessThanOrEqual(1);
+    await expect(page.locator(".redditp__video")).toHaveCount(0);
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Preview image");
+  });
+
+  test("a failed preview preload recovers through bounded retries and fresh playback", async ({
+    page,
+  }) => {
+    let attempts = 0;
+    await page.route("https://preview.redd.it/**", async (route) => {
+      const url = route.request().url();
+      if (url.includes("pa2.mp4") || url.includes("pfail")) {
+        attempts += 1;
+        if (attempts <= 2) {
+          await route.fulfill({
+            status: 503,
+            contentType: "text/plain",
+            body: "nope",
+          });
+          return;
+        }
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: "video/webm",
+        body: webm5a,
+      });
+    });
+    await page.route("https://i.redd.it/**", (route) =>
+      route.fulfill({
+        contentType: "image/svg+xml",
+        body: svgImage5a,
+      }),
+    );
+    await openFeed5a(
+      page,
+      `${previewImagePost5a("pa1", "Preview image")}${previewVideoPost5a(
+        "pfail",
+        "Recovering clip",
+      )}`,
+    );
+    await expect
+      .poll(() => attempts, { timeout: 20000 })
+      .toBe(3);
+    await expect
+      .poll(() => stats5a(page), { timeout: 15000 })
+      .toEqual(expect.objectContaining({ inFlight: 0 }));
+
+    // Fresh playback after the failed attempts lands on the third attempt's
+    // prepared element.
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Recovering clip");
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => document.querySelector(".redditp__video")?.readyState),
+        { timeout: 15000 },
+      )
+      .toBeGreaterThanOrEqual(1);
+    expect(attempts).toBe(3);
+  });
+});
+
+test.describe("phase 5a instrumentation", () => {
+  test.setTimeout(60000);
+
+  test("navigation reuse classification distinguishes prepared, inflight, and cold video starts", async ({
+    page,
+  }) => {
+    const videos = trackHost5a(page, "v.redd.it", 250);
+    trackHost5a(page, "i.redd.it", 250);
+    await openFeed5a(
+      page,
+      `${imagePost5a("f1", "Image 1")}${videoPost5a(
+        "f2",
+        "Clip Prepared",
+        "https://v.redd.it/plainA/DASH_480.mp4",
+      )}${imagePost5a("g2", "Image 3")}${imagePost5a("g3", "Image 4")}${videoPost5a(
+        "f4",
+        "Clip Cold",
+        "https://v.redd.it/plainc/DASH_480.mp4",
+      )}${imagePost5a("f5", "Image 6")}`,
+      (feedPage) => installDurationOverrides5a(feedPage, {}),
+    );
+    await expect(page.locator(".redditp__title")).toHaveText("Image 1");
+
+    // Race into the still-running preload: navigation joins in fetch.
+    await expect
+      .poll(() => countOf5a(videos, "/plainA/"), { timeout: 15000 })
+      .toBeGreaterThan(0);
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Clip Prepared");
+    const joined = await navRecord5a(page);
+    expect(["inflight", "prepared"]).toContain(joined.reuse);
+
+    // Plainc sits three images-plus-one away: outside the video preload
+    // window from every station, so navigation onto it is a cold fetch and
+    // reports itself as such.
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Image 3");
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Image 4");
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Clip Cold");
+    const cold = await navRecord5a(page);
+    expect(cold.reuse).toBe("fresh");
+    await expect
+      .poll(() => countOf5a(videos, "/plainc/"), { timeout: 15000 })
+      .toBeGreaterThan(0);
+  });
+
+  test("first-frame-ready evidence uses media data, not metadata, and records ms", async ({
+    page,
+  }) => {
+    const videos = trackHost5a(page, "v.redd.it");
+    trackHost5a(page, "i.redd.it");
+    await openFeed5a(
+      page,
+      `${imagePost5a("f1", "Image 1")}${videoPost5a(
+        "f2",
+        "Clip Prepared",
+        "https://v.redd.it/fframe/DASH_480.mp4",
+      )}`,
+      (feedPage) => installDurationOverrides5a(feedPage, {}),
+    );
+    await expect(page.locator(".redditp__title")).toHaveText("Image 1");
+    // The immediate next eligible video gets one bounded first-frame
+    // preparation pass after its metadata:HAVE data is confirmed by the
+    // preload-firstframe event, not by declaration.
+    await expect
+      .poll(
+        async () =>
+          (await debugEvents5a(page)).some(
+            ({ event, detail }) =>
+              event === "preload-firstframe" &&
+              String(JSON.stringify(detail)).includes("/fframe/"),
+          ),
+        { timeout: 20000 },
+      )
+      .toBe(true);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Clip Prepared");
+    await expect
+      .poll(
+        async () =>
+          (await debugEvents5a(page)).some(
+            ({ event, detail }) =>
+              event === "display-firstframe" &&
+              String(JSON.stringify(detail)).includes("/fframe/"),
+          ),
+        { timeout: 15000 },
+      )
+      .toBe(true);
+    const firstFrame = (await debugEvents5a(page)).find(
+      ({ event }) => event === "display-firstframe",
+    );
+    expect(firstFrame.detail.readyState).toBeGreaterThanOrEqual(2);
+    expect(firstFrame.detail.ms).toBeGreaterThanOrEqual(0);
+  });
+});
+
 

@@ -42,6 +42,11 @@
   // window itself stays inside the ordinary preloadPosts horizon.
   const VIDEO_PRELOAD_LIMIT = 2;
   const VIDEO_PRELOAD_WINDOW = 2;
+  // Duration eligibility (Phase 5A): a post whose media is exclusively video
+  // with every duration KNOWN to exceed this limit is excluded from the
+  // eligible navigation sequence. Images are never filtered, and an unknown
+  // duration is an explicit unknown — provisionally eligible, not zero.
+  const MAX_ELIGIBLE_VIDEO_SECONDS = 60;
   const SETTINGS_KEY = "redditpPresentationSettings";
   // The one embed origin that publishes a message protocol for controlling
   // its player. Every other player keeps its own sound control.
@@ -101,6 +106,10 @@
       canceled: 0,
       hits: 0,
       misses: 0,
+      // Phase 5A accounting: posts skipped for known long duration, and
+      // v.redd.it DASH sources prepared ahead of navigation.
+      longSkipped: 0,
+      dashPrepared: 0,
     },
     lastNavigation: null,
     debugLog: [],
@@ -1522,14 +1531,45 @@
     if (state.open && state.slides[state.index] === slide) render();
   }
 
+  // The page's bridge runs in the page world and answers a handshake only
+  // through DOM events that travel along the DOM tree. An element detached
+  // from the document propagates nothing, so a speculatively prepared video
+  // briefly joins a hidden container for the synchronous attach (and for
+  // the later reset) and then returns to the cache detached.
+  let dashHandshakeBox = null;
+
+  function dispatchRedditDashEvent(video, type) {
+    if (video.isConnected) {
+      video.dispatchEvent(new Event(type, { bubbles: true }));
+      return;
+    }
+    // The handshake is synchronous; the element needs to be connected only
+    // for the duration of the dispatch. Hidden, source-free, so nothing is
+    // fetched, laid out, or played while it is in the container.
+    if (!dashHandshakeBox || !dashHandshakeBox.isConnected) {
+      dashHandshakeBox = document.createElement("div");
+      dashHandshakeBox.hidden = true;
+      document.documentElement.append(dashHandshakeBox);
+    }
+    dashHandshakeBox.append(video);
+    video.dispatchEvent(new Event(type, { bubbles: true }));
+    video.remove();
+  }
+
+  // The bridge protocol core (see page-bridge.js). Dispatches the attach
+  // event and reports whether the page's dash.js claimed the element.
+  function attachRedditDashSource(video, mpdUrl) {
+    video.setAttribute("data-redditp-mpd", mpdUrl);
+    dispatchRedditDashEvent(video, "redditp:dash-attach");
+    return video.getAttribute("data-redditp-dash") === "attached";
+  }
+
   // v.redd.it serves video and audio as separate DASH tracks. Old Reddit
   // already loads dash.js to join them, and page-bridge.js (running in the
   // page's world) attaches it to our element. DOM events reach the bridge
   // synchronously, so its answer is on the element when dispatchEvent returns.
   function attachRedditDash(video, slide) {
-    video.setAttribute("data-redditp-mpd", slide.mpdUrl);
-    video.dispatchEvent(new Event("redditp:dash-attach", { bubbles: true }));
-    if (video.getAttribute("data-redditp-dash") !== "attached") return false;
+    if (!attachRedditDashSource(video, slide.mpdUrl)) return false;
     video.addEventListener(
       "redditp:dash-failed",
       () => playVideoFallback(video, slide),
@@ -1543,7 +1583,7 @@
 
   function releaseRedditDash(video) {
     if (video.getAttribute("data-redditp-dash") !== "attached") return;
-    video.dispatchEvent(new Event("redditp:dash-reset", { bubbles: true }));
+    dispatchRedditDashEvent(video, "redditp:dash-reset");
     video.removeAttribute("data-redditp-dash");
   }
 
@@ -1660,8 +1700,16 @@ galleryButton.textContent = "";
       button.setAttribute("aria-label", `Post ${i + 1}`);
       if (i + 1 === currentPost)
         button.classList.add("redditp__number--active");
+      // Numbered navigation keeps the feed-based numbering but honours the
+      // duration policy: an excluded post is skipped in the same direction
+      // a next-navigation would travel.
       button.addEventListener("click", () => {
-        state.index = startIndex;
+        const dest = forwardEligibleSlide(startIndex);
+        if (dest === null) {
+          noteDurationSkips("navigation-skipped-long", state.index, startIndex);
+          return;
+        }
+        state.index = dest;
         render();
       });
       numberBar.append(button);
@@ -1744,6 +1792,7 @@ galleryButton.textContent = "";
   // Counts posts rather than slides, so a gallery advances only its own
   // "(2/7)" counter while the post number stays put.
   function updateCount(loading) {
+    const previousText = count.textContent;
     if (!state.slides.length) {
       count.textContent = "0 posts";
       return;
@@ -1758,6 +1807,14 @@ galleryButton.textContent = "";
       if (index === state.index) current = total;
     });
     count.textContent = `${current} / ${total}${loading ? " · loading more" : ""}`;
+    // The chip shares its row with the numbered track, so a width change
+    // (the " · loading more" suffix appears exactly when a scan starts)
+    // narrows the track after `scrollNumberTrackTo` already ran for this
+    // navigation and leaves the active button clipped. Re-anchor it.
+    if (count.textContent !== previousText) {
+      const activeButton = numberBar.querySelector(".redditp__number--active");
+      if (activeButton) scrollNumberTrackTo(activeButton);
+    }
   }
 
   function mediaPreloadKey(slide) {
@@ -1790,6 +1847,11 @@ galleryButton.textContent = "";
         typeof HTMLVideoElement !== "undefined" &&
         cached instanceof HTMLVideoElement
       ) {
+        // A prepared DASH element still holds a live dash.js player; the
+        // bridge must reset it before the element's stream is freed.
+        if (cached.hasAttribute("data-redditp-dash")) {
+          releaseRedditDash(cached);
+        }
         cached.pause();
         cached.removeAttribute("src");
         if (typeof cached.load === "function") cached.load();
@@ -1873,10 +1935,166 @@ galleryButton.textContent = "";
   // such a slide later fails to play, so the answer is recorded once — the
   // flag rides on the slide object and leaves nothing to clean up.
   function videoPreloadExclusionReason(slide) {
-    if (slide.mpdUrl) return "dash-delegated";
+    // Known long videos never enter the eager-preparation queues (5G).
+    const duration = slideVideoDuration(slide);
+    if (duration !== null && duration > MAX_ELIGIBLE_VIDEO_SECONDS)
+      return "long-video";
+    // DASH slides delegate playback to the page's dash.js. That same page
+    // capability is also what makes the stream resolvable ahead of
+    // navigation, so the delegation is only an exclusion where the bridge
+    // mediation is absent.
+    if (slide.mpdUrl) return dashPreloadAvailable() ? "" : "dash-delegated";
     if (!canPlayHls() && /\.m3u8(?:$|[?#])/i.test(slide.url))
       return "unsupported-hls";
     return "";
+  }
+
+  // Same availability question the page bridge answers when asked to attach
+  // ("window.dashjs"? see page-bridge.js). Cheap to ask, so the scheduler
+  // consults it directly instead of guessing around the bridge protocol.
+  function dashPreloadAvailable() {
+    return Boolean(
+      window.dashjs && typeof window.dashjs.MediaPlayer === "function",
+    );
+  }
+
+  // A video slide's duration in seconds, or null while it is explicitly
+  // unknown. A duration once learned rides on the slide: any media element
+  // that ever opened the slide's URL reports it, and the prepared element in
+  // the cache is consulted as a fallback so eviction cannot falsify a
+  // settled answer.
+  function slideVideoDuration(slide) {
+    if (!slide || slide.kind !== "video") return null;
+    if (Number.isFinite(slide.videoDuration) && slide.videoDuration > 0)
+      return slide.videoDuration;
+    const cached = state.preloadCache.get(mediaPreloadKey(slide));
+    if (
+      typeof HTMLVideoElement !== "undefined" &&
+      cached instanceof HTMLVideoElement &&
+      Number.isFinite(cached.duration) &&
+      cached.duration > 0
+    )
+      return cached.duration;
+    const inflight = inflightVideoFor(slide);
+    if (
+      inflight &&
+      Number.isFinite(inflight.duration) &&
+      inflight.duration > 0
+    )
+      return inflight.duration;
+    return null;
+  }
+
+  // Learned duration: never invent 0 for loud failures or live streams —
+  // those stay unknown. Recording also re-runs the scheduler so the long
+  // duration its brand-new knowledge implies takes effect immediately.
+  function noteVideoDuration(slide, video) {
+    if (!slide || slide.kind !== "video" || !video) return;
+    const duration = Number(video.duration);
+    if (!Number.isFinite(duration) || duration <= 0) return;
+    const rounded = Math.round(duration * 100) / 100;
+    if (slide.videoDuration === rounded) return;
+    slide.videoDuration = rounded;
+    debugLogEvent("video-duration", {
+      key: mediaPreloadKey(slide),
+      duration: rounded,
+    });
+    if (state.open) schedulePreloadQueue();
+  }
+
+  // The centralized duration-eligibility decision (5B). A post is excluded
+  // only when every slide grouped under this identity is a video whose
+  // duration is both known and beyond the limit. Any image in the group
+  // keeps the post (5.1: the rule must never skip between a gallery's
+  // images), any unknown duration leaves it provisionally eligible (5.3),
+  // and short media keeps it eligible outright.
+  function postDurationExclusionReason(identity) {
+    let videoOnly = false;
+    let knownLong = false;
+    for (const slide of state.slides) {
+      if (!slide || postIdentity(slide) !== identity) continue;
+      if (slide.kind !== "video") return "";
+      videoOnly = true;
+      const duration = slideVideoDuration(slide);
+      if (duration === null) return "";
+      if (duration > MAX_ELIGIBLE_VIDEO_SECONDS) {
+        knownLong = true;
+      } else {
+        return "";
+      }
+    }
+    return videoOnly && knownLong ? "long-video" : "";
+  }
+
+  // Skips get counted once per resolved navigation so the diagnostics can
+  // say how often the filter moved a request, not how often it was asked.
+  function noteDurationSkips(slug, fromIndex, destIndex) {
+    state.preloadStats.longSkipped += 1;
+    debugLogEvent(slug, { from: fromIndex, to: destIndex });
+  }
+
+  // The first slide at or after `index` whose post passes the duration
+  // policy. Excluded posts are stepped over whole (bounded by the feed
+  // length); null means nothing eligible lies in that direction (5.2).
+  function forwardEligibleSlide(index) {
+    while (index >= 0 && index < state.slides.length) {
+      const identity = postIdentity(state.slides[index]);
+      if (!postDurationExclusionReason(identity)) return index;
+      let next = index;
+      while (
+        next < state.slides.length &&
+        postIdentity(state.slides[next]) === identity
+      ) {
+        next += 1;
+      }
+      index = next;
+    }
+    return null;
+  }
+
+  // First slide strictly behind `index` whose post passes the policy.
+  function backwardEligibleSlide(index) {
+    while (index >= 0 && index < state.slides.length) {
+      const identity = postIdentity(state.slides[index]);
+      if (!postDurationExclusionReason(identity)) return index;
+      let start = index;
+      while (
+        start > 0 &&
+        postIdentity(state.slides[start - 1]) === identity
+      ) {
+        start -= 1;
+      }
+      if (start === 0) return null;
+      index = start - 1;
+    }
+    return null;
+  }
+
+  // previousPost lands on the first slide of the previous eligible post.
+  function previousEligiblePostStart(index) {
+    const dest = backwardEligibleSlide(index);
+    if (dest === null) return null;
+    const identity = postIdentity(state.slides[dest]);
+    let start = dest;
+    while (start > 0 && postIdentity(state.slides[start - 1]) === identity) {
+      start -= 1;
+    }
+    return start;
+  }
+
+  // previousPostLast lands on the last slide of the previous eligible post.
+  function eligiblePostLastSlide(index) {
+    const dest = backwardEligibleSlide(index);
+    if (dest === null) return null;
+    const identity = postIdentity(state.slides[dest]);
+    let last = dest;
+    while (
+      last + 1 < state.slides.length &&
+      postIdentity(state.slides[last + 1]) === identity
+    ) {
+      last += 1;
+    }
+    return last;
   }
 
   function notePreloadSkip(slide, reason) {
@@ -2029,19 +2247,23 @@ galleryButton.textContent = "";
   // whether it reused prepared media, and how long fresh media took from
   // the navigation input to being usable. One object keeps this O(1) no
   // matter how navigation spins, while the ring buffer records the events.
-  function recordNavigation(slide, ready) {
+  // `reuse` distinguishes a prepared resource, an in-flight resolution the
+  // display joined, and a cold fetch ("", images).
+  function recordNavigation(slide, ready, reuse) {
     state.lastNavigation = {
       index: state.index,
       key: mediaPreloadKey(slide),
       kind: slide ? slide.kind : "",
       ready,
-      startedAt: performance.now(),
+      reuse: reuse || "",
       readyAfterMs: ready ? 0 : null,
+      startedAt: performance.now(),
     };
     debugLogEvent("navigate", {
       to: state.index,
       key: state.lastNavigation.key,
       ready,
+      reuse: state.lastNavigation.reuse,
     });
   }
 
@@ -2066,7 +2288,31 @@ galleryButton.textContent = "";
     }
   }
 
+  // A re-entrancy guard around the scheduler: a job can complete
+  // synchronously (a tightened exclusion, a failed DASH handshake) and
+  // re-run the scheduler from inside `runPreload`. Recomputing the queue
+  // from within that pass recurses endlessly when the exclusion stays
+  // volatile, so nested passes defer and the outermost pass drains.
+  schedulePreloadQueue.running = false;
+  schedulePreloadQueue.pending = false;
+
   function schedulePreloadQueue() {
+    if (schedulePreloadQueue.running) {
+      schedulePreloadQueue.pending = true;
+      return;
+    }
+    schedulePreloadQueue.running = true;
+    try {
+      do {
+        schedulePreloadQueue.pending = false;
+        schedulePreloadQueuePass();
+      } while (schedulePreloadQueue.pending);
+    } finally {
+      schedulePreloadQueue.running = false;
+    }
+  }
+
+  function schedulePreloadQueuePass() {
     if (!state.open) return;
     evictPreloadCache();
     // Speculative work steps aside while the tab is hidden; a later render
@@ -2230,6 +2476,25 @@ galleryButton.textContent = "";
       return;
     }
     if (job.slide.kind === "video") {
+      // Exclusions can tighten after the job was queued (a duration arriving,
+      // the page's dash.js going away): re-ask before spending any element.
+      const exclusion = videoPreloadExclusionReason(job.slide);
+      if (exclusion) {
+        state.preloadInFlight.delete(key);
+        releasePreloadResource(job.media);
+        notePreloadSkip(job.slide, exclusion);
+        debugLogEvent("preload-skip", { key, reason: exclusion });
+        schedulePreloadQueue();
+        return;
+      }
+      if (job.slide.mpdUrl) {
+        // v.redd.it DASH startup preparation: the source (MPD) is resolved
+        // through the existing page bridge so playback later starts from a
+        // live dash.js player instead of a cold element. No second DASH
+        // player, exactly the integration the display path already uses.
+        runDashVideoPreload(job);
+        return;
+      }
       const video = document.createElement("video");
       job.media = video;
       video.redditpPreloaded = true;
@@ -2239,11 +2504,41 @@ galleryButton.textContent = "";
       video.addEventListener(
         "loadedmetadata",
         guarded(() => {
+          noteVideoDuration(job.slide, video);
           state.preloadCache.set(key, video);
           state.preloadStats.loaded += 1;
           state.preloadRetry.delete(key);
           debugLogEvent("preload-loaded", { key, media: "metadata" });
           state.preloadInFlight.delete(key);
+          // The immediate next eligible video also gets its first frame:
+          // one bounded position fetch at the head of the media, so
+          // navigation starts with usable pixels instead of decoding from
+          // zero. Longer or further videos keep their metadata-only depth.
+          const duration = slideVideoDuration(job.slide);
+          if (
+            duration !== null &&
+            duration <= MAX_ELIGIBLE_VIDEO_SECONDS &&
+            job.priority === 1
+          ) {
+            try {
+              video.currentTime = 0.01;
+            } catch (_error) {
+              // Seek-less engines simply pay the fetch at display time.
+            }
+            debugLogEvent("preload-firstframe-scheduled", { key });
+          }
+          video.addEventListener(
+            "loadeddata",
+            () => {
+              // Evidence that initial media data exists is recorded whether
+              // or metadata never claims first-frame readiness (11H).
+              debugLogEvent("preload-firstframe", {
+                key,
+                readyState: video.readyState,
+              });
+            },
+            { once: true },
+          );
           schedulePreloadQueue();
         }),
         { once: true },
@@ -2279,6 +2574,75 @@ galleryButton.textContent = "";
       return;
     }
     state.preloadInFlight.delete(key);
+  }
+
+  // v.redd.it DASH preparation for an upcoming slide. The element is
+  // attached to the page's dash.js through the same bridge protocol the
+  // display path uses (attachRedditDash), so the MPD is resolved and the
+  // player is connected before navigation; no competing DASH player is
+  // created and src stays untouched (dash.js needs a src-free element).
+  // Completing on attach keeps the budget from freezing on engines where
+  // dash.js never reports loadedmetadata; duration only arrives when it
+  // arrives, and stays unknown until then.
+  function runDashVideoPreload(job) {
+    const key = job.key;
+    const video = document.createElement("video");
+    job.media = video;
+    video.redditpPreloaded = true;
+    video.preload = "metadata";
+    video.muted = true;
+    video.playsInline = true;
+    attachRedditDashSource(video, job.slide.mpdUrl);
+    if (video.getAttribute("data-redditp-dash") !== "attached") {
+      // The bridge mediation vanished between scheduling and attaching;
+      // report it like the scheduler's other exclusions do.
+      state.preloadInFlight.delete(key);
+      releasePreloadResource(video);
+      notePreloadSkip(job.slide, "dash-delegated");
+      debugLogEvent("preload-skip", { key, reason: "dash-delegated" });
+      schedulePreloadQueue();
+      return;
+    }
+    state.preloadCache.set(key, video);
+    state.preloadStats.loaded += 1;
+    state.preloadStats.dashPrepared += 1;
+    state.preloadRetry.delete(key);
+    state.preloadInFlight.delete(key);
+    debugLogEvent("preload-loaded", { key, media: "dash" });
+    // Duration and first-frame evidence still arrive later through the
+    // connected player's own element events.
+    video.addEventListener(
+      "loadedmetadata",
+      () => noteVideoDuration(job.slide, video),
+      { once: true },
+    );
+    video.addEventListener(
+      "loadeddata",
+      () => {
+        debugLogEvent("preload-firstframe", { key, readyState: video.readyState });
+      },
+      { once: true },
+    );
+    // A later bridge failure must not keep a broken prepared entry. When the
+    // element is displayed the ordinary fallback path takes over; when it is
+    // still speculative the entry is dropped and the slide stays out of the
+    // speculative queue until it is actually visited (a display resets the
+    // flag and a fresh attempt is spent there).
+    video.addEventListener(
+      "redditp:dash-failed",
+      () => {
+        if (video.parentNode === mediaBox) return; // displayed fallback path owns it
+        if (state.preloadCache.get(key) === video) {
+          state.preloadCache.delete(key);
+          state.preloadStats.evicted += 1;
+          job.slide.preloadFailed = true;
+          debugLogEvent("preload-invalidated", { key, reason: "dash-failed" });
+          schedulePreloadQueue();
+        }
+      },
+      { once: true },
+    );
+    schedulePreloadQueue();
   }
 
   // Drops queued work and marks running jobs canceled on close; the running
@@ -2392,17 +2756,21 @@ galleryButton.textContent = "";
       mediaBox.append(img);
     } else if (slide.kind === "video") {
       const navKey = mediaPreloadKey(slide);
-      // DASH slides keep their fresh element: dash.js needs one without a
-      // src-tagged stream behind it. Other videos reuse a prepared element
-      // so metadata and the first frame are already there.
-      const cachedVideo = slide.mpdUrl
-        ? null
-        : state.preloadCache.get(navKey);
-      const inflightVideo = cachedVideo
-        ? null
-        : slide.mpdUrl
-          ? null
-          : inflightVideoFor(slide);
+      // DASH slides keep a src-free element: dash.js needs one without a
+      // src-tagged stream behind it. The one exception is a prepared element
+      // whose player is already attached and live, which is exactly what the
+      // DASH preloader produced; reusing it starts the stream with no setup.
+      // Other videos reuse a prepared element so metadata and the first
+      // frame are already there.
+      const cachedEntry = state.preloadCache.get(navKey);
+      const cachedVideo =
+        typeof HTMLVideoElement !== "undefined" &&
+        cachedEntry instanceof HTMLVideoElement &&
+        (!slide.mpdUrl ||
+          cachedEntry.getAttribute("data-redditp-dash") === "attached")
+          ? cachedEntry
+          : null;
+      const inflightVideo = cachedVideo ? null : inflightVideoFor(slide);
       // Reuse an in-flight video element even before its metadata arrives so
       // navigation does not issue a second request for the same resource.
       const reusable = cachedVideo
@@ -2439,28 +2807,55 @@ galleryButton.textContent = "";
           if (video.error) playVideoFallback(video, video.redditpErrorSlide);
         });
       }
+      const navStart = Date.now();
+      const firstFrameEvidence = () => {
+        // Initial media data, not metadata — this is the first-frame
+        // instrumentation (11H) and feeds no navigation decisions.
+        debugLogEvent("display-firstframe", {
+          key: navKey,
+          ms: Math.max(0, Date.now() - navStart),
+          readyState: video.readyState,
+        });
+      };
       if (fresh) {
         video.addEventListener(
           "loadedmetadata",
-          () => noteMediaReady(navKey),
+          () => {
+            noteVideoDuration(slide, video);
+            noteMediaReady(navKey);
+          },
           { once: true },
         );
-        recordNavigation(slide, false);
+        recordNavigation(slide, false, "fresh");
         noteCacheRead(false, slide);
       } else if (videoPreloadReady(video)) {
-        recordNavigation(slide, true);
+        recordNavigation(slide, true, "prepared");
         noteCacheRead(true, slide);
       } else {
         video.addEventListener(
           "loadedmetadata",
-          () => noteMediaReady(navKey),
+          () => {
+            noteVideoDuration(slide, video);
+            noteMediaReady(navKey);
+          },
           { once: true },
         );
-        recordNavigation(slide, false);
+        recordNavigation(slide, false, cachedVideo ? "prepared" : "inflight");
         noteCacheRead(true, slide);
       }
+      video.addEventListener("loadeddata", firstFrameEvidence, { once: true });
+      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+        // Data already present (shared element replaying): record at once.
+        firstFrameEvidence();
+      }
       mediaBox.append(video);
-      if (!slide.mpdUrl || !attachRedditDash(video, slide)) {
+      if (
+        slide.mpdUrl &&
+        video.getAttribute("data-redditp-dash") === "attached"
+      ) {
+        // Prepared before navigation: the player is already wired up.
+        playVideo(video);
+      } else if (!slide.mpdUrl || !attachRedditDash(video, slide)) {
         video.redditpPlayingFallback = true;
         // Reusing an element that already carries the right src must not
         // reset it: assigning .src always restarts the element.
@@ -2557,7 +2952,30 @@ galleryButton.textContent = "";
       void loadMoreAtEnd(true);
       return;
     }
-    state.index += delta;
+    // Duration eligibility is resolved once, here: the landing slide is
+    // found by skipping whole excluded posts in the travelled direction,
+    // bounded by the feed length and with explicit end-of-feed handling. A
+    // plain step (the picture case) resolves to a plain step.
+    const target = state.index + delta;
+    const dest =
+      delta > 0
+        ? forwardEligibleSlide(target)
+        : backwardEligibleSlide(target);
+    if (dest === null) {
+      // Nothing eligible ahead in this direction until the feed grows; the
+      // last-post advance still starts the scan like the unfiltered path.
+      noteDurationSkips(
+        "navigation-skipped-long",
+        state.index,
+        target,
+      );
+      if (delta > 0) void loadMoreAtEnd(true);
+      return;
+    }
+    if (dest !== target) {
+      noteDurationSkips("navigation-skipped-long", state.index, dest);
+    }
+    state.index = dest;
     render();
   }
 
@@ -2574,14 +2992,22 @@ galleryButton.textContent = "";
         nextIndex += 1;
       }
     }
-    if (nextIndex < state.slides.length) {
-      move(nextIndex - state.index);
+    // Skipping a post with an excluded video must jump the whole post, so
+    // the hop goes through move(), which resolves the duration policy
+    // together with its loading and single-post bookkeeping.
+    const dest = nextIndex <= state.slides.length - 1
+      ? forwardEligibleSlide(nextIndex)
+      : null;
+    if (dest !== null) {
+      move(dest - state.index);
       return;
     }
-    // Settle on the last image before using the normal end-of-feed path.
+    // Settle on the last eligible slide before using the normal end-of-feed
+    // path. An excluded tail must not be rendered to satisfy the settle.
     // This keeps loading, wrapping, and single-post boundaries in move().
-    if (state.index < state.slides.length - 1) {
-      state.index = state.slides.length - 1;
+    const lastEligible = backwardEligibleSlide(state.slides.length - 1);
+    if (lastEligible !== null && lastEligible > state.index) {
+      state.index = lastEligible;
       render();
     }
     move(1);
@@ -2595,15 +3021,12 @@ galleryButton.textContent = "";
       start -= 1;
     }
     if (start === 0) return;
-    let previous = start - 1;
-    const previousIdentity = postIdentity(state.slides[previous]);
-    while (
-      previous > 0 &&
-      postIdentity(state.slides[previous - 1]) === previousIdentity
-    ) {
-      previous -= 1;
+    const dest = previousEligiblePostStart(start - 1);
+    if (dest === null) {
+      noteDurationSkips("navigation-skipped-long", state.index, start);
+      return;
     }
-    state.index = previous;
+    state.index = dest;
     render();
   }
 
@@ -2615,7 +3038,12 @@ galleryButton.textContent = "";
       start -= 1;
     }
     if (start === 0) return;
-    state.index = start - 1;
+    const dest = eligiblePostLastSlide(start - 1);
+    if (dest === null) {
+      noteDurationSkips("navigation-skipped-long", state.index, start);
+      return;
+    }
+    state.index = dest;
     render();
   }
 
@@ -2736,7 +3164,11 @@ galleryButton.textContent = "";
     const shouldAdvance = state.advanceAfterLoad;
     state.advanceAfterLoad = false;
     if (added && shouldAdvance) {
-      state.index += 1;
+      // The appended posts are brand new, so their durations are unknown and
+      // provisionally eligible; the resolver only guards against an identity
+      // that somehow arrived pre-excluded.
+      const dest = forwardEligibleSlide(state.index + 1);
+      state.index = dest === null ? state.index + 1 : dest;
       render();
     } else if (!added && shouldAdvance) {
       // Start the next lap with a fresh scan budget.
@@ -2799,6 +3231,12 @@ galleryButton.textContent = "";
       // start still means the first pass has been watched.
       timeupdate: () => {
         if (!isCurrent()) return;
+        // A displayed video is the authoritative source for its own
+        // duration, so late discovery (a slow stream, an adaptive player
+        // that reports duration after it started decoding) is picked up
+        // while the slide stays on screen. Renewal is cheap: the recorder
+        // only acts on a change.
+        noteVideoDuration(state.slides[state.index], video);
         if (
           video.loop &&
           video.currentTime < playback.lastTime &&
@@ -3480,14 +3918,16 @@ galleryButton.textContent = "";
         return state.preloadQueue.length;
       },
       // The most recent navigation render: destination identity, whether it
-      // reused prepared media, and the navigation-to-usable-media time (0
-      // for prepared media, measured milliseconds for a fresh fetch).
+      // reused prepared media ("prepared" / "inflight" / "fresh"), and the
+      // navigation-to-usable-media time (0 for prepared media, measured
+      // milliseconds for a fresh fetch).
       lastNavigation() {
         return state.lastNavigation && {
           index: state.lastNavigation.index,
           key: state.lastNavigation.key,
           kind: state.lastNavigation.kind,
           ready: state.lastNavigation.ready,
+          reuse: state.lastNavigation.reuse || "",
           readyAfterMs: state.lastNavigation.readyAfterMs,
         };
       },

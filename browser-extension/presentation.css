@@ -87,6 +87,9 @@
   max-flex-shrink: 0;
   width: auto;
   max-height: 100%;
+  /* Portrait videos must letterbox, not spill past the stage width and get
+     side-cropped on phones. */
+  max-width: 100%;
   border: 0;
   object-fit: contain;
   background: #000;
@@ -100,6 +103,9 @@
   max-flex-shrink: 0;
   width: auto;
   max-height: 100%;
+  /* Non-expanded images keep their natural size but never overflow the
+     stage horizontally; object-fit keeps the content ratio correct. */
+  max-width: 100%;
   border: 0;
   object-fit: contain;
   background: #000;
@@ -107,7 +113,11 @@
 
 #redditp-presentation .redditp__image--expand {
   flex-shrink: 0;
-  width: auto;
+  /* The post's own media is the slide: the element box fills the stage and
+     object-fit letterboxes the content inside it. Sizing the box from the
+     image ratio instead under- or over-shoots the stage (portrait images
+     overflowed and were cropped on phone widths). */
+  width: 100%;
   height: 100%;
 }
 
@@ -318,6 +328,7 @@
 
 #redditp-presentation .redditp__arrow[hidden],
 #redditp-presentation .redditp__button[hidden],
+#redditp-presentation .redditp__count[hidden],
 #redditp-presentation .redditp__details[hidden],
 #redditp-presentation .redditp__controls[hidden],
 #redditp-presentation .redditp__numbers[hidden] {
