@@ -1,8 +1,8 @@
-# Redditp — Improved Redditp Browser Extension
+# RedditPix — Reddit media slideshow browser extension
 
 ## Overview
 
-Redditp is an enhanced Reddit media-viewing browser extension designed to
+RedditPix is an enhanced Reddit media-viewing browser extension designed to
 provide an immersive, distraction-free experience for viewing Reddit images,
 galleries, and videos. It turns the Reddit feed you are already browsing into a
 full-screen, navigable media slideshow — no separate tab, no copied URLs, and no
@@ -19,7 +19,7 @@ original Redditp project:
 - **This repository**
   ([Parag1337/redditp](https://github.com/Parag1337/redditp)) concentrates on
   the browser extension experience: a modern Manifest V3 extension named
-  **Presentation Mode for Reddit** with a rebuilt media viewer, gallery support,
+  **RedditPix** with a rebuilt media viewer, gallery support,
   predictive preloading and caching, persistent settings, and a large automated
   test suite. The legacy website sources were removed from this repository and
   remain available in the upstream project.
@@ -110,7 +110,7 @@ Everything below is confirmed by the current implementation in
   auto-advance toggle.
 - `H` hides the entire interface for a clean view; `P` toggles the bottom panel;
   `T` toggles the title panel.
-- The obsolete legacy Redditp brand/comments/media toolbar and the old mute
+- The obsolete legacy comments/media toolbar and the old mute
   button are gone: comments and the original media open in a new tab with `C`
   and `I`, and sound is toggled with `M`.
 - Controls are styled for small screens (smaller arrows and panels below 600px,
@@ -216,7 +216,7 @@ this repo is limited to Playwright viewport sizes.
 2. Enable **Developer mode** (top right).
 3. Click **Load unpacked** and select the `browser-extension/` folder of this
    repository.
-4. Pin **Presentation Mode for Reddit** if you want its toolbar button visible.
+4. Pin **RedditPix** if you want its toolbar button visible.
 
 ### Install in Firefox
 
@@ -306,11 +306,14 @@ Notes:
 ├── AGENTS.md                     # contributor/agent working agreement
 ├── LICENSE                       # MIT (original Redditp license)
 ├── README.md                     # this file
+├── PRIVACY.md                    # privacy policy (also shipped in release/)
+├── CHANGELOG.md                  # release notes (also shipped in release/)
+├── FIREFOX-AMO-LISTING.md        # Firefox Add-ons listing copy
 ├── package.json                  # scripts and dev dependencies
 ├── playwright.config.js          # test projects: chromium + firefox
 ├── playwright.chrome.config.js   # optional run against installed Google Chrome
 ├── browser-extension/            # the extension source (single source tree)
-│   ├── manifest.json             # MV3 manifest, version 0.5.6
+│   ├── manifest.json             # MV3 manifest, version 1.0.0
 │   ├── background.js             # toolbar / Alt+P launcher, injection
 │   ├── auto-activate.js          # ?redditp=1 URL activation
 │   ├── content.js                # viewer, extraction, navigation, preloading
@@ -318,16 +321,17 @@ Notes:
 │   ├── presentation.css          # isolated responsive viewer styles
 │   ├── README.md                 # extension-specific documentation
 │   ├── STORE-LISTING.md          # Chrome Web Store listing copy
-│   └── favicon.png, icon-128.png
+│   └── favicon.png, icon-16/32/48/128.png
 ├── tests/
 │   └── playwright/
-│       ├── browser-extension.spec.js   # main suite (121 tests)
-│       ├── audit-probe.spec.js         # 4 temporary audit probes
-│       └── browser-extension.config.js
+│       ├── browser-extension.spec.js   # main suite
+│       ├── preload-benchmarks.spec.js  # preloading benchmark suite
+│       └── media-mode / pagination / animations specs, audit probes
 ├── test-data/                    # local HTML/video fixtures used by tests
 ├── nodejs/
 │   ├── package-extension.js      # builds Chrome and Firefox packages
 │   └── release-extension.js      # store upload/release automation
+├── release/                      # official release: ZIP, docs, verification
 ├── build/                        # generated packages (gitignored)
 ├── .env.example                  # credential template for releases
 └── .vscode/                      # editor settings (Prettier on save)
@@ -355,8 +359,8 @@ pipeline depends on the removed legacy website sources.
 | `npm test`                                              | Run the Playwright suite (Chromium + Firefox projects).                     |
 | `npm run test:playwright` / `test:playwright:ui`        | Same suite / UI mode.                                                       |
 | `npx playwright test -c playwright.chrome.config.js`    | Run the suite against installed Google Chrome.                              |
-| `npm run ext:package`                                   | Package the Chrome zip → `build/redditp-extension-v<version>.zip`.          |
-| `npm run ext:package:firefox`                           | Package the Firefox zip → `build/redditp-extension-firefox-v<version>.zip`. |
+| `npm run ext:package`                                   | Package the Chrome zip → `build/RedditPix-v<version>.zip`.                  |
+| `npm run ext:package:firefox`                           | Package the Firefox zip → `build/RedditPix-v<version>-firefox.zip`.         |
 | `npm run ext:package:all`                               | Package both targets.                                                       |
 | `npm run ext:firefox:run`                               | Build Firefox target and run it via `web-ext` in a throwaway profile.       |
 | `npx web-ext lint --source-dir build/firefox-extension` | Run AMO's lint checks on the Firefox build.                                 |
@@ -371,7 +375,7 @@ Packaging details:
   and `build/firefox-extension/`, then zips them.
 - The Chrome build uses `manifest.json` as-is. The Firefox build patches in an
   MV3 event-page background (`background.scripts`) and
-  `browser_specific_settings` (add-on id `presentation-mode@redditp.com`,
+  `browser_specific_settings` (add-on id `{941a3bf7-8de6-4d3a-b7d3-a6f7b5220fd2}`,
   `strict_min_version` 140.0, `data_collection_permissions: none`, and
   `gecko_android` 142.0).
 - `nodejs/release-extension.js` requires credentials in `.env` (see
@@ -446,7 +450,7 @@ following are **future ideas, not implemented commitments**:
 - Improved mobile experience and larger touch targets across the viewer.
 - Better touch interactions (for example vertical or edge gestures).
 - A standalone mobile application or PWA around the viewer.
-- A dedicated Redditp browser (kiosk-style Reddit media browsing).
+- A dedicated RedditPix browser (kiosk-style Reddit media browsing).
 - Additional feed customization (subreddit picking, filtering, ordering).
 - Smaller polish items: correcting the in-app shortcut card, optional digit-key
   post jumping, and investigating a Safari build target.
@@ -454,10 +458,13 @@ following are **future ideas, not implemented commitments**:
 ## Credits and attribution
 
 - Redditp was created by **Yuval Greenfield** and lives upstream at
-  <https://github.com/ubershmekel/redditp>. This project is a fork of that work
-  and is not affiliated with Reddit, Inc.
+  <https://github.com/ubershmekel/redditp>. RedditPix is an independent fork of
+  that work, published as a separate add-on under its own Mozilla Add-ons
+  identity, and is not affiliated with Reddit, Inc. or with the upstream
+  project.
 - This improved repository: <https://github.com/Parag1337/redditp>
-- The extension is distributed as **Presentation Mode for Reddit**; install
+- The extension is distributed as **RedditPix**; install
   link: <https://redditp.com/extension>
 - Licensed under the MIT License — see [LICENSE](LICENSE). The original license
-  and attribution are preserved; please keep them when redistributing.
+  and attribution are preserved as the MIT redistribution requires; please keep
+  the `LICENSE` file and this attribution when redistributing.

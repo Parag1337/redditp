@@ -1,4 +1,4 @@
-# Presentation Mode for Reddit — browser extension
+# RedditPix — browser extension
 
 This Manifest V3 extension turns the Reddit listing currently open in the
 browser into an in-page media slideshow. It reads the posts rendered in the
@@ -19,7 +19,7 @@ In Chrome:
 1. Open `chrome://extensions` in Chrome.
 2. Enable **Developer mode**.
 3. Click **Load unpacked** and select this `browser-extension` folder.
-4. Pin **Presentation Mode for Reddit** if you want its button in the toolbar.
+4. Pin **RedditPix** if you want its button in the toolbar.
 
 In Firefox, the manifest in this folder is the Chrome one, so build the Firefox
 manifest first:
@@ -133,7 +133,7 @@ Shortcuts**.
   button flashes a hint instead.
 - Firefox's native video controls consume clicks on the video surface before
   page scripts see them, so Firefox toggles playback itself rather than through
-  redditp's handler. The visible behavior is the same, and Reddit's own click
+  RedditPix's handler. The visible behavior is the same, and Reddit's own click
   handler stays out of the way there too.
 - `background.js` and `auto-activate.js` resolve `globalThis.browser || chrome`
   because Firefox's `chrome` alias is callback-based while `browser` returns
@@ -170,13 +170,13 @@ is never a slide.
 Unsupported link types remain useful as title cards with links to the media and
 comments.
 
-On a direct video post, redditp initializes Reddit's dormant adaptive player
+On a direct video post, RedditPix initializes Reddit's dormant adaptive player
 before opening it. Reddit's low-frame-rate `CMAF_96.mp4` seek preview is never
 used as a playback source. Dormant video cards in listings are initialized and
 upgraded to their live player when their slide is reached.
 
 Some search result formats expose only a small custom thumbnail. When one of
-those slides is shown, redditp reads that post's normal Reddit HTML in the
+those slides is shown, RedditPix reads that post's normal Reddit HTML in the
 background and upgrades the thumbnail to its actual image, video, or gallery. If
 Reddit returns a login, quarantine, or challenge page, the thumbnail remains
 available as the fallback.
@@ -190,8 +190,9 @@ available as the fallback.
 - `page-bridge.js`: runs in the page's own world to lend old Reddit's dash.js to
   v.redd.it slides, so they play with sound; injected by `background.js`
 - `presentation.css`: isolated, responsive presentation UI
-- `favicon.png`: small toolbar icon (64px)
-- `icon-128.png`: store and extensions-page icon (128px)
+- `favicon.png`: largest brand icon (512px, also used as the 512px store icon)
+- `icon-16.png`, `icon-32.png`, `icon-48.png`: toolbar icons
+- `icon-128.png`: extensions-page icon (128px)
 
 `nodejs/package-extension.js` lists the files that go into the upload; add any
 new runtime file there as well as to `manifest.json`. It takes a target:

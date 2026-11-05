@@ -22,6 +22,9 @@ const files = [
   "auto-activate.js",
   "presentation.css",
   "favicon.png",
+  "icon-16.png",
+  "icon-32.png",
+  "icon-48.png",
   "icon-128.png",
 ];
 
@@ -30,18 +33,23 @@ const files = [
 const targets = {
   chrome: {
     stageName: "chrome-extension",
-    zipName: (version) => `redditp-extension-v${version}.zip`,
+    zipName: (version) => `RedditPix-v${version}.zip`,
     patchManifest: (manifest) => manifest,
   },
   firefox: {
     stageName: "firefox-extension",
-    zipName: (version) => `redditp-extension-firefox-v${version}.zip`,
+    zipName: (version) => `RedditPix-v${version}-firefox.zip`,
     patchManifest: (manifest) => {
       const patched = { ...manifest };
       patched.background = { scripts: ["background.js"] };
       patched.browser_specific_settings = {
         gecko: {
-          id: "presentation-mode@redditp.com",
+          // Random-UUID identity for this fork. The upstream RedditP add-on is
+          // an AMO add-on owned by another developer; a fork must ship under
+          // its own id so AMO never treats RedditPix as an update to it.
+          // Verify no listed add-on uses it before each first release:
+          // https://addons.mozilla.org/api/v5/addons/addon/<guid>/
+          id: "{941a3bf7-8de6-4d3a-b7d3-a6f7b5220fd2}",
           // 140 ESR is the first release that accepts data_collection_permissions.
           strict_min_version: "140.0",
           // The add-on stores settings locally and sends nothing anywhere.

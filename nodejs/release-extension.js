@@ -133,7 +133,7 @@ run(process.execPath, [path.join(__dirname, "package-extension.js"), "all"]);
 
 if (dryRun) review(version);
 
-const chromeZip = path.join(buildDir, `redditp-extension-v${version}.zip`);
+const chromeZip = path.join(buildDir, `RedditPix-v${version}.zip`);
 const firefoxDir = path.join(buildDir, "firefox-extension");
 
 if (doChrome) {

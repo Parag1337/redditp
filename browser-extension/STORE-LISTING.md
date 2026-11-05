@@ -1,5 +1,9 @@
 # Chrome Web Store listing copy
 
+Note: since v1.0.0 the extension name is **RedditPix**, used in both the Chrome
+Web Store and Mozilla Add-ons. The Firefox-specific listing fields live in
+[`FIREFOX-AMO-LISTING.md`](../FIREFOX-AMO-LISTING.md).
+
 Paste these exact fields into the Web Store dashboard.
 
 ## History, and what not to reintroduce
@@ -28,10 +32,11 @@ it is searching for and is not shipped.)
 
 ## Name
 
-Presentation Mode for Reddit
+RedditPix
 
 The brand goes in the descriptive position. A name that _leads_ with another
-company's trademark ("redditp Presentation Mode") risks a trademark or
+company's trademark ("RedditPix — Presentation Mode for reddit.com") risks a
+trademark or
 impersonation rejection, which matters most on a brand-new listing that gets a
 full first-time review.
 
@@ -41,7 +46,7 @@ Turn the Reddit page you are browsing into a full-screen slideshow.
 
 ## Detailed description
 
-Presentation Mode for Reddit turns the Reddit page you already have open into a
+RedditPix turns the Reddit page you already have open into a
 full-screen slideshow.
 
 Click the toolbar button or press Alt+P on a Reddit feed, subreddit, search
@@ -94,7 +99,7 @@ click-to-activate would find behavior the listing did not disclose.
 ## Submission checklist
 
 - Run the grep above; it must return nothing.
-- `npm run ext:package`, then upload `build/redditp-extension-v<version>.zip`.
+- `npm run ext:package`, then upload `build/RedditPix-v<version>.zip`.
 - Screenshots must show ordinary subreddits. Nothing in a screenshot should need
   a content rating the listing does not declare.
 - Set the maturity rating honestly: the extension displays whatever the user's

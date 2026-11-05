@@ -7268,14 +7268,18 @@ test.describe("phase 5a instrumentation", () => {
     const joined = await navRecord5a(page);
     expect(["inflight", "prepared"]).toContain(joined.reuse);
 
-    // Plainc sits three images-plus-one away: outside the video preload
-    // window from every station, so navigation onto it is a cold fetch and
-    // reports itself as such.
-    await page.keyboard.press("ArrowRight");
-    await expect(page.locator(".redditp__title")).toHaveText("Image 3");
-    await page.keyboard.press("ArrowRight");
-    await expect(page.locator(".redditp__title")).toHaveText("Image 4");
-    await page.keyboard.press("ArrowRight");
+    // Plainc sits four posts ahead of the opening station, past the video
+    // preload window (2 posts), so a direct numbered-bar jump lands on it
+    // as a cold fetch and reports itself as such. Keyboard traversal is not
+    // used for the cold case: stepping through Image 3 and Image 4 means
+    // finishing stations one and two posts ahead of plainc, which
+    // legitimately start its speculative preload (offset <= window) before
+    // the navigation arrives.
+    expect
+      .soft(videos.requested.filter((u) => u.includes("/plainc/")).length)
+      .toBe(0);
+    expect(videos.requested.some((u) => u.includes("/plainc/"))).toBe(false);
+    await page.locator(".redditp__number").nth(4).click();
     await expect(page.locator(".redditp__title")).toHaveText("Clip Cold");
     const cold = await navRecord5a(page);
     expect(cold.reuse).toBe("fresh");

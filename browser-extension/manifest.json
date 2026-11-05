@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Presentation Mode for Reddit",
-  "version": "0.5.6",
+  "name": "RedditPix",
+  "version": "1.0.0",
   "description": "Turn the Reddit page you are browsing into a media slideshow.",
   "homepage_url": "https://redditp.com/",
   "permissions": [
@@ -29,13 +29,18 @@
     }
   ],
   "icons": {
-    "64": "favicon.png",
-    "128": "icon-128.png"
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png",
+    "512": "favicon.png"
   },
   "action": {
-    "default_title": "Open presentation mode",
+    "default_title": "Open RedditPix presentation mode",
     "default_icon": {
-      "64": "favicon.png",
+      "16": "icon-16.png",
+      "32": "icon-32.png",
+      "48": "icon-48.png",
       "128": "icon-128.png"
     }
   },

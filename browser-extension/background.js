@@ -19,7 +19,7 @@ async function flashHint(tabId, title) {
     Promise.resolve(
       api.action.setTitle({
         tabId,
-        title: "Open redditp presentation mode",
+        title: "Open RedditPix presentation mode",
       }),
     ).catch(() => {});
   }, 2500);
@@ -36,7 +36,7 @@ async function showPresentation(tab) {
   }
 
   if (url.protocol !== "https:" || !REDDIT_HOST_RE.test(url.hostname)) {
-    await flashHint(tab.id, "redditp works on reddit.com pages");
+    await flashHint(tab.id, "RedditPix works on reddit.com pages");
     return;
   }
 
@@ -54,19 +54,19 @@ async function showPresentation(tab) {
         world: "MAIN",
       });
     } catch (error) {
-      console.warn("redditp page bridge unavailable", error);
+      console.warn("RedditPix page bridge unavailable", error);
     }
     await api.scripting.executeScript({
       target: { tabId: tab.id },
       files: ["content.js"],
     });
   } catch (error) {
-    console.error("Unable to start redditp presentation mode", error);
+    console.error("Unable to start RedditPix presentation mode", error);
     // Firefox treats MV3 host permissions as optional, so the redditp=1 launch
     // can be denied until the user allows reddit.com access for the add-on.
     await flashHint(
       tab.id,
-      "redditp needs permission for reddit.com - click the toolbar button to start",
+      "RedditPix needs permission for reddit.com - click the toolbar button to start",
     ).catch(() => {});
   }
 }

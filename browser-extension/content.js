@@ -150,6 +150,12 @@
       // playable URL, and ones that ended in the embed fallback.
       redgifsPrepared: 0,
       redgifsFailed: 0,
+      // Phase 7 accounting: prepared DASH entries invalidated because their
+      // bridge mark was released on the way out of the display. A released
+      // element can never be recognized as prepared again, so keeping the
+      // entry would both fake reuse and permanently occupy a video-budget
+      // slot.
+      dashReleased: 0,
     },
     lastNavigation: null,
     debugLog: [],
@@ -787,10 +793,13 @@
     const links = [];
     node.querySelectorAll(".expando[data-cachedhtml]").forEach((expando) => {
       // Collapsed old-Reddit galleries live in escaped HTML, not child nodes.
-      // A template keeps scripts and resources inert; never mount that markup.
-      const template = document.createElement("template");
-      template.innerHTML = expando.getAttribute("data-cachedhtml") || "";
-      links.push(...template.content.querySelectorAll(selector));
+      // DOMParser parses inertly: scripts cannot run and no resources load,
+      // so only the link elements are read out of the markup, and that
+      // markup is never mounted into the live document.
+      const cached = parseHtmlDocument(
+        expando.getAttribute("data-cachedhtml") || "",
+      );
+      links.push(...cached.querySelectorAll(selector));
     });
     return links;
   }
@@ -956,9 +965,8 @@
     node.querySelectorAll("iframe[src]").forEach(addFrame);
     node.querySelectorAll("shreddit-embed[html]").forEach((embed) => {
       // Read URLs only. Never mount Reddit's supplied HTML or run its scripts.
-      const template = document.createElement("template");
-      template.innerHTML = embed.getAttribute("html") || "";
-      template.content.querySelectorAll("iframe[src]").forEach(addFrame);
+      const embedded = parseHtmlDocument(embed.getAttribute("html") || "");
+      embedded.querySelectorAll("iframe[src]").forEach(addFrame);
     });
     if (media.length) return media;
 
@@ -1384,6 +1392,24 @@
     return result;
   }
 
+  // Inert HTML parsing: DOMParser never runs scripts and never loads
+  // resources, so untrusted markup can be queried safely without ever
+  // mounting it into the live document. Used instead of assigning to a
+  // detached element's innerHTML, which AMO lint flags as advisory risk.
+  function parseHtmlDocument(html) {
+    return new DOMParser().parseFromString(html, "text/html");
+  }
+
+  // Replaces the target's content with the root element of static SVG
+  // markup. Identical DOM to the innerHTML assignment it replaces. The
+  // markup must come from the code's own constants, never from Reddit or
+  // the page; untrusted HTML only ever goes through parseHtmlDocument.
+  function setSvgMarkup(target, markup) {
+    const doc = parseHtmlDocument(markup);
+    const imported = document.importNode(doc.body.firstElementChild, true);
+    target.replaceChildren(imported);
+  }
+
   function normalizedSettings(value) {
     const result = Object.assign({}, DEFAULT_SETTINGS);
     if (!value || typeof value !== "object") return result;
@@ -1468,7 +1494,7 @@
   root.id = "redditp-presentation";
   root.setAttribute("role", "dialog");
   root.setAttribute("aria-modal", "true");
-  root.setAttribute("aria-label", "redditp presentation mode");
+  root.setAttribute("aria-label", "RedditPix presentation mode");
   root.hidden = true;
 
   const stage = element("div", "redditp__stage", "");
@@ -1517,9 +1543,11 @@
     "redditp__button redditp__settings-button redditp__control-item",
     "",
   );
-  settingsButton.innerHTML =
-    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>';
   settingsButton.type = "button";
+  setSvgMarkup(
+    settingsButton,
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+  );
   settingsButton.setAttribute("aria-label", "Open presentation settings");
   settingsButton.title = "Settings";
   const rotateButton = element(
@@ -1527,28 +1555,34 @@
     "redditp__button redditp__rotate redditp__control-item",
     "",
   );
-  rotateButton.innerHTML =
-    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>';
   rotateButton.type = "button";
   rotateButton.setAttribute("aria-label", "Rotate viewer");
   rotateButton.title = "Rotate viewer (R)";
+  setSvgMarkup(
+    rotateButton,
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',
+  );
   const hideButton = element(
     "button",
     "redditp__button redditp__hide redditp__control-item",
     "",
   );
-  hideButton.innerHTML =
-    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.442 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>';
   hideButton.type = "button";
   hideButton.setAttribute("aria-label", "Hide interface");
   hideButton.title = "Hide interface (H)";
+  setSvgMarkup(
+    hideButton,
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.442 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>',
+  );
   const fullscreenButton = element(
     "button",
     "redditp__button redditp__fullscreen redditp__control-item",
     "",
   );
-  fullscreenButton.innerHTML =
-    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+  setSvgMarkup(
+    fullscreenButton,
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>',
+  );
   fullscreenButton.type = "button";
   fullscreenButton.setAttribute("aria-label", "Enter fullscreen");
   fullscreenButton.title = "Toggle fullscreen (F)";
@@ -1567,7 +1601,7 @@
   // Insert a play SVG icon for the stopped state.
   const playSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
   const pauseSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
-  autoButton.innerHTML = playSvg;
+  setSvgMarkup(autoButton, playSvg);
   // Accessible name is set when state changes; initial text hidden but accessible.
   autoButton.setAttribute("aria-label", "Start slideshow");
   const nextButton = element("button", "redditp__arrow redditp__next", "›");
@@ -1726,10 +1760,32 @@
   );
   controls.insertBefore(mediaModeButton, count);
 
+  // Drops the preload-cache entry for a video whose DASH player was just
+  // released on the way out of the display (stopMedia). The displayed
+  // element IS the cached element, and once the bridge mark is gone the
+  // entry can never be recognized as prepared again — while still holding
+  // a video-budget slot. Dropping it keeps the budget honest and lets the
+  // scheduler re-prepare the slide while it stays within range, so a step
+  // back finds a live attached player instead of a fresh attach.
+  function dropPreparedDashEntry(video) {
+    for (const [key, entry] of Array.from(state.preloadCache)) {
+      if (entry !== video) continue;
+      state.preloadCache.delete(key);
+      state.preloadRetry.delete(key);
+      state.preloadStats.dashReleased += 1;
+      debugLogEvent("preload-invalidated", { key, reason: "dash-released" });
+      break;
+    }
+    schedulePreloadQueue();
+  }
+
   function stopMedia() {
     untrackMedia();
     mediaBox.querySelectorAll("video").forEach((video) => {
+      const wasPreparedDASH =
+        video.getAttribute("data-redditp-dash") === "attached";
       releaseRedditDash(video);
+      if (wasPreparedDASH) dropPreparedDashEntry(video);
       video.pause();
       const restore = state.nativeRestores.get(video);
       if (!restore) return;
@@ -1816,6 +1872,12 @@
   // briefly joins a hidden container for the synchronous attach (and for
   // the later reset) and then returns to the cache detached.
   let dashHandshakeBox = null;
+
+  // Bumped at the start of every render. Late media events (a superseded
+  // video's loadeddata, an abort error arriving after the stage already
+  // moved on) carry the generation they belong to, so they can only clear
+  // the loading state that render created — never a newer one's loader.
+  let renderGeneration = 0;
 
   function dispatchRedditDashEvent(video, type) {
     if (video.isConnected) {
@@ -2181,9 +2243,12 @@
       ? "Exit fullscreen (F)"
       : "Toggle fullscreen (F)";
     fullscreenButton.setAttribute("aria-pressed", String(fullscreenActive));
-    fullscreenButton.innerHTML = fullscreenActive
-      ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>'
-      : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+    setSvgMarkup(
+      fullscreenButton,
+      fullscreenActive
+        ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>'
+        : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>',
+    );
   }
 
   // Counts posts rather than slides, so a gallery advances only its own
@@ -2703,17 +2768,31 @@
     );
   }
 
-  // How many speculative video elements exist right now, across the cache
-  // and still-running jobs. The one being displayed counts when it was
-  // prepared by the preloader, so it still occupies its budget slot.
+  // How many video resources in an expensive state exist right now, across
+  // the cache and still-running jobs. The one being displayed counts when
+  // it was prepared by the preloader, so it still occupies its budget slot.
+  // This is a decoder/playback budget, not a metadata-element budget: a
+  // video element that only holds metadata (HAVE_METADATA, no data, no
+  // attached DASH player) costs no media pipeline. Charging it for merely
+  // holding metadata starved near-priority video re-preparation while a
+  // distant forward slide's shell sat in the cache (measured in the
+  // Phase 7 benchmarks: a one-step-back video refetched fresh because of
+  // exactly that accounting). Expensive states are:
+  //   - readyState >= HAVE_CURRENT_DATA (buffered samples/frames), or
+  //   - an attached dash.js player (data-redditp-dash "attached").
   function heldVideoPreloads() {
     let count = 0;
+    const expensive = (video) =>
+      video.readyState >= (HTMLMediaElement.HAVE_CURRENT_DATA || 2) ||
+      video.getAttribute("data-redditp-dash") === "attached";
     for (const value of state.preloadCache.values()) {
       if (
         typeof HTMLVideoElement !== "undefined" &&
-        value instanceof HTMLVideoElement
-      )
+        value instanceof HTMLVideoElement &&
+        expensive(value)
+      ) {
         count += 1;
+      }
     }
     for (const job of state.preloadInFlight.values()) {
       if (job.slide?.kind === "video") count += 1;
@@ -2739,6 +2818,7 @@
   // `reuse` distinguishes a prepared resource, an in-flight resolution the
   // display joined, and a cold fetch ("", images).
   function recordNavigation(slide, ready, reuse) {
+    const nowMs = performance.now();
     state.lastNavigation = {
       index: state.index,
       key: mediaPreloadKey(slide),
@@ -2746,7 +2826,11 @@
       ready,
       reuse: reuse || "",
       readyAfterMs: ready ? 0 : null,
-      startedAt: performance.now(),
+      startedAt: nowMs,
+      // Wall-clock twin of startedAt: the only clock shared by debug
+      // log entries, so later events (playback start, first frame) can
+      // report their navigation-relative delays without clock mixing.
+      startedAtMs: Date.now(),
     };
     debugLogEvent("navigate", {
       to: state.index,
@@ -2855,16 +2939,78 @@
         .map((job, index) => ({ job, index }))
         .sort((a, b) => a.job.priority - b.job.priority || a.index - b.index);
       // Video jobs wait while their budget is full so speculative videos
-      // can never crowd the image pipeline or create extra decoders.
-      const eligible = choices.find(
-        (choice) =>
+      // can never crowd the image pipeline or create extra decoders. When
+      // the budget is full and the closest waiting video is nearer than a
+      // cached video resource, making room wins: release the farthest
+      // cached video (a Phase 7 measured case — a distant forward video's
+      // frames kept the slot a one-step-back video needed, so the step
+      // back refetched fresh over the network).
+      let eligible = null;
+      for (const choice of choices) {
+        if (
           choice.job.slide.kind !== "video" ||
-          heldVideoPreloads() < VIDEO_PRELOAD_LIMIT,
-      );
+          heldVideoPreloads() < VIDEO_PRELOAD_LIMIT
+        ) {
+          eligible = choice;
+          break;
+        }
+        if (evictFartherVideoResource(videoDistance(choice.job.slide))) {
+          if (heldVideoPreloads() < VIDEO_PRELOAD_LIMIT) {
+            eligible = choice;
+            break;
+          }
+        }
+      }
       if (!eligible) break;
       state.preloadQueue.splice(eligible.index, 1);
       runPreload(eligible.job);
     }
+  }
+
+  // A video job's distance from the displayed slide, used to compare it
+  // against held video resources when the budget is contested.
+  function videoDistance(slide) {
+    const index = state.slides.indexOf(slide);
+    return index === -1 ? Infinity : Math.abs(index - state.index);
+  }
+
+  // Releases the cached video resource farthest from the displayed slide,
+  // and only when it is strictly farther than the waiting job asking for
+  // room. Returns whether one was released. Never releases the resource
+  // of a slide near the stage: the current, next, and previous slides'
+  // entries stay within the active window and are skipped by the
+  // distance check.
+  function evictFartherVideoResource(distance) {
+    let farKey = "";
+    let farDistance = distance;
+    for (const [key, value] of state.preloadCache) {
+      if (
+        typeof HTMLVideoElement === "undefined" ||
+        !(value instanceof HTMLVideoElement)
+      ) {
+        continue;
+      }
+      const expensive =
+        value.readyState >= (HTMLMediaElement.HAVE_CURRENT_DATA || 2) ||
+        value.getAttribute("data-redditp-dash") === "attached";
+      if (!expensive) continue;
+      const cacheIndex = state.slides.findIndex(
+        (slide) => mediaPreloadKey(slide) === key,
+      );
+      if (cacheIndex === -1) continue;
+      const cacheDistance = Math.abs(cacheIndex - state.index);
+      if (cacheDistance > farDistance) {
+        farKey = key;
+        farDistance = cacheDistance;
+      }
+    }
+    if (!farKey) return false;
+    releasePreloadResource(state.preloadCache.get(farKey));
+    state.preloadCache.delete(farKey);
+    state.preloadRetry.delete(farKey);
+    state.preloadStats.evicted += 1;
+    debugLogEvent("preload-evict", farKey);
+    return true;
   }
 
   function runPreload(job) {
@@ -3523,6 +3669,8 @@
       // ghost layer here, not after the swap.
       startTransition(state.slides[state.index]);
     }
+    renderGeneration += 1;
+    const generation = renderGeneration;
     stopMedia();
     resolveIneligibleIndex();
     syncPresentationUi();
@@ -3533,6 +3681,9 @@
     }
 
     const slide = state.slides[state.index];
+    // The loading state is per-render: every render starts from a clean
+    // class so a stale loader can never outlive the media it described.
+    mediaBox.classList.remove("redditp__loading");
     // Revisiting a slide retries its media, so a past failure must not keep
     // forcing the timer path.
     slide.mediaFailed = false;
@@ -3644,6 +3795,20 @@
           cachedEntry.getAttribute("data-redditp-dash") === "attached")
           ? cachedEntry
           : null;
+      if (cachedEntry && !cachedVideo && slide.mpdUrl) {
+        // A prepared DASH entry whose bridge mark is gone is dead weight:
+        // drop it here as well as in stopMedia, so an entry released
+        // outside our own bookkeeping (a raced close, a retired overlay)
+        // can neither be reused nor hold a video budget slot.
+        state.preloadCache.delete(navKey);
+        state.preloadRetry.delete(navKey);
+        state.preloadStats.dashReleased += 1;
+        debugLogEvent("preload-invalidated", {
+          key: navKey,
+          reason: "dash-released",
+        });
+        schedulePreloadQueue();
+      }
       const inflightVideo = cachedVideo ? null : inflightVideoFor(slide);
       // Reuse an in-flight video element even before its metadata arrives so
       // navigation does not issue a second request for the same resource.
@@ -3680,6 +3845,28 @@
           // attempt being replaced must not fail the fallback.
           if (video.error) playVideoFallback(video, video.redditpErrorSlide);
         });
+      }
+      // Lightweight loading state: a video with no frame to show yet gets
+      // the CSS loader on the media box until data arrives or the display
+      // fails. A prepared element already holding frames (or the deck of
+      // cached media about to replay) pays the class removal, nothing else.
+      if (video.readyState < (HTMLMediaElement.HAVE_CURRENT_DATA || 2)) {
+        mediaBox.classList.add("redditp__loading");
+        // Late events from a superseded element must not cut short the
+        // current media's loader, and the loader must also clear when this
+        // render's element ends in the failure card (where it is no longer
+        // in the media box). The generation guards both.
+        const clearLoader = () => {
+          if (
+            generation === renderGeneration &&
+            mediaBox.classList.contains("redditp__loading")
+          ) {
+            mediaBox.classList.remove("redditp__loading");
+          }
+        };
+        video.addEventListener("loadeddata", clearLoader, { once: true });
+        video.addEventListener("error", clearLoader, { once: true });
+        video.addEventListener("playing", clearLoader, { once: true });
       }
       const navStart = Date.now();
       const firstFrameEvidence = () => {
@@ -4365,7 +4552,7 @@
   // state in sync with `state.autoPlaying`, so every entry point (user
   // toggle, open, close) paints the same play/pause visuals.
   function renderAutoButton() {
-    autoButton.innerHTML = state.autoPlaying ? pauseSvg : playSvg;
+    setSvgMarkup(autoButton, state.autoPlaying ? pauseSvg : playSvg);
     autoButton.setAttribute(
       "aria-label",
       state.autoPlaying ? "Pause slideshow" : "Start slideshow",
@@ -4392,7 +4579,7 @@
 
   function renderMediaModeButton() {
     const mode = currentMediaMode();
-    mediaModeButton.innerHTML = MEDIA_MODE_ICONS[mode];
+    setSvgMarkup(mediaModeButton, MEDIA_MODE_ICONS[mode]);
     mediaModeButton.title = `${MEDIA_MODE_TITLES[mode]} (cycle mode)`;
     mediaModeButton.setAttribute("aria-label", MEDIA_MODE_TITLES[mode]);
     mediaModeButton.dataset.mediaMode = mode;
@@ -4478,6 +4665,16 @@
   }
 
   function playVideo(video) {
+    // Navigation-relative playback start (Phase 7 instrumentation). Fires
+    // only for the display path (preloader jobs never call playVideo), and
+    // only lands in the bounded ring while localStorage debug is on.
+    debugLogEvent("playback-start", {
+      key: mediaPreloadKey(state.slides[state.index]),
+      ms:
+        state.lastNavigation &&
+        Math.max(0, Date.now() - state.lastNavigation.startedAtMs),
+      readyState: video.readyState,
+    });
     video.play().catch((error) => {
       // The remembered sound setting can start a presentation without a user
       // gesture on the page, where browsers refuse unmuted autoplay. Play this

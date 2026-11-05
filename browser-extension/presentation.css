@@ -76,6 +76,41 @@
   margin: 0;
 }
 
+/* Phase 7 lightweight loading state: shows while a displayed video has no
+   frame yet (fresh fetch, replay decode, DASH buffering). Pure CSS on the
+   media box — no extra DOM, so navigation structure, gestures, and the
+   pinned media-element counts stay untouched. Removed as soon as the
+   element presents data (loadeddata), fails, or is superseded by a render
+   that needs no loader. */
+#redditp-presentation .redditp__media.redditp__loading::after {
+  content: "";
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  margin-left: -17px;
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(255, 255, 255, 0.28);
+  border-top-color: #d93900;
+  border-radius: 50%;
+  animation: redditp-loading-spin 0.9s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes redditp-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #redditp-presentation .redditp__media.redditp__loading::after {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
 #redditp-presentation .redditp__video,
 #redditp-presentation .redditp__embed {
   flex-shrink: 0;

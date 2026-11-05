@@ -1,7 +1,7 @@
 {
-  "name": "redditp",
+  "name": "redditpix",
   "version": "1.0.0",
-  "description": "Convert reddit urls into slideshows",
+  "description": "Turn the Reddit page you are browsing into a media slideshow (browser extension)",
   "main": "browser-extension/manifest.json",
   "devDependencies": {
     "@playwright/test": "^1.54.1",
@@ -29,6 +29,7 @@
   "keywords": [
     "reddit",
     "redditp",
+    "redditpix",
     "slideshow",
     "images"
   ],
