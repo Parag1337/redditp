@@ -32,7 +32,7 @@
   ].join(",");
   const POST_SELECTOR = `${SPECIFIC_POST_SELECTOR},article`;
   const FOCUSABLE_SELECTOR =
-    "a[href], button:not([disabled]), input:not([disabled]), video[controls], iframe";
+    "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), video[controls], iframe";
   const IMAGE_URL_RE = /\.(?:avif|gif|jpe?g|png|webp)(?:$|[?#])/i;
   const VIDEO_URL_RE = /\.(?:m3u8|mp4|webm)(?:$|[?#])/i;
   const MIN_EXPAND_IMAGE_LONG_EDGE = 1000;
@@ -52,6 +52,31 @@
   // the exact behavior shipped before the mode existed.
   const MEDIA_MODE_KEYS = ["both", "images", "videos"];
   const SETTINGS_KEY = "redditpPresentationSettings";
+  // Slide transitions: each value names the one animation used at every
+  // media swap from a navigation. `random` is resolved per transition by an
+  // injectable sampler (never "none") that avoids repeating its choice.
+  const TRANSITION_ANIMATION_KEYS = [
+    "none",
+    "fade",
+    "slide-right",
+    "slide-left",
+    "ken-burns",
+    "random",
+  ];
+  const TRANSITION_ANIMATION_LABELS = {
+    none: "None",
+    fade: "Fade",
+    "slide-right": "Slide Right",
+    "slide-left": "Slide Left",
+    "ken-burns": "Ken Burns",
+    random: "Random",
+  };
+  const TRANSITION_ANIMATION_POOL = [
+    "fade",
+    "slide-right",
+    "slide-left",
+    "ken-burns",
+  ];
   // The one embed origin that publishes a message protocol for controlling
   // its player. Every other player keeps its own sound control.
   const JS_API_EMBED_ORIGIN = "https://www.youtube.com";
@@ -72,6 +97,7 @@
     preloadPosts: 5,
     preloadConcurrency: 3,
     mediaMode: "both",
+    transitionAnimation: "none",
   };
   const state = {
     open: false,
@@ -90,6 +116,11 @@
     nativeRestores: new WeakMap(),
     oldOverflow: "",
     pointerStart: null,
+    pendingTransition: null,
+    transition: null,
+    transitionToken: 0,
+    randomSource: Math.random,
+    lastRandomTransition: "",
     settings: Object.assign({}, DEFAULT_SETTINGS),
     settingsLoaded: false,
     settingsOpen: false,
@@ -1376,6 +1407,13 @@
         // An outdated or corrupt stored value must not strand the viewer in
         // a mode it cannot reason about; fall back to the default instead.
         if (MEDIA_MODE_KEYS.includes(value[key])) result[key] = value[key];
+      } else if (key === "transitionAnimation") {
+        // Same rule for the transition setting: an unknown stored name (an
+        // older version, a future rename, corrupt data) falls back to the
+        // shipped default of an immediate media swap without animation.
+        if (TRANSITION_ANIMATION_KEYS.includes(value[key])) {
+          result[key] = value[key];
+        }
       }
     });
     // Before 2026-09 this was stored inverted as `controlsCollapsed`.
@@ -1435,6 +1473,13 @@
 
   const stage = element("div", "redditp__stage", "");
   const mediaBox = element("div", "redditp__media", "");
+  // Slide transitions (new): during a transition the outgoing media has to
+  // outlive the immediate media swap, so the previous image is parked here
+  // with its exact on-screen geometry until its exit animation ends. The
+  // real element moves, not a copy — no duplicate requests, no reload —
+  // and its inline style attribute is restored when the bar is released.
+  const transitionGhost = element("div", "redditp__ghost", "");
+  transitionGhost.setAttribute("aria-hidden", "true");
   const empty = element("div", "redditp__empty", "");
   const emptyTitle = element("h2", "", "No posts found on this page");
   const emptyText = element(
@@ -1443,7 +1488,7 @@
     "Scroll Reddit to load some posts, then try presentation mode again.",
   );
   empty.append(emptyTitle, emptyText);
-  stage.append(mediaBox, empty);
+  stage.append(mediaBox, empty, transitionGhost);
 
   const count = element("div", "redditp__count", "");
   const numberBar = element("nav", "redditp__numbers", "");
@@ -1569,6 +1614,30 @@
   durationControl.append(durationInput, element("span", "", "seconds"));
   durationLabel.append(durationText, durationControl);
 
+  // Slide transition animation (new): one select in the settings panel,
+  // persisted like every other setting. A native select keeps keyboard and
+  // touch behavior free of custom code, and the viewer's arrow-key handler
+  // already ignores focus inside settings, so a focused select never
+  // navigates the slideshow.
+  const transitionLabel = element(
+    "label",
+    "redditp__setting redditp__setting--transition",
+    "",
+  );
+  const transitionText = element("span", "", "Transition animation");
+  const transitionControl = element("span", "redditp__transition-control", "");
+  const transitionSelect = element("select", "", "");
+  transitionSelect.setAttribute("aria-label", "Slide transition animation");
+  transitionSelect.dataset.setting = "transitionAnimation";
+  TRANSITION_ANIMATION_KEYS.forEach((key) => {
+    const option = element("option", "", "");
+    option.value = key;
+    option.textContent = TRANSITION_ANIMATION_LABELS[key];
+    transitionSelect.append(option);
+  });
+  transitionControl.append(transitionSelect);
+  transitionLabel.append(transitionText, transitionControl);
+
   const settingCheckboxes = {};
   function checkboxSetting(key, labelText) {
     const label = element("label", "redditp__setting", "");
@@ -1619,6 +1688,7 @@
     settingsTitle,
     settingsClose,
     durationLabel,
+    transitionLabel,
     checkboxSetting("finishMediaOnce", "Let videos play at least once"),
     checkboxSetting("loopShortMedia", "Loop short videos until the timer ends"),
     element(
@@ -1947,12 +2017,19 @@
       !state.settings.showDetails ||
       state.interfaceHidden;
     meta.hidden = true;
-    // The bottom-nav row itself follows the interface's visibility; the
+    // The bottom-nav row itself follows the interface's visibility. In the
+    // no-matching-media stage the row survives with only the media-mode
+    // chip visible: the chip is the way back to a workable mode, hiding it
+    // would strand the viewer in a state only a restart could fix. The
     // count chip specifically also keeps the compact-controls behavior of
     // old (`P` hides the count and the numbered buttons but never the auto
     // toggle, which stays reachable).
-    controls.hidden = !hasSlides || !hasVisible || state.interfaceHidden;
-    count.hidden = !hasSlides || !hasVisible || !state.settings.showControls;
+    controls.hidden = !hasSlides || state.interfaceHidden;
+    count.hidden =
+      !hasSlides ||
+      !hasVisible ||
+      state.interfaceHidden ||
+      !state.settings.showControls;
     settingsButton.hidden = !state.settings.showControls;
     prevButton.hidden = nextButton.hidden =
       !hasSlides || !hasVisible || !state.settings.showArrows;
@@ -1961,16 +2038,12 @@
       !hasSlides ||
       (isSinglePostPage() && state.index === state.slides.length - 1);
     closeButton.hidden = !state.settings.showClose;
-    updateCount(state.loadingMore && isOnLastPost());
+    updateCount(state.loadingMore && isOnLastEligiblePost());
     const slide = hasSlides ? state.slides[state.index] : null;
     galleryButton.hidden = !slide?.galleryItem;
     // Gallery counter shown only in title; toolbar button is the "Skip gallery" control.
     // Remove the duplicate counter from the toolbar button while preserving its function.
     galleryButton.textContent = "";
-    numberBar.replaceChildren();
-    // The auto-advance toggle lives in the same bottom strip as the numbered
-    // post buttons, ahead of them.
-    numberBar.append(autoButton);
     const starts = [];
     let previous = null;
     state.slides.forEach((item, index) => {
@@ -1985,26 +2058,59 @@
     starts.forEach((startIndex, i) => {
       if (state.index >= startIndex) currentPost = i + 1;
     });
-    starts.forEach((startIndex, i) => {
-      const button = element("button", "redditp__number", String(i + 1));
-      button.type = "button";
-      button.setAttribute("aria-label", `Post ${i + 1}`);
-      if (i + 1 === currentPost)
-        button.classList.add("redditp__number--active");
-      // Numbered navigation keeps the feed-based numbering but honours the
-      // duration policy: an excluded post is skipped in the same direction
-      // a next-navigation would travel.
-      button.addEventListener("click", () => {
-        const dest = forwardEligibleSlide(startIndex);
-        if (dest === null) {
-          noteDurationSkips("navigation-skipped-long", state.index, startIndex);
-          return;
-        }
-        state.index = dest;
-        render();
+    // The numbered bar rebuild was the only O(posts) DOM churn on every
+    // render (every navigation, resize, settings update). The buttons only
+    // change when the identity sequence of starts changes — plain post
+    // navigation, mode syncs, and resizes merely move the active mark —
+    // so reuse the row and flip classes in that case. Entries appended at
+    // the end (or an enrichment expansion) change the starts sequence and
+    // trigger a real rebuild, keeping every closure's startIndex exact.
+    const startsSignature = starts.join("|");
+    if (numberBar.dataset.redditpStarts !== startsSignature) {
+      numberBar.dataset.redditpStarts = startsSignature;
+      numberBar.replaceChildren();
+      // The auto-advance toggle lives in the same bottom strip as the
+      // numbered post buttons, ahead of them.
+      numberBar.append(autoButton);
+      starts.forEach((startIndex, i) => {
+        const button = element("button", "redditp__number", String(i + 1));
+        button.type = "button";
+        button.setAttribute("aria-label", `Post ${i + 1}`);
+        // Numbered navigation keeps the feed-based numbering but honours the
+        // duration policy: an excluded post is skipped in the same direction
+        // a next-navigation would travel.
+        button.addEventListener("click", () => {
+          const dest = forwardEligibleSlide(startIndex);
+          if (dest === null) {
+            noteDurationSkips(
+              "navigation-skipped-long",
+              state.index,
+              startIndex,
+            );
+            return;
+          }
+          // Clicking the number of the already-displayed post re-renders the
+          // same slide; only real hops take a transition, so the viewer
+          // never fades a slide into itself.
+          if (dest !== state.index) requestTransition(dest - state.index);
+          state.index = dest;
+          render();
+        });
+        numberBar.append(button);
       });
-      numberBar.append(button);
-    });
+    }
+    if (currentPost >= 1 && starts.length) {
+      const target =
+        numberBar.querySelectorAll(".redditp__number")[currentPost - 1];
+      if (target && !target.classList.contains("redditp__number--active")) {
+        numberBar
+          .querySelectorAll(".redditp__number--active")
+          .forEach((button) =>
+            button.classList.remove("redditp__number--active"),
+          );
+        target.classList.add("redditp__number--active");
+      }
+    }
     const activeButton = numberBar.querySelector(".redditp__number--active");
     if (activeButton) scrollNumberTrackTo(activeButton);
     // The auto-advance toggle stays reachable even when the rest of the
@@ -3164,7 +3270,259 @@
     if (dest !== null && dest !== state.index) state.index = dest;
   }
 
+  // Slide transitions (new). One engine serves every navigation path:
+  // move(), skipGallery(), previousPostLast(), auto-advance end and the
+  // numbered track all "request" a transition right before their render,
+  // and render() consumes the request. No animation logic lives inside the
+  // gesture or keyboard handlers.
+  function currentTransitionAnimation() {
+    const stored = state.settings.transitionAnimation;
+    // A corrupt or missing value must not disable or break the viewer; an
+    // unknown name behaves exactly like the shipped default.
+    return TRANSITION_ANIMATION_KEYS.includes(stored) ? stored : "none";
+  }
+
+  // Reduced motion is honored twice, by design: this resolver stops timers,
+  // snapshots, and class churn from starting at all, while the stylesheet
+  // still hard-disables the animations for anything that might slip through.
+  function reducedMotionRequested() {
+    try {
+      return Boolean(
+        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,
+      );
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  // The test seam for Random: production keeps Math.random, and the process
+  // API can inject a deterministic sampler without any test-only branch in
+  // the navigation or settings code.
+  function pickRandomTransitionStyle() {
+    const pool = TRANSITION_ANIMATION_POOL.filter(
+      (name) => name !== state.lastRandomTransition,
+    );
+    const sampled = Number(state.randomSource());
+    const clamped = Number.isFinite(sampled)
+      ? Math.min(0.999999, Math.max(0, sampled))
+      : 0;
+    const pick = pool[Math.floor(clamped * pool.length)] || "fade";
+    state.lastRandomTransition = pick;
+    return pick;
+  }
+
+  function resolveTransitionStyle(style, incomingSlide) {
+    if (reducedMotionRequested()) return "none";
+    let resolved = TRANSITION_ANIMATION_KEYS.includes(style) ? style : "none";
+    if (resolved === "random") resolved = pickRandomTransitionStyle();
+    // Ken Burns is an image treatment: zooming a video element would scale
+    // its native controls too, so video slides use the fade instead.
+    if (resolved === "ken-burns" && incomingSlide?.kind !== "image") {
+      resolved = "fade";
+    }
+    return resolved;
+  }
+
+  // Navigation call sites ask once, right before their synchronous render:
+  // a site that ends up not rendering leaves no pending request, and the
+  // pagination continuation re-requests on its own before its render.
+  function requestTransition(direction) {
+    state.pendingTransition = direction > 0 ? 1 : -1;
+  }
+
+  function stripAnimationClasses(container) {
+    container.querySelectorAll(".redditp__media-anim").forEach((element) => {
+      element.classList.remove(
+        "redditp__media-anim",
+        "redditp__media-anim--fade",
+        "redditp__media-anim--slide-right",
+        "redditp__media-anim--slide-left",
+        "redditp__media-anim--ken-burns",
+      );
+    });
+  }
+
+  function releaseGhostElement(el) {
+    el.classList.remove(
+      "redditp__ghost-anim--exit-left",
+      "redditp__ghost-anim--exit-right",
+      "redditp__ghost-anim--exit-fade",
+    );
+  }
+
+  // A stale transition can never survive into the next render: both CSS
+  // animations (entering and exiting states) and any inline geometry are
+  // cleaned up here, whatever the previous render left behind.
+  function cancelTransition() {
+    const transition = state.transition;
+    if (transition) {
+      clearTimeout(transition.releaseTimer);
+      state.transition = null;
+      restoreParkedImages(transition.parked);
+    }
+    const children = Array.from(transitionGhost.children);
+    transitionGhost.replaceChildren();
+    children.forEach((child) => releaseGhostElement(child));
+    stripAnimationClasses(mediaBox);
+  }
+
+  // Before stopMedia() drops the current media, an image gets parked in the
+  // ghost layer with its exact computed geometry so its exit animation can
+  // play while the next slide's element builds underneath. The element is
+  // moved, not cloned or refetched, and its inline style attribute is put
+  // back byte-for-byte when the ghost releases it.
+  function ghostOutgoingImage() {
+    const outgoing = mediaBox.firstElementChild;
+    if (
+      !(outgoing instanceof HTMLImageElement) ||
+      !outgoing.complete ||
+      outgoing.naturalWidth === 0
+    ) {
+      return [];
+    }
+    const rect = outgoing.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return [];
+    const restore = outgoing.getAttribute("style");
+    const computed = getComputedStyle(outgoing);
+    outgoing.style.position = "absolute";
+    outgoing.style.margin = "0";
+    outgoing.style.left = `${rect.left}px`;
+    outgoing.style.top = `${rect.top}px`;
+    outgoing.style.width = `${rect.width}px`;
+    outgoing.style.height = `${rect.height}px`;
+    outgoing.style.objectFit = computed.objectFit;
+    outgoing.style.opacity = "1";
+    outgoing.style.zIndex = "3";
+    transitionGhost.append(outgoing);
+    return [{ el: outgoing, restore }];
+  }
+
+  function startTransition(incomingSlide) {
+    const style = resolveTransitionStyle(
+      currentTransitionAnimation(),
+      incomingSlide,
+    );
+    if (style === "none") return;
+    cancelTransition();
+    const token = state.transitionToken + 1;
+    state.transitionToken = token;
+    const parked = ghostOutgoingImage();
+    // The exit direction of the parked image follows the chosen style, not
+    // the navigation direction: "slide-right" always shows new media
+    // entering from the right with the old one leaving toward the left,
+    // "slide-left" mirrors it, and a fade dims the parked image out in
+    // step with the entering one.
+    if (parked.length && style !== "ken-burns") {
+      const { el } = parked[0];
+      el.classList.add(
+        style === "slide-right"
+          ? "redditp__ghost-anim--exit-left"
+          : style === "slide-left"
+            ? "redditp__ghost-anim--exit-right"
+            : "redditp__ghost-anim--exit-fade",
+      );
+    }
+    // The safety timer releases everything even when animationend never
+    // fires (a blockable animation, an immediate further navigation that
+    // already consumed the element, or an offscreen tab's throttling).
+    state.transition = {
+      token,
+      style,
+      releaseTimer: 0,
+      parked,
+    };
+    if (parked.length) {
+      parked[0].el.addEventListener(
+        "animationend",
+        () => {
+          if (state.transition?.token === token) finishTransition();
+        },
+        { once: true },
+      );
+    }
+    state.transition.releaseTimer = setTimeout(
+      finishTransition,
+      style === "ken-burns" ? 5600 : 700,
+    );
+  }
+
+  // The exit snapshot stays parked in the preloaded image cache, so its
+  // inline style attributes must be resting before the same element is ever
+  // displayed again.
+  function finishTransition() {
+    const transition = state.transition;
+    if (!transition) return;
+    clearTimeout(transition.releaseTimer);
+    state.transition = null;
+    const children = Array.from(transitionGhost.children);
+    transitionGhost.replaceChildren();
+    children.forEach((child) => releaseGhostElement(child));
+    restoreParkedImages(transition.parked);
+    // The entering element may still carry its animation class when the
+    // safety timer wins the race against animationend.
+    stripAnimationClasses(mediaBox);
+  }
+
+  // A stale transition can never survive into the next render: both CSS
+  // animations (entering and exiting states) and any inline geometry are
+  // cleaned up here, whatever the previous render left behind.
+  function cancelTransition() {
+    const transition = state.transition;
+    if (transition) {
+      clearTimeout(transition.releaseTimer);
+      state.transition = null;
+      restoreParkedImages(transition.parked);
+    }
+    const children = Array.from(transitionGhost.children);
+    transitionGhost.replaceChildren();
+    children.forEach((child) => releaseGhostElement(child));
+    stripAnimationClasses(mediaBox);
+  }
+
+  // One place keeps the parked image's release rule: its inline style
+  // attribute is restored from the snapshot taken when it was parked, so
+  // the preloaded element can be displayed again with nothing left behind.
+  function restoreParkedImages(parked) {
+    (parked || []).forEach(({ el, restore }) => {
+      releaseGhostElement(el);
+      if (restore === null) el.removeAttribute("style");
+      else el.setAttribute("style", restore);
+    });
+  }
+
+  // After the new media is built, the entering animation is applied to the
+  // element itself: transforms and opacity only, no layout properties.
+  function applyIncomingTransition(transition) {
+    const incoming = mediaBox.firstElementChild;
+    if (!incoming) return;
+    const { token, style } = transition;
+    incoming.classList.add(
+      "redditp__media-anim",
+      `redditp__media-anim--${style}`,
+    );
+    incoming.addEventListener(
+      "animationend",
+      () => {
+        // Only the matching transition's end strips the classes; a later
+        // navigation superseding this one cancels through cancelTransition.
+        if (state.transition?.token === token) stripAnimationClasses(mediaBox);
+      },
+      { once: true },
+    );
+  }
+
   function render() {
+    // A fresh render is a clean technical slate: whichever animation an
+    // earlier navigation left behind is released before anything below is
+    // rebuilt, so superseding transitions never accumulate.
+    cancelTransition();
+    const pendingTransition = state.pendingTransition;
+    state.pendingTransition = null;
+    if (pendingTransition) {
+      // Must run before stopMedia(): the outgoing image is moved into the
+      // ghost layer here, not after the swap.
+      startTransition(state.slides[state.index]);
+    }
     stopMedia();
     resolveIneligibleIndex();
     syncPresentationUi();
@@ -3442,13 +3800,19 @@
         ),
       );
     }
+    // The entering animation is applied to the element that was just built:
+    // works identically for the next/previous post, gallery steps, auto
+    // advance, numbered navigation, and the pagination continuation, since
+    // they all funnel through this render.
+    if (state.transition) applyIncomingTransition(state.transition);
     scheduleAuto();
     schedulePreloadQueue();
     void enrichSlide(slide);
     void upgradePendingAdaptiveSlide(slide);
     // Start loading on the last post's first slide so the next post is ready
-    // by the time its gallery ends.
-    if (!isSinglePostPage() && isOnLastPost()) {
+    // by the time its gallery ends. The eligibility-aware placement keeps
+    // this firing when the filters leave only the eligible tail navigable.
+    if (!isSinglePostPage() && isOnLastEligiblePost()) {
       void loadMoreAtEnd(false);
     }
   }
@@ -3497,6 +3861,7 @@
     if (dest !== target) {
       noteDurationSkips("navigation-skipped-long", state.index, dest);
     }
+    requestTransition(delta);
     state.index = dest;
     render();
   }
@@ -3530,6 +3895,7 @@
     // This keeps loading, wrapping, and single-post boundaries in move().
     const lastEligible = backwardEligibleSlide(state.slides.length - 1);
     if (lastEligible !== null && lastEligible > state.index) {
+      requestTransition(1);
       state.index = lastEligible;
       render();
     }
@@ -3566,6 +3932,7 @@
       noteDurationSkips("navigation-skipped-long", state.index, start);
       return;
     }
+    requestTransition(-1);
     state.index = dest;
     render();
   }
@@ -3582,6 +3949,34 @@
 
   function isOnLastPost() {
     return state.slides.length > 0 && state.index >= lastPostStart();
+  }
+
+  // The raw feed and the navigable feed diverge when a mode filter or the
+  // duration policy hides the tail: the user can reach the last eligible
+  // post while raw posts still trail it, and those can never be "reached"
+  // by navigation. Pagination must therefore trigger from the last post
+  // that still holds navigable media — otherwise the loader never fires
+  // and the feed stops growing (the 50-post stall).
+  function lastEligiblePostStart() {
+    for (let i = state.slides.length - 1; i >= 0; i -= 1) {
+      if (slideEligibilityReason(state.slides[i])) continue;
+      const identity = postIdentity(state.slides[i]);
+      let start = i;
+      while (start > 0 && postIdentity(state.slides[start - 1]) === identity) {
+        start -= 1;
+      }
+      return start;
+    }
+    return -1;
+  }
+
+  // True also when nothing loaded is eligible: with zero navigable media the
+  // only way out of the no-match stage is to keep scanning later batches, so
+  // the placement check must not refuse to start the loader.
+  function isOnLastEligiblePost() {
+    if (!state.slides.length) return false;
+    const start = lastEligiblePostStart();
+    return start === -1 || state.index >= start;
   }
 
   function postIdentity(slide) {
@@ -3637,6 +4032,13 @@
       state.scanFailures = 0;
       state.slides.push(...additions);
       schedulePreloadQueue();
+      // A feed whose first listing held one post disables auto-advance's
+      // length guard, and the append above lifts it. Arm the timer here so
+      // the shipped-on slideshow actually starts moving — but never disturb
+      // a timer that is already counting down (or out) for the user.
+      if (state.open && state.autoPlaying && !state.autoTimer) {
+        scheduleAuto();
+      }
     }
     return additions.length;
   }
@@ -3659,7 +4061,7 @@
       }
       return;
     }
-    if (!state.open || !isOnLastPost()) return;
+    if (!state.open || !isOnLastEligiblePost()) return;
 
     if (state.scanFailures >= SCAN_FAILURE_LIMIT) {
       if (advanceWhenReady || state.advanceAfterLoad) {
@@ -3730,6 +4132,7 @@
       // media — the next navigation or completed scan resolves again.
       const dest = forwardEligibleSlide(state.index + 1);
       if (dest !== null) {
+        requestTransition(1);
         state.index = dest;
         render();
       } else {
@@ -3742,6 +4145,7 @@
       state.scanFailures = 0;
       const wrapDest = forwardEligibleSlide(0);
       if (wrapDest !== null) {
+        requestTransition(1);
         state.index = wrapDest;
         render();
       } else {
@@ -3923,6 +4327,7 @@
     Object.keys(settingCheckboxes).forEach((key) => {
       settingCheckboxes[key].checked = state.settings[key];
     });
+    transitionSelect.value = currentTransitionAnimation();
   }
 
   function openSettings() {
@@ -3936,7 +4341,10 @@
     if (!state.settingsOpen) return;
     state.settingsOpen = false;
     settingsOverlay.hidden = true;
-    (state.settings.showControls ? settingsButton : settingsButton).focus({
+    // A hidden target cannot take focus; fall back to the close chip so the
+    // keyboard user does not lose focus to the page when the bottom panel
+    // setting was off.
+    (!settingsButton.hidden ? settingsButton : closeButton).focus({
       preventScroll: true,
     });
   }
@@ -4017,8 +4425,14 @@
       slideMediaModeEligible(current)
     ) {
       // Stay on the eligible slide: only the counters and the preload
-      // priorities change, nothing about the displayed media does.
+      // priorities change, nothing about the displayed media does. The
+      // title's gallery indicator, though, describes what next/previous
+      // walk through the mode filter, so it must re-label here where the
+      // other counters do.
       syncPresentationUi();
+      if (state.slides[state.index]?.galleryItem) {
+        title.textContent = visibleGalleryLabel(state.slides[state.index]);
+      }
       schedulePreloadQueue();
       return;
     }
@@ -4212,6 +4626,9 @@
     state.interfaceHidden = false;
     settingsOverlay.hidden = true;
     clearTimeout(state.autoTimer);
+    // A transition must never outlive the viewer: the ghost layer is a
+    // presentation surface, and closing refreshes the reader it sits over.
+    cancelTransition();
     renderAutoButton();
     stopMedia();
     cancelPreloads();
@@ -4268,11 +4685,10 @@
     state.nextPageUrl = nextPageUrl(document);
     state.index = Math.min(state.index, Math.max(0, state.slides.length - 1));
     render();
-    const initialFocus = closeButton.hidden
-      ? state.settings.showControls
-        ? settingsButton
-        : settingsButton
-      : closeButton;
+    // Focus whichever primary control is actually visible: the close button
+    // is the usual anchor, and the settings chip stands in when close was
+    // turned off. Hidden elements cannot take focus.
+    const initialFocus = closeButton.hidden ? settingsButton : closeButton;
     initialFocus.focus({ preventScroll: true });
   }
 
@@ -4337,29 +4753,17 @@
       event.preventDefault();
       event.stopPropagation();
       move(-1);
+      // ArrowUp/ArrowDown keep the slide-level movement used before: the
+      // gallery-aware branches resolved to the same move() call in both
+      // cases, so the duplication is collapsed without changing behavior.
     } else if (event.key === "ArrowDown") {
       event.preventDefault();
       event.stopPropagation();
-      if (state.slides[state.index]?.galleryItem) {
-        // In a gallery: advance to the next gallery image. Gallery items are
-        // first-class slides, so the advance goes through move() — mutating
-        // only the counter used to drift the (1/7) indicator while the
-        // displayed media stayed put.
-        move(1);
-      } else {
-        // Not in a gallery: advance to next post
-        move(1);
-      }
+      move(1);
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
       event.stopPropagation();
-      if (state.slides[state.index]?.galleryItem) {
-        // In a gallery: go back one gallery image
-        move(-1);
-      } else {
-        // Not in a gallery: keep the summary screen behavior
-        move(-1);
-      }
+      move(-1);
     } else if (event.key === "PageDown") {
       event.preventDefault();
       event.stopPropagation();
@@ -4379,9 +4783,9 @@
     } else if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
-      if (state.settingsOpen) {
-        closeSettings();
-      } else if (document.fullscreenElement) {
+      // The settings-open branch above never falls through to here, so the
+      // only remaining choice is fullscreen first, then close.
+      if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
       } else {
         close();
@@ -4436,6 +4840,9 @@
     durationInput.value = String(seconds);
     updateSetting("slideDurationSeconds", seconds);
   });
+  transitionSelect.addEventListener("change", () => {
+    updateSetting("transitionAnimation", transitionSelect.value);
+  });
   Object.keys(settingCheckboxes).forEach((key) => {
     settingCheckboxes[key].addEventListener("change", () => {
       updateSetting(key, settingCheckboxes[key].checked);
@@ -4454,7 +4861,6 @@
   nextButton.addEventListener("click", () => move(1));
   autoButton.addEventListener("click", toggleAuto);
   mediaModeButton.addEventListener("click", cycleMediaMode);
-  settingsButton.addEventListener("click", openSettings);
   rotateButton.addEventListener("click", toggleRotate);
   hideButton.addEventListener("click", toggleHideInterface);
   fullscreenButton.addEventListener("click", toggleFullscreen);
@@ -4506,9 +4912,18 @@
       Math.abs(dx) > 55 &&
       Math.abs(dx) > Math.abs(dy)
     ) {
-      move(dx < 0 ? 1 : -1);
+      // Swipes are post-level, matching the right/left tap zones: a swipe
+      // left is the next post wherever the feed is (gallery included), a
+      // swipe right returns to the previous post's last eligible slide.
+      // The vertical guard (|dx| > |dy|) and the 55px threshold keep small
+      // or vertical gestures from being read as horizontal navigation.
+      if (dx < 0) skipGallery();
+      else previousPostLast();
       return;
     }
+    // Only a near-movement gesture counts as a tap: a bigger drag was
+    // handled as a swipe above, and anything else is ignored so accidental
+    // movement cannot trigger navigation.
     if (!state.settings.tapZones) return;
     if (Math.abs(dx) > 10 || Math.abs(dy) > 10) return;
     const rect = root.getBoundingClientRect();
@@ -4519,15 +4934,19 @@
       skipGallery();
     } else {
       const slide = state.slides[state.index];
-      if (slide?.galleryItem && slide.galleryItem < slide.galleryTotal) {
+      // A gallery slide advances exactly one gallery image, and at the last
+      // image moves through to the next post — move() runs the same
+      // duration policy, wrap, and pagination the loaded end-of-feed
+      // single-post page relies on.
+      if (slide?.galleryItem) {
         move(1);
-      } else if (
-        slide?.galleryItem &&
-        slide.galleryItem === slide.galleryTotal
-      ) {
-        move(1);
+      } else {
+        // An empty middle tap must never sit still on a single-image or
+        // single-video post: the middle zone is exactly the "advance one
+        // media step" zone, and only a gallery currently has one more.
+        // Everything else behaves like next-post.
+        skipGallery();
       }
-      // Single-image posts: no gallery transition.
     }
   });
 
@@ -4536,6 +4955,13 @@
     toggle() {
       if (state.open || state.opening) close();
       else open();
+    },
+    // Injectable seam for the Random transition style: a deterministic
+    // sampler can replace Math.random at runtime without any test-only
+    // branch elsewhere. Passing anything that is not a function (including
+    // null) restores the production sampler.
+    setRandomSource(random) {
+      state.randomSource = typeof random === "function" ? random : Math.random;
     },
     debug: {
       queue() {

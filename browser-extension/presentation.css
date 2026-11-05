@@ -71,7 +71,6 @@
 
 #redditp-presentation .redditp__media > * {
   display: block;
-  max-flex-shrink: 0;
   width: auto;
   max-height: 100%;
   margin: 0;
@@ -84,8 +83,6 @@
   height: 100%;
   min-width: 0;
   min-height: 0;
-  max-flex-shrink: 0;
-  width: auto;
   max-height: 100%;
   /* Portrait videos must letterbox, not spill past the stage width and get
      side-cropped on phones. */
@@ -100,8 +97,6 @@
   height: auto;
   min-width: 0;
   min-height: 0;
-  max-flex-shrink: 0;
-  width: auto;
   max-height: 100%;
   /* Non-expanded images keep their natural size but never overflow the
      stage horizontally; object-fit keeps the content ratio correct. */
@@ -141,22 +136,18 @@
 
 #redditp-presentation .redditp__details {
   position: absolute;
+  top: 0;
   left: 0;
   z-index: 4;
-  width: min(450px, calc(100vw - 48px));
-  color: #eee;
-  background: rgba(0, 0, 0, 0.72);
-  opacity: 0.9;
-  backdrop-filter: blur(3px);
-}
-
-#redditp-presentation .redditp__details {
-  top: 0;
   width: min(800px, calc(100vw - 48px));
   max-height: 45vh;
   max-height: 45dvh;
   overflow-y: auto;
   padding: 9px 28px 9px 11px;
+  color: #eee;
+  background: rgba(0, 0, 0, 0.72);
+  opacity: 0.9;
+  backdrop-filter: blur(3px);
 }
 
 #redditp-presentation .redditp__title {
@@ -196,12 +187,13 @@
   /* One bottom navigation row: the fixed count chip and the scrollable
      numbered track share a flex line. The row is a transparent pass-through
      strip (only the count and the buttons take visual weight; the strip
-     stays open to tap zones and video controls). Root safe-area padding
-     keeps the 12px offset clear of browser bottom UI. */
+     stays open to tap zones and video controls). The root's safe-area
+     padding only protects in-flow children, so the absolute row adds the
+     inset itself to stay clear of browser bottom UI. */
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   z-index: 5;
   display: flex;
   align-items: center;
@@ -289,7 +281,9 @@
 }
 
 #redditp-presentation .redditp__button:focus-visible,
-#redditp-presentation .redditp__arrow:focus-visible {
+#redditp-presentation .redditp__arrow:focus-visible,
+#redditp-presentation .redditp__number:focus-visible,
+#redditp-presentation .redditp__auto:focus-visible {
   outline: 2px solid #5ff;
   outline-offset: 2px;
 }
@@ -300,15 +294,31 @@
 
 #redditp-presentation .redditp__close {
   position: absolute;
-  top: 4px;
-  right: 5px;
+  /* Matches the top-right control row's chip band so the close button sits
+     flush with fullscreen/hide/settings/rotate instead of floating 7px above
+     its own row. */
+  top: 12px;
+  /* The desktop close joins the top-right control row after rotate, matching
+     the mobile convention where close already sits inside the row. Its old
+     top-right corner slot is reserved for the hide chip since the
+     hide/fullscreen swap, and a close there swallowed clicks meant for
+     that chip. */
+  right: 170px;
   z-index: 6;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   color: #bbb;
   background: rgba(0, 0, 0, 0.55);
   font-size: 22px;
   font-weight: 400;
+}
+/* On gallery slides the gallery chip takes the slot beside rotate, so the
+   close steps one pitch further out to keep every chip clear of the others.
+   Mobile keeps its own 48px-pitch row layout with the close inside it. */
+@media (min-width: 601px) {
+  #redditp-presentation:has(.redditp__gallery:not([hidden])) .redditp__close {
+    right: 202px;
+  }
 }
 
 #redditp-presentation .redditp__arrow {
@@ -468,6 +478,168 @@
   font: inherit;
 }
 
+/* Transition animation setting: a native select keeps keyboard, touch, and
+   screen-reader behavior for free; only the chrome is themed. */
+#redditp-presentation .redditp__setting--transition {
+  justify-content: space-between;
+  margin-bottom: 8px;
+  cursor: default;
+}
+
+#redditp-presentation .redditp__transition-control select {
+  width: 168px;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px solid #999;
+  border-radius: 7px;
+  color: #fff;
+  background: #0d0d0d;
+  font: inherit;
+}
+
+/* ---- Phase 6: slide transition animations ------------------------------
+   The viewer never adds nodes for a transition: the outgoing image moves
+   into the .redditp__ghost layer (positioned by JS with its computed
+   geometry) and the incoming element animates in place. Everything below
+   is transform/opacity, so no layout is recomputed during the swap. */
+#redditp-presentation .redditp__ghost {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#redditp-presentation .redditp__media-anim,
+#redditp-presentation .redditp__ghost > * {
+  will-change: opacity, transform;
+}
+
+#redditp-presentation .redditp__media-anim--fade {
+  animation: redditp-anim-fade-in 380ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+#redditp-presentation .redditp__media-anim--slide-right {
+  animation: redditp-anim-enter-right 420ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+#redditp-presentation .redditp__media-anim--slide-left {
+  animation: redditp-anim-enter-left 420ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+#redditp-presentation .redditp__media-anim--ken-burns {
+  /* One keyframe run doubles as the transition (opacity burst) and the
+     cinematic drift; ending back at scale(1) means removing the class at
+     the end never snaps the image. The zoom stays under 6% and the pan
+     under 2%, so portrait and landscape content keeps its framing. */
+  animation: redditp-anim-ken-burns 4800ms ease-in-out;
+}
+
+#redditp-presentation .redditp__ghost > .redditp__ghost-anim--exit-left {
+  animation: redditp-anim-exit-left 420ms cubic-bezier(0.33, 1, 0.68, 1)
+    forwards;
+}
+
+#redditp-presentation .redditp__ghost > .redditp__ghost-anim--exit-right {
+  animation: redditp-anim-exit-right 420ms cubic-bezier(0.33, 1, 0.68, 1)
+    forwards;
+}
+
+#redditp-presentation .redditp__ghost > .redditp__ghost-anim--exit-fade {
+  animation: redditp-anim-fade-out 380ms cubic-bezier(0.33, 1, 0.68, 1) forwards;
+}
+
+@keyframes redditp-anim-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes redditp-anim-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes redditp-anim-enter-right {
+  from {
+    opacity: 0.35;
+    transform: translate3d(55%, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes redditp-anim-exit-left {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(-55%, 0, 0);
+  }
+}
+
+@keyframes redditp-anim-enter-left {
+  from {
+    opacity: 0.35;
+    transform: translate3d(-55%, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes redditp-anim-exit-right {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(55%, 0, 0);
+  }
+}
+
+@keyframes redditp-anim-ken-burns {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  12% {
+    opacity: 1;
+    transform: translate3d(0.6%, 0.4%, 0) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Reduced motion: the OS asks for immediate change, so navigation gets no
+   animation regardless of the chosen setting. The JS resolver already
+   refuses to start one; this hard-disables anything that could slip
+   through (an in-flight transition when the setting flips mid-transition).
+   Reduced motion takes effect as soon as the OS preference changes, no
+   reload needed; a transition already running ends at rest. */
+@media (prefers-reduced-motion: reduce) {
+  #redditp-presentation .redditp__media-anim,
+  #redditp-presentation .redditp__ghost > * {
+    animation: none !important;
+    will-change: auto;
+  }
+}
+
 #redditp-presentation .redditp__shortcuts {
   min-width: 0;
   margin-top: 16px;
@@ -584,12 +756,10 @@
 }
 
 @media (max-width: 600px) {
+  /* The title panel's own width for this band is set by the phase-4a mobile
+     block further down (below-row layout); merge small scope tweaks here. */
   #redditp-presentation .redditp__details {
-    width: calc(100vw - 40px);
     max-width: none;
-  }
-
-  #redditp-presentation .redditp__details {
     padding-right: 10px;
   }
 
@@ -632,9 +802,10 @@
   }
 }
 
-/* On narrow screens the title panel is wide enough to run underneath the
-   top-right control stack (fullscreen/hide/settings/rotate and, on gallery
-   slides, the gallery indicator at right: 164px), hiding the first lines of
+/* In the 601-969 band the title panel keeps side clearance instead of the
+   below-row layout used on phones: the panel is wide enough there to run
+   underneath the top-right control stack (fullscreen/hide/settings/rotate
+   and, on gallery slides, the gallery indicator), hiding the first lines of
    long titles or metadata. Cap the panel short of that ~198px stack zone
    wherever it could reach it (up to ~970px viewport width). */
 @media (max-width: 969px) {
@@ -850,12 +1021,15 @@
   }
 
   /* The title panel must clear the wider control row, including the gallery
-     button that only exists on gallery slides. */
+     button that only exists on gallery slides. At a 48px chip pitch the old
+     side-clearance model squeezed long titles into a 54-130px column on
+     phones, so the panel now starts below the chips and claims the full
+     width instead. */
   #redditp-presentation .redditp__details {
-    width: min(800px, calc(100vw - 260px));
-  }
-  #redditp-presentation:has(.redditp__gallery:not([hidden])) .redditp__details {
-    width: min(800px, calc(100vw - 306px));
+    top: 58px;
+    width: min(800px, calc(100vw - 16px));
+    max-height: calc(100vh - 150px);
+    max-height: calc(100dvh - 150px);
   }
 
   /* Settings: full-height exit and a finger-sized duration input. */
@@ -865,3 +1039,7 @@
   #redditp-presentation .redditp__duration-control input {
     min-height: 44px;
   }
+  #redditp-presentation .redditp__transition-control select {
+    min-height: 44px;
+  }
+}

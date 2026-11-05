@@ -434,6 +434,10 @@ test.describe("media mode control", () => {
     await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
 
     await cycleTo(page, "videos");
+    // The re-land targets the gallery's first visible video, which is
+    // position 1 of the two videos the mode keeps.
+    await expect(page.locator(".redditp__title")).toContainText("(1/2");
+    await page.keyboard.press("ArrowRight");
     await expect(page.locator(".redditp__title")).toContainText("(2/2");
     await page.keyboard.press("ArrowLeft");
     await expect(page.locator(".redditp__title")).toContainText("(1/2");
@@ -458,21 +462,28 @@ test.describe("media mode control", () => {
     await waitSettled(page);
 
     await cycleTo(page, "videos");
-    // 60s is eligible and stays the landing slide; 75s is excluded.
+    // 60s is eligible and stays the landing slide; 75s is excluded by the
+    // duration policy, and Image 80 is excluded by the mode itself, so
+    // navigation from the last video is bounded and stays put (never hangs).
     await expect(page.locator(".redditp__title")).toHaveText("Clip 60");
     await page.keyboard.press("ArrowRight");
-    await expect(page.locator(".redditp__title")).toHaveText("Image 80");
-    await page.keyboard.press("ArrowLeft");
     await expect(page.locator(".redditp__title")).toHaveText("Clip 60");
+    await expect(page.locator(".redditp__count")).toHaveText("1 / 2");
     await expect(page.locator(".redditp__number")).toHaveCount(2);
 
     await cycleTo(page, "images");
+    // Forward-first re-landing: the next eligible image is Image 80.
     await expect(page.locator(".redditp__title")).toHaveText("Image 80");
     await expect(page.locator(".redditp__number")).toHaveCount(1);
 
     await cycleTo(page, "both");
     // Numbering keeps feed semantics: the 75s clip has its number back.
     await expect(page.locator(".redditp__number")).toHaveCount(3);
+    await page.locator(".redditp__number").nth(0).click();
+    await expect(page.locator(".redditp__title")).toHaveText("Clip 60");
+    // The 75s post is skipped as a whole in either mode.
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Image 80");
     // Whether or not the mode filter explains them, long known videos are
     // still excluded by the duration policy in every mode.
     await page.locator(".redditp__number").nth(0).click();
@@ -495,15 +506,24 @@ test.describe("media mode control", () => {
     );
     await waitSettled(page);
     await cycleTo(page, "videos");
+    // Only the unknown clip is mode-eligible here; the unknown duration
+    // remains provisionally eligible... the other two posts are images,
+    // excluded by the mode, so their count is not shown as reachable.
     await expect(page.locator(".redditp__title")).toHaveText("Unknown clip");
     await page.keyboard.press("ArrowRight");
-    await expect(page.locator(".redditp__title")).not.toHaveText(
-      "Unknown clip",
-    );
+    await expect(page.locator(".redditp__title")).toHaveText("Unknown clip");
+    await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
     await page.keyboard.press("ArrowLeft");
     // The unknown-duration clip remains provisionally eligible, so going
     // back re-enters it instead of skipping over all videos forever.
-    await expect(page.locator(".redditp__title")).toHaveText("Unknown clip");
+    await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
+    const title = page.locator(".redditp__title");
+    await expect(title).toHaveText("Unknown clip");
+    // ...and the images remain reachable as soon as the mode allows.
+    await cycleTo(page, "both");
+    await expect(title).toHaveText("Unknown clip");
+    await page.keyboard.press("ArrowRight");
+    await expect(title).toHaveText("Image 3");
   });
 
   test("slideshow advances only through slides the mode allows", async ({
@@ -517,7 +537,7 @@ test.describe("media mode control", () => {
         "Image 3",
       )}${videoPost("a4", "Clip B")}${imagePost("a5", "Image 5")}`,
       (feedPage) => installDurationOverrides(feedPage, { "/a[24]/": 30 }),
-      { slideDurationSeconds: 1 },
+      { slideDurationSeconds: 1, autoAdvance: false },
     );
     await waitSettled(page);
     await cycleTo(page, "images");
@@ -561,14 +581,17 @@ test.describe("media mode control", () => {
     await expect(page.locator(".redditp__empty h2")).toHaveText(
       "No videos match the media filter",
     );
-    await expect(page.locator(".redditp__controls")).toBeHidden();
+    // The row survives with only the mode chip: it is the way back.
+    await expect(page.locator(".redditp__controls")).toBeVisible();
+    await expect(page.locator(".redditp__count")).toBeHidden();
+    await expect(page.locator(".redditp__auto")).toBeHidden();
     await expect(page.locator(".redditp__media video")).toHaveCount(0);
     await expect(page.locator(".redditp__media img")).toHaveCount(0);
     // Navigation keys change nothing while nothing is eligible.
     await page.keyboard.press("ArrowRight");
     await expect(page.locator(".redditp__empty")).toBeVisible();
 
-    await cycleTo(page, "both");
+    await page.locator(".redditp__media-mode").click();
     await expect(page.locator(".redditp__empty")).toBeHidden();
     await expect(page.locator(".redditp__controls")).toBeVisible();
   });
@@ -584,7 +607,7 @@ test.describe("media mode control", () => {
         "Image 3",
       )}${imagePost("t4", "Image 4")}`,
       (feedPage) => installDurationOverrides(feedPage, { "/t2/": 30 }),
-      { slideDurationSeconds: 1 },
+      { slideDurationSeconds: 1, autoAdvance: false },
     );
     await waitSettled(page);
     // Slideshow starts on the first (eligible) slide, and the mode change

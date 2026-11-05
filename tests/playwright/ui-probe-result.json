@@ -1,0 +1,9874 @@
+{
+ "chrome-plain": {
+  "320x640": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 270,
+      "right": 310,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 222,
+      "right": 262,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 174,
+      "right": 214,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 126,
+      "right": 166,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 78,
+      "right": 118,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 304,
+      "top": 58,
+      "bottom": 98,
+      "width": 304,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 294,
+      "top": 67,
+      "bottom": 87,
+      "width": 283,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 580,
+      "bottom": 616,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 576,
+      "bottom": 620,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 320,
+      "top": 568,
+      "bottom": 628,
+      "width": 210,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 320,
+    "vh": 640,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 320,
+     "h": 640
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 270,
+      "right": 310,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 222,
+      "right": 262,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 174,
+      "right": 214,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 126,
+      "right": 166,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 78,
+      "right": 118,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 304,
+      "top": 58,
+      "bottom": 98,
+      "width": 304,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 294,
+      "top": 67,
+      "bottom": 87,
+      "width": 283,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 580,
+      "bottom": 616,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 576,
+      "bottom": 620,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 320,
+      "top": 568,
+      "bottom": 628,
+      "width": 210,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 320,
+    "vh": 640
+   }
+  },
+  "360x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 310,
+      "right": 350,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 262,
+      "right": 302,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 214,
+      "right": 254,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 166,
+      "right": 206,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 118,
+      "right": 158,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 344,
+      "top": 58,
+      "bottom": 98,
+      "width": 344,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 334,
+      "top": 67,
+      "bottom": 87,
+      "width": 323,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 740,
+      "bottom": 776,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 360,
+      "top": 728,
+      "bottom": 788,
+      "width": 250,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 360,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 360,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 310,
+      "right": 350,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 262,
+      "right": 302,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 214,
+      "right": 254,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 166,
+      "right": 206,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 118,
+      "right": 158,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 344,
+      "top": 58,
+      "bottom": 98,
+      "width": 344,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 334,
+      "top": 67,
+      "bottom": 87,
+      "width": 323,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 740,
+      "bottom": 776,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 360,
+      "top": 728,
+      "bottom": 788,
+      "width": 250,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 360,
+    "vh": 800
+   }
+  },
+  "375x667": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 325,
+      "right": 365,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 277,
+      "right": 317,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 229,
+      "right": 269,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 181,
+      "right": 221,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 133,
+      "right": 173,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 359,
+      "top": 58,
+      "bottom": 98,
+      "width": 359,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 349,
+      "top": 67,
+      "bottom": 87,
+      "width": 338,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 607,
+      "bottom": 643,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 603,
+      "bottom": 647,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 375,
+      "top": 595,
+      "bottom": 655,
+      "width": 265,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 375,
+    "vh": 667,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 375,
+     "h": 667
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 325,
+      "right": 365,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 277,
+      "right": 317,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 229,
+      "right": 269,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 181,
+      "right": 221,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 133,
+      "right": 173,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 359,
+      "top": 58,
+      "bottom": 98,
+      "width": 359,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 349,
+      "top": 67,
+      "bottom": 87,
+      "width": 338,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 607,
+      "bottom": 643,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 603,
+      "bottom": 647,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 375,
+      "top": 595,
+      "bottom": 655,
+      "width": 265,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 375,
+    "vh": 667
+   }
+  },
+  "390x844": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 340,
+      "right": 380,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 292,
+      "right": 332,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 244,
+      "right": 284,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 196,
+      "right": 236,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 148,
+      "right": 188,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 374,
+      "top": 58,
+      "bottom": 98,
+      "width": 374,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 364,
+      "top": 67,
+      "bottom": 87,
+      "width": 353,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 784,
+      "bottom": 820,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 780,
+      "bottom": 824,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 390,
+      "top": 772,
+      "bottom": 832,
+      "width": 280,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 390,
+    "vh": 844,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 390,
+     "h": 844
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 340,
+      "right": 380,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 292,
+      "right": 332,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 244,
+      "right": 284,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 196,
+      "right": 236,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 148,
+      "right": 188,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 374,
+      "top": 58,
+      "bottom": 98,
+      "width": 374,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 364,
+      "top": 67,
+      "bottom": 87,
+      "width": 353,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 784,
+      "bottom": 820,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 780,
+      "bottom": 824,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 390,
+      "top": 772,
+      "bottom": 832,
+      "width": 280,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 390,
+    "vh": 844
+   }
+  },
+  "393x852": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 343,
+      "right": 383,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 295,
+      "right": 335,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 247,
+      "right": 287,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 199,
+      "right": 239,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 151,
+      "right": 191,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 377,
+      "top": 58,
+      "bottom": 98,
+      "width": 377,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 367,
+      "top": 67,
+      "bottom": 87,
+      "width": 356,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 792,
+      "bottom": 828,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 788,
+      "bottom": 832,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 393,
+      "top": 780,
+      "bottom": 840,
+      "width": 283,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 393,
+    "vh": 852,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 393,
+     "h": 852
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 343,
+      "right": 383,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 295,
+      "right": 335,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 247,
+      "right": 287,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 199,
+      "right": 239,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 151,
+      "right": 191,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 377,
+      "top": 58,
+      "bottom": 98,
+      "width": 377,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 367,
+      "top": 67,
+      "bottom": 87,
+      "width": 356,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 792,
+      "bottom": 828,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 788,
+      "bottom": 832,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 393,
+      "top": 780,
+      "bottom": 840,
+      "width": 283,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 393,
+    "vh": 852
+   }
+  },
+  "412x915": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 362,
+      "right": 402,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 314,
+      "right": 354,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 266,
+      "right": 306,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 218,
+      "right": 258,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 170,
+      "right": 210,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 396,
+      "top": 58,
+      "bottom": 98,
+      "width": 396,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 386,
+      "top": 67,
+      "bottom": 87,
+      "width": 375,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 855,
+      "bottom": 891,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 851,
+      "bottom": 895,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 412,
+      "top": 843,
+      "bottom": 903,
+      "width": 302,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 412,
+    "vh": 915,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 412,
+     "h": 915
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 362,
+      "right": 402,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 314,
+      "right": 354,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 266,
+      "right": 306,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 218,
+      "right": 258,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 170,
+      "right": 210,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 396,
+      "top": 58,
+      "bottom": 98,
+      "width": 396,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 386,
+      "top": 67,
+      "bottom": 87,
+      "width": 375,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 855,
+      "bottom": 891,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 851,
+      "bottom": 895,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 412,
+      "top": 843,
+      "bottom": 903,
+      "width": 302,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 412,
+    "vh": 915
+   }
+  },
+  "700x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 496,
+      "right": 530,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 654,
+      "right": 688,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 614,
+      "right": 648,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 576,
+      "right": 610,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 538,
+      "right": 572,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 490,
+      "top": 0,
+      "bottom": 40,
+      "width": 490,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 462,
+      "top": 9,
+      "bottom": 29,
+      "width": 451,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 700,
+      "top": 728,
+      "bottom": 788,
+      "width": 583,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 700,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 700,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 496,
+      "right": 530,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 654,
+      "right": 688,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 614,
+      "right": 648,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 576,
+      "right": 610,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 538,
+      "right": 572,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 490,
+      "top": 0,
+      "bottom": 40,
+      "width": 490,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 462,
+      "top": 9,
+      "bottom": 29,
+      "width": 451,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 700,
+      "top": 728,
+      "bottom": 788,
+      "width": 583,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 700,
+    "vh": 800
+   }
+  },
+  "1280x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 1076,
+      "right": 1110,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1234,
+      "right": 1268,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1194,
+      "right": 1228,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1156,
+      "right": 1190,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1118,
+      "right": 1152,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1280,
+      "top": 728,
+      "bottom": 788,
+      "width": 1163,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1280,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 1280,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 1076,
+      "right": 1110,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1234,
+      "right": 1268,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1194,
+      "right": 1228,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1156,
+      "right": 1190,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1118,
+      "right": 1152,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1280,
+      "top": 728,
+      "bottom": 788,
+      "width": 1163,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1280,
+    "vh": 800
+   }
+  },
+  "1920x1080": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 1716,
+      "right": 1750,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1874,
+      "right": 1908,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1834,
+      "right": 1868,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1796,
+      "right": 1830,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1758,
+      "right": 1792,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1920,
+      "top": 1008,
+      "bottom": 1068,
+      "width": 1803,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1920,
+    "vh": 1080,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 1920,
+     "h": 1080
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 1716,
+      "right": 1750,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1874,
+      "right": 1908,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1834,
+      "right": 1868,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1796,
+      "right": 1830,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1758,
+      "right": 1792,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1920,
+      "top": 1008,
+      "bottom": 1068,
+      "width": 1803,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1920,
+    "vh": 1080
+   }
+  }
+ },
+ "chrome-gallery": {
+  "320x640": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 270,
+      "right": 310,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 222,
+      "right": 262,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 174,
+      "right": 214,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 126,
+      "right": 166,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 78,
+      "right": 118,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 304,
+      "top": 58,
+      "bottom": 98,
+      "width": 304,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 294,
+      "top": 67,
+      "bottom": 87,
+      "width": 283,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 580,
+      "bottom": 616,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 576,
+      "bottom": 620,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 320,
+      "top": 568,
+      "bottom": 628,
+      "width": 210,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 320,
+    "vh": 640,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 320,
+     "h": 640
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 270,
+      "right": 310,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 222,
+      "right": 262,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 174,
+      "right": 214,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 126,
+      "right": 166,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 78,
+      "right": 118,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 304,
+      "top": 58,
+      "bottom": 98,
+      "width": 304,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 294,
+      "top": 67,
+      "bottom": 87,
+      "width": 283,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 580,
+      "bottom": 616,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 576,
+      "bottom": 620,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 320,
+      "top": 568,
+      "bottom": 628,
+      "width": 210,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 320,
+    "vh": 640
+   }
+  },
+  "360x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 310,
+      "right": 350,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 262,
+      "right": 302,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 214,
+      "right": 254,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 166,
+      "right": 206,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 118,
+      "right": 158,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 344,
+      "top": 58,
+      "bottom": 98,
+      "width": 344,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 334,
+      "top": 67,
+      "bottom": 87,
+      "width": 323,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 740,
+      "bottom": 776,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 360,
+      "top": 728,
+      "bottom": 788,
+      "width": 250,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 360,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 360,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 310,
+      "right": 350,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 262,
+      "right": 302,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 214,
+      "right": 254,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 166,
+      "right": 206,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 118,
+      "right": 158,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 344,
+      "top": 58,
+      "bottom": 98,
+      "width": 344,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 334,
+      "top": 67,
+      "bottom": 87,
+      "width": 323,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 740,
+      "bottom": 776,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 360,
+      "top": 728,
+      "bottom": 788,
+      "width": 250,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 360,
+    "vh": 800
+   }
+  },
+  "375x667": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 325,
+      "right": 365,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 277,
+      "right": 317,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 229,
+      "right": 269,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 181,
+      "right": 221,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 133,
+      "right": 173,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 359,
+      "top": 58,
+      "bottom": 98,
+      "width": 359,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 349,
+      "top": 67,
+      "bottom": 87,
+      "width": 338,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 607,
+      "bottom": 643,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 603,
+      "bottom": 647,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 375,
+      "top": 595,
+      "bottom": 655,
+      "width": 265,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 375,
+    "vh": 667,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 375,
+     "h": 667
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 325,
+      "right": 365,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 277,
+      "right": 317,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 229,
+      "right": 269,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 181,
+      "right": 221,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 133,
+      "right": 173,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 359,
+      "top": 58,
+      "bottom": 98,
+      "width": 359,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 349,
+      "top": 67,
+      "bottom": 87,
+      "width": 338,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 607,
+      "bottom": 643,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 603,
+      "bottom": 647,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 375,
+      "top": 595,
+      "bottom": 655,
+      "width": 265,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 375,
+    "vh": 667
+   }
+  },
+  "390x844": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 340,
+      "right": 380,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 292,
+      "right": 332,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 244,
+      "right": 284,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 196,
+      "right": 236,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 148,
+      "right": 188,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 374,
+      "top": 58,
+      "bottom": 98,
+      "width": 374,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 364,
+      "top": 67,
+      "bottom": 87,
+      "width": 353,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 784,
+      "bottom": 820,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 780,
+      "bottom": 824,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 390,
+      "top": 772,
+      "bottom": 832,
+      "width": 280,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 390,
+    "vh": 844,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 390,
+     "h": 844
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 340,
+      "right": 380,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 292,
+      "right": 332,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 244,
+      "right": 284,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 196,
+      "right": 236,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 148,
+      "right": 188,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 374,
+      "top": 58,
+      "bottom": 98,
+      "width": 374,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 364,
+      "top": 67,
+      "bottom": 87,
+      "width": 353,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 784,
+      "bottom": 820,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 780,
+      "bottom": 824,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 390,
+      "top": 772,
+      "bottom": 832,
+      "width": 280,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 390,
+    "vh": 844
+   }
+  },
+  "393x852": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 343,
+      "right": 383,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 295,
+      "right": 335,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 247,
+      "right": 287,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 199,
+      "right": 239,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 151,
+      "right": 191,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 377,
+      "top": 58,
+      "bottom": 98,
+      "width": 377,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 367,
+      "top": 67,
+      "bottom": 87,
+      "width": 356,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 792,
+      "bottom": 828,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 788,
+      "bottom": 832,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 393,
+      "top": 780,
+      "bottom": 840,
+      "width": 283,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 393,
+    "vh": 852,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 393,
+     "h": 852
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 343,
+      "right": 383,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 295,
+      "right": 335,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 247,
+      "right": 287,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 199,
+      "right": 239,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 151,
+      "right": 191,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 377,
+      "top": 58,
+      "bottom": 98,
+      "width": 377,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 367,
+      "top": 67,
+      "bottom": 87,
+      "width": 356,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 792,
+      "bottom": 828,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 788,
+      "bottom": 832,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 393,
+      "top": 780,
+      "bottom": 840,
+      "width": 283,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 393,
+    "vh": 852
+   }
+  },
+  "412x915": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 362,
+      "right": 402,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 314,
+      "right": 354,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 266,
+      "right": 306,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 218,
+      "right": 258,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 170,
+      "right": 210,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 396,
+      "top": 58,
+      "bottom": 98,
+      "width": 396,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 386,
+      "top": 67,
+      "bottom": 87,
+      "width": 375,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 855,
+      "bottom": 891,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 851,
+      "bottom": 895,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 412,
+      "top": 843,
+      "bottom": 903,
+      "width": 302,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 412,
+    "vh": 915,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 412,
+     "h": 915
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 362,
+      "right": 402,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 314,
+      "right": 354,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 266,
+      "right": 306,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 218,
+      "right": 258,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 170,
+      "right": 210,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 396,
+      "top": 58,
+      "bottom": 98,
+      "width": 396,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 386,
+      "top": 67,
+      "bottom": 87,
+      "width": 375,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 855,
+      "bottom": 891,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 851,
+      "bottom": 895,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 412,
+      "top": 843,
+      "bottom": 903,
+      "width": 302,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 412,
+    "vh": 915
+   }
+  },
+  "700x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 496,
+      "right": 530,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 654,
+      "right": 688,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 614,
+      "right": 648,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 576,
+      "right": 610,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 538,
+      "right": 572,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 490,
+      "top": 0,
+      "bottom": 40,
+      "width": 490,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 462,
+      "top": 9,
+      "bottom": 29,
+      "width": 451,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 700,
+      "top": 728,
+      "bottom": 788,
+      "width": 583,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 700,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 700,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 496,
+      "right": 530,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 654,
+      "right": 688,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 614,
+      "right": 648,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 576,
+      "right": 610,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 538,
+      "right": 572,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 490,
+      "top": 0,
+      "bottom": 40,
+      "width": 490,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 462,
+      "top": 9,
+      "bottom": 29,
+      "width": 451,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 700,
+      "top": 728,
+      "bottom": 788,
+      "width": 583,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 700,
+    "vh": 800
+   }
+  },
+  "1280x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 1076,
+      "right": 1110,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1234,
+      "right": 1268,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1194,
+      "right": 1228,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1156,
+      "right": 1190,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1118,
+      "right": 1152,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1280,
+      "top": 728,
+      "bottom": 788,
+      "width": 1163,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1280,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 1280,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 1076,
+      "right": 1110,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1234,
+      "right": 1268,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1194,
+      "right": 1228,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1156,
+      "right": 1190,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1118,
+      "right": 1152,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1280,
+      "top": 728,
+      "bottom": 788,
+      "width": 1163,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1280,
+    "vh": 800
+   }
+  },
+  "1920x1080": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 1716,
+      "right": 1750,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1874,
+      "right": 1908,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1834,
+      "right": 1868,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1796,
+      "right": 1830,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1758,
+      "right": 1792,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1920,
+      "top": 1008,
+      "bottom": 1068,
+      "width": 1803,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1920,
+    "vh": 1080,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 1920,
+     "h": 1080
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 1716,
+      "right": 1750,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1874,
+      "right": 1908,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1834,
+      "right": 1868,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1796,
+      "right": 1830,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1758,
+      "right": 1792,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1920,
+      "top": 1008,
+      "bottom": 1068,
+      "width": 1803,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1920,
+    "vh": 1080
+   }
+  }
+ },
+ "firefox-plain": {
+  "320x640": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 270,
+      "right": 310,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 222,
+      "right": 262,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 174,
+      "right": 214,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 126,
+      "right": 166,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 78,
+      "right": 118,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 304,
+      "top": 58,
+      "bottom": 98,
+      "width": 304,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 294,
+      "top": 67,
+      "bottom": 87,
+      "width": 283,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 580,
+      "bottom": 616,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 576,
+      "bottom": 620,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 320,
+      "top": 568,
+      "bottom": 628,
+      "width": 210,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 320,
+    "vh": 640,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 320,
+     "h": 640
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 270,
+      "right": 310,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 222,
+      "right": 262,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 174,
+      "right": 214,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 126,
+      "right": 166,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 78,
+      "right": 118,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 304,
+      "top": 58,
+      "bottom": 98,
+      "width": 304,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 294,
+      "top": 67,
+      "bottom": 87,
+      "width": 283,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 580,
+      "bottom": 616,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 576,
+      "bottom": 620,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 320,
+      "top": 568,
+      "bottom": 628,
+      "width": 210,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 320,
+    "vh": 640
+   }
+  },
+  "360x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 310,
+      "right": 350,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 262,
+      "right": 302,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 214,
+      "right": 254,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 166,
+      "right": 206,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 118,
+      "right": 158,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 344,
+      "top": 58,
+      "bottom": 98,
+      "width": 344,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 334,
+      "top": 67,
+      "bottom": 87,
+      "width": 323,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 740,
+      "bottom": 776,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 360,
+      "top": 728,
+      "bottom": 788,
+      "width": 250,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 360,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 360,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 310,
+      "right": 350,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 262,
+      "right": 302,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 214,
+      "right": 254,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 166,
+      "right": 206,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 118,
+      "right": 158,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 344,
+      "top": 58,
+      "bottom": 98,
+      "width": 344,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 334,
+      "top": 67,
+      "bottom": 87,
+      "width": 323,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 740,
+      "bottom": 776,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 360,
+      "top": 728,
+      "bottom": 788,
+      "width": 250,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 360,
+    "vh": 800
+   }
+  },
+  "375x667": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 325,
+      "right": 365,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 277,
+      "right": 317,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 229,
+      "right": 269,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 181,
+      "right": 221,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 133,
+      "right": 173,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 359,
+      "top": 58,
+      "bottom": 98,
+      "width": 359,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 349,
+      "top": 67,
+      "bottom": 87,
+      "width": 338,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 607,
+      "bottom": 643,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 603,
+      "bottom": 647,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 375,
+      "top": 595,
+      "bottom": 655,
+      "width": 265,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 375,
+    "vh": 667,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 375,
+     "h": 667
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 325,
+      "right": 365,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 277,
+      "right": 317,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 229,
+      "right": 269,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 181,
+      "right": 221,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 133,
+      "right": 173,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 359,
+      "top": 58,
+      "bottom": 98,
+      "width": 359,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 349,
+      "top": 67,
+      "bottom": 87,
+      "width": 338,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 607,
+      "bottom": 643,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 603,
+      "bottom": 647,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 375,
+      "top": 595,
+      "bottom": 655,
+      "width": 265,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 375,
+    "vh": 667
+   }
+  },
+  "390x844": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 340,
+      "right": 380,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 292,
+      "right": 332,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 244,
+      "right": 284,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 196,
+      "right": 236,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 148,
+      "right": 188,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 374,
+      "top": 58,
+      "bottom": 98,
+      "width": 374,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 364,
+      "top": 67,
+      "bottom": 87,
+      "width": 353,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 784,
+      "bottom": 820,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 780,
+      "bottom": 824,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 390,
+      "top": 772,
+      "bottom": 832,
+      "width": 280,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 390,
+    "vh": 844,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 390,
+     "h": 844
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 340,
+      "right": 380,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 292,
+      "right": 332,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 244,
+      "right": 284,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 196,
+      "right": 236,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 148,
+      "right": 188,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 374,
+      "top": 58,
+      "bottom": 98,
+      "width": 374,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 364,
+      "top": 67,
+      "bottom": 87,
+      "width": 353,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 784,
+      "bottom": 820,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 780,
+      "bottom": 824,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 390,
+      "top": 772,
+      "bottom": 832,
+      "width": 280,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 390,
+    "vh": 844
+   }
+  },
+  "393x852": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 343,
+      "right": 383,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 295,
+      "right": 335,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 247,
+      "right": 287,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 199,
+      "right": 239,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 151,
+      "right": 191,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 377,
+      "top": 58,
+      "bottom": 98,
+      "width": 377,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 367,
+      "top": 67,
+      "bottom": 87,
+      "width": 356,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 792,
+      "bottom": 828,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 788,
+      "bottom": 832,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 393,
+      "top": 780,
+      "bottom": 840,
+      "width": 283,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 393,
+    "vh": 852,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 393,
+     "h": 852
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 343,
+      "right": 383,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 295,
+      "right": 335,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 247,
+      "right": 287,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 199,
+      "right": 239,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 151,
+      "right": 191,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 377,
+      "top": 58,
+      "bottom": 98,
+      "width": 377,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 367,
+      "top": 67,
+      "bottom": 87,
+      "width": 356,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 792,
+      "bottom": 828,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 788,
+      "bottom": 832,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 393,
+      "top": 780,
+      "bottom": 840,
+      "width": 283,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 393,
+    "vh": 852
+   }
+  },
+  "412x915": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 362,
+      "right": 402,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 314,
+      "right": 354,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 266,
+      "right": 306,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 218,
+      "right": 258,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 170,
+      "right": 210,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 396,
+      "top": 58,
+      "bottom": 98,
+      "width": 396,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 386,
+      "top": 67,
+      "bottom": 87,
+      "width": 375,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 855,
+      "bottom": 891,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 851,
+      "bottom": 895,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 412,
+      "top": 843,
+      "bottom": 903,
+      "width": 302,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 412,
+    "vh": 915,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 412,
+     "h": 915
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 362,
+      "right": 402,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 314,
+      "right": 354,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 266,
+      "right": 306,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 218,
+      "right": 258,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 170,
+      "right": 210,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 396,
+      "top": 58,
+      "bottom": 98,
+      "width": 396,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 386,
+      "top": 67,
+      "bottom": 87,
+      "width": 375,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 855,
+      "bottom": 891,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 851,
+      "bottom": 895,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 412,
+      "top": 843,
+      "bottom": 903,
+      "width": 302,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 412,
+    "vh": 915
+   }
+  },
+  "700x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 496,
+      "right": 530,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 654,
+      "right": 688,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 614,
+      "right": 648,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 576,
+      "right": 610,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 538,
+      "right": 572,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 490,
+      "top": 0,
+      "bottom": 40,
+      "width": 490,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 462,
+      "top": 9,
+      "bottom": 29,
+      "width": 451,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 700,
+      "top": 728,
+      "bottom": 788,
+      "width": 583,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 700,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 700,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 496,
+      "right": 530,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 654,
+      "right": 688,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 614,
+      "right": 648,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 576,
+      "right": 610,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 538,
+      "right": 572,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 490,
+      "top": 0,
+      "bottom": 40,
+      "width": 490,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 462,
+      "top": 9,
+      "bottom": 29,
+      "width": 451,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 700,
+      "top": 728,
+      "bottom": 788,
+      "width": 583,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 700,
+    "vh": 800
+   }
+  },
+  "1280x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 1076,
+      "right": 1110,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1234,
+      "right": 1268,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1194,
+      "right": 1228,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1156,
+      "right": 1190,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1118,
+      "right": 1152,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1280,
+      "top": 728,
+      "bottom": 788,
+      "width": 1163,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1280,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 1280,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 1076,
+      "right": 1110,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1234,
+      "right": 1268,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1194,
+      "right": 1228,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1156,
+      "right": 1190,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1118,
+      "right": 1152,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1280,
+      "top": 728,
+      "bottom": 788,
+      "width": 1163,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1280,
+    "vh": 800
+   }
+  },
+  "1920x1080": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 1716,
+      "right": 1750,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1874,
+      "right": 1908,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1834,
+      "right": 1868,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1796,
+      "right": 1830,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1758,
+      "right": 1792,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1920,
+      "top": 1008,
+      "bottom": 1068,
+      "width": 1803,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1920,
+    "vh": 1080,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 1920,
+     "h": 1080
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 1716,
+      "right": 1750,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1874,
+      "right": 1908,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1834,
+      "right": 1868,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1796,
+      "right": 1830,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1758,
+      "right": 1792,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1920,
+      "top": 1008,
+      "bottom": 1068,
+      "width": 1803,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1920,
+    "vh": 1080
+   }
+  }
+ },
+ "firefox-gallery": {
+  "320x640": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 270,
+      "right": 310,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 222,
+      "right": 262,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 174,
+      "right": 214,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 126,
+      "right": 166,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 78,
+      "right": 118,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 304,
+      "top": 58,
+      "bottom": 98,
+      "width": 304,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 294,
+      "top": 67,
+      "bottom": 87,
+      "width": 283,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 580,
+      "bottom": 616,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 576,
+      "bottom": 620,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 320,
+      "top": 568,
+      "bottom": 628,
+      "width": 210,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 320,
+    "vh": 640,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 320,
+     "h": 640
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 270,
+      "right": 310,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 222,
+      "right": 262,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 174,
+      "right": 214,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 126,
+      "right": 166,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 78,
+      "right": 118,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 304,
+      "top": 58,
+      "bottom": 98,
+      "width": 304,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 294,
+      "top": 67,
+      "bottom": 87,
+      "width": 283,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 580,
+      "bottom": 616,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 576,
+      "bottom": 620,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 320,
+      "top": 568,
+      "bottom": 628,
+      "width": 210,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 320,
+      "top": 0,
+      "bottom": 640,
+      "width": 320,
+      "height": 640,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 320,
+    "vh": 640
+   }
+  },
+  "360x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 310,
+      "right": 350,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 262,
+      "right": 302,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 214,
+      "right": 254,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 166,
+      "right": 206,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 118,
+      "right": 158,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 344,
+      "top": 58,
+      "bottom": 98,
+      "width": 344,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 334,
+      "top": 67,
+      "bottom": 87,
+      "width": 323,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 740,
+      "bottom": 776,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 360,
+      "top": 728,
+      "bottom": 788,
+      "width": 250,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 360,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 360,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 310,
+      "right": 350,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 262,
+      "right": 302,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 214,
+      "right": 254,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 166,
+      "right": 206,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 118,
+      "right": 158,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 344,
+      "top": 58,
+      "bottom": 98,
+      "width": 344,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 334,
+      "top": 67,
+      "bottom": 87,
+      "width": 323,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 740,
+      "bottom": 776,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 360,
+      "top": 728,
+      "bottom": 788,
+      "width": 250,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 360,
+      "top": 0,
+      "bottom": 800,
+      "width": 360,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 360,
+    "vh": 800
+   }
+  },
+  "375x667": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 325,
+      "right": 365,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 277,
+      "right": 317,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 229,
+      "right": 269,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 181,
+      "right": 221,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 133,
+      "right": 173,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 359,
+      "top": 58,
+      "bottom": 98,
+      "width": 359,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 349,
+      "top": 67,
+      "bottom": 87,
+      "width": 338,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 607,
+      "bottom": 643,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 603,
+      "bottom": 647,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 375,
+      "top": 595,
+      "bottom": 655,
+      "width": 265,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 375,
+    "vh": 667,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 375,
+     "h": 667
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 325,
+      "right": 365,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 277,
+      "right": 317,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 229,
+      "right": 269,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 181,
+      "right": 221,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 133,
+      "right": 173,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 359,
+      "top": 58,
+      "bottom": 98,
+      "width": 359,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 349,
+      "top": 67,
+      "bottom": 87,
+      "width": 338,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 607,
+      "bottom": 643,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 603,
+      "bottom": 647,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 375,
+      "top": 595,
+      "bottom": 655,
+      "width": 265,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 375,
+      "top": 0,
+      "bottom": 667,
+      "width": 375,
+      "height": 667,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 375,
+    "vh": 667
+   }
+  },
+  "390x844": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 340,
+      "right": 380,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 292,
+      "right": 332,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 244,
+      "right": 284,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 196,
+      "right": 236,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 148,
+      "right": 188,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 374,
+      "top": 58,
+      "bottom": 98,
+      "width": 374,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 364,
+      "top": 67,
+      "bottom": 87,
+      "width": 353,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 784,
+      "bottom": 820,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 780,
+      "bottom": 824,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 390,
+      "top": 772,
+      "bottom": 832,
+      "width": 280,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 390,
+    "vh": 844,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 390,
+     "h": 844
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 340,
+      "right": 380,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 292,
+      "right": 332,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 244,
+      "right": 284,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 196,
+      "right": 236,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 148,
+      "right": 188,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 374,
+      "top": 58,
+      "bottom": 98,
+      "width": 374,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 364,
+      "top": 67,
+      "bottom": 87,
+      "width": 353,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 784,
+      "bottom": 820,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 780,
+      "bottom": 824,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 390,
+      "top": 772,
+      "bottom": 832,
+      "width": 280,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 390,
+      "top": 0,
+      "bottom": 844,
+      "width": 390,
+      "height": 844,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 390,
+    "vh": 844
+   }
+  },
+  "393x852": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 343,
+      "right": 383,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 295,
+      "right": 335,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 247,
+      "right": 287,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 199,
+      "right": 239,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 151,
+      "right": 191,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 377,
+      "top": 58,
+      "bottom": 98,
+      "width": 377,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 367,
+      "top": 67,
+      "bottom": 87,
+      "width": 356,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 792,
+      "bottom": 828,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 788,
+      "bottom": 832,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 393,
+      "top": 780,
+      "bottom": 840,
+      "width": 283,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 393,
+    "vh": 852,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 393,
+     "h": 852
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 343,
+      "right": 383,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 295,
+      "right": 335,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 247,
+      "right": 287,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 199,
+      "right": 239,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 151,
+      "right": 191,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 377,
+      "top": 58,
+      "bottom": 98,
+      "width": 377,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 367,
+      "top": 67,
+      "bottom": 87,
+      "width": 356,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 792,
+      "bottom": 828,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 788,
+      "bottom": 832,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 393,
+      "top": 780,
+      "bottom": 840,
+      "width": 283,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 393,
+      "top": 0,
+      "bottom": 852,
+      "width": 393,
+      "height": 852,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 393,
+    "vh": 852
+   }
+  },
+  "412x915": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 362,
+      "right": 402,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 314,
+      "right": 354,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 266,
+      "right": 306,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 218,
+      "right": 258,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 170,
+      "right": 210,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 396,
+      "top": 58,
+      "bottom": 98,
+      "width": 396,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 386,
+      "top": 67,
+      "bottom": 87,
+      "width": 375,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 855,
+      "bottom": 891,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 851,
+      "bottom": 895,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 412,
+      "top": 843,
+      "bottom": 903,
+      "width": 302,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 412,
+    "vh": 915,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 412,
+     "h": 915
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 362,
+      "right": 402,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "hide": {
+      "left": 314,
+      "right": 354,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 266,
+      "right": 306,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "settings": {
+      "left": 218,
+      "right": 258,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 170,
+      "right": 210,
+      "top": 10,
+      "bottom": 50,
+      "width": 40,
+      "height": 40,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 396,
+      "top": 58,
+      "bottom": 98,
+      "width": 396,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 386,
+      "top": 67,
+      "bottom": 87,
+      "width": 375,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 104,
+      "top": 855,
+      "bottom": 891,
+      "width": 42,
+      "height": 36,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 851,
+      "bottom": 895,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 110,
+      "right": 412,
+      "top": 843,
+      "bottom": 903,
+      "width": 302,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 412,
+      "top": 0,
+      "bottom": 915,
+      "width": 412,
+      "height": 915,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 412,
+    "vh": 915
+   }
+  },
+  "700x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 496,
+      "right": 530,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 654,
+      "right": 688,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 614,
+      "right": 648,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 576,
+      "right": 610,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 538,
+      "right": 572,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 490,
+      "top": 0,
+      "bottom": 40,
+      "width": 490,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 462,
+      "top": 9,
+      "bottom": 29,
+      "width": 451,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 700,
+      "top": 728,
+      "bottom": 788,
+      "width": 583,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 700,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 700,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 496,
+      "right": 530,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 654,
+      "right": 688,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 614,
+      "right": 648,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 576,
+      "right": 610,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 538,
+      "right": 572,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 490,
+      "top": 0,
+      "bottom": 40,
+      "width": 490,
+      "height": 40,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 462,
+      "top": 9,
+      "bottom": 29,
+      "width": 451,
+      "height": 20,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 700,
+      "top": 728,
+      "bottom": 788,
+      "width": 583,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 700,
+      "top": 0,
+      "bottom": 800,
+      "width": 700,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 700,
+    "vh": 800
+   }
+  },
+  "1280x800": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 1076,
+      "right": 1110,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1234,
+      "right": 1268,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1194,
+      "right": 1228,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1156,
+      "right": 1190,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1118,
+      "right": 1152,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1280,
+      "top": 728,
+      "bottom": 788,
+      "width": 1163,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1280,
+    "vh": 800,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 1280,
+     "h": 800
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 1076,
+      "right": 1110,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1234,
+      "right": 1268,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1194,
+      "right": 1228,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1156,
+      "right": 1190,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1118,
+      "right": 1152,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 736,
+      "bottom": 780,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 736,
+      "bottom": 780,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1280,
+      "top": 728,
+      "bottom": 788,
+      "width": 1163,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1280,
+      "top": 0,
+      "bottom": 800,
+      "width": 1280,
+      "height": 800,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1280,
+    "vh": 800
+   }
+  },
+  "1920x1080": {
+   "plain": {
+    "items": {
+     "close": {
+      "left": 1716,
+      "right": 1750,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1874,
+      "right": 1908,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1834,
+      "right": 1868,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1796,
+      "right": 1830,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1758,
+      "right": 1792,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1920,
+      "top": 1008,
+      "bottom": 1068,
+      "width": 1803,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1920,
+    "vh": 1080,
+    "imageFit": {
+     "fitsX": true,
+     "fitsY": true,
+     "w": 1920,
+     "h": 1080
+    }
+   },
+   "skipGallery": {
+    "items": {
+     "close": {
+      "left": 1716,
+      "right": 1750,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "hide": {
+      "left": 1874,
+      "right": 1908,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "fullscreen": {
+      "left": 1834,
+      "right": 1868,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "settings": {
+      "left": 1796,
+      "right": 1830,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "rotate": {
+      "left": 1758,
+      "right": 1792,
+      "top": 12,
+      "bottom": 46,
+      "width": 34,
+      "height": 34,
+      "hidden": false
+     },
+     "gallery": {
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "bottom": 0,
+      "width": 0,
+      "height": 0,
+      "hidden": true
+     },
+     "details": {
+      "left": 0,
+      "right": 800,
+      "top": 0,
+      "bottom": 45,
+      "width": 800,
+      "height": 45,
+      "hidden": false
+     },
+     "title": {
+      "left": 11,
+      "right": 772,
+      "top": 9,
+      "bottom": 34,
+      "width": 761,
+      "height": 25,
+      "hidden": false
+     },
+     "count": {
+      "left": 62,
+      "right": 111,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 49,
+      "height": 44,
+      "hidden": false
+     },
+     "mode": {
+      "left": 12,
+      "right": 56,
+      "top": 1016,
+      "bottom": 1060,
+      "width": 44,
+      "height": 44,
+      "hidden": false
+     },
+     "numbers": {
+      "left": 117,
+      "right": 1920,
+      "top": 1008,
+      "bottom": 1068,
+      "width": 1803,
+      "height": 60,
+      "hidden": false
+     },
+     "media": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "image": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     },
+     "root": {
+      "left": 0,
+      "right": 1920,
+      "top": 0,
+      "bottom": 1080,
+      "width": 1920,
+      "height": 1080,
+      "hidden": false
+     }
+    },
+    "overlaps": [],
+    "vw": 1920,
+    "vh": 1080
+   }
+  }
+ }
+}

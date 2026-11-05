@@ -5699,16 +5699,22 @@ test.describe("phase 4a mobile touch targets", () => {
         ).toBe(true);
       }
 
-      // The title panel stays clear of every hit zone, not just of the
-      // visible chips.
-      const stackLeft = Math.min(
-        ...layout.items.map((item) => item.effective.left),
-      );
+      // The title panel must not intersect any hit zone. On phones the panel
+      // sits below the control row (the old side-clearance model starved long
+      // titles into a 54-130px column), so the guard is a true rectangle
+      // overlap check instead of a right-edge clearance.
       expect(layout.detailsVisible, `${width}: title panel shown`).toBe(true);
+      const titleOverlaps = layout.items.filter(
+        (item) =>
+          item.effective.left < layout.detailsRect.right &&
+          item.effective.right > layout.detailsRect.left &&
+          item.effective.top < layout.detailsRect.bottom &&
+          item.effective.bottom > layout.detailsRect.top,
+      );
       expect(
-        layout.detailsRect.right,
+        titleOverlaps.map((item) => item.name),
         `${width}: title panel clear of hit zones`,
-      ).toBeLessThanOrEqual(stackLeft + 0.5);
+      ).toEqual([]);
 
       // Numbered navigation stays finger-sized and fully on screen.
       expect(layout.numbers.length, `${width}: numbers + auto`).toBe(5);
@@ -5762,7 +5768,8 @@ test.describe("phase 4a mobile touch targets", () => {
     await page.getByRole("button", { name: "Post 3" }).click();
     await expect(page.locator(".redditp__title")).toHaveText("Image two");
 
-    // Without the gallery open the title panel gets the wider cap.
+    // Below the control row the title panel claims the full phone width
+    // (the side-clearance cap no longer applies in the below-row layout).
     await expect
       .poll(async () =>
         page.evaluate(
@@ -5771,7 +5778,7 @@ test.describe("phase 4a mobile touch targets", () => {
               .width,
         ),
       )
-      .toBe("130px");
+      .toBe("374px");
 
     // Hide/show still works, and the interface can come back without touch
     // on the hidden control itself.
@@ -5833,17 +5840,13 @@ test.describe("phase 4a mobile touch targets", () => {
         layout.docScroll.clientWidth + 1,
       );
       for (const item of layout.items) {
-        // No hit-zone pseudo on desktop: the strip keeps its 34px chips and
-        // the 36px close button.
+        // No hit-zone pseudo on desktop: the strip keeps all chips at 34px,
+        // including the close button that joined the row.
         expect(item.expandable, `${item.name} has no hit-zone pseudo`).toBe(
           false,
         );
-        const expected = item.name === "close" ? 36 : 34;
-        expect(item.box.width, `${item.name} width`).toBeCloseTo(expected, 1);
-        expect(item.box.height, `${item.name} height`).toBeCloseTo(
-          expected,
-          1,
-        );
+        expect(item.box.width, `${item.name} width`).toBeCloseTo(34, 1);
+        expect(item.box.height, `${item.name} height`).toBeCloseTo(34, 1);
       }
       // Arrows keep the desktop 50x64 size and navigation still works
       // (the keyboard lands on the second gallery image).
@@ -6174,7 +6177,129 @@ test.describe("phase 4b bottom bar polish", () => {
       Math.abs(revive.count.centerY - revive.auto.centerY),
     ).toBeLessThanOrEqual(2);
   });
+
+  test("hide and fullscreen keep order and actions after the position swap", async ({
+    page,
+  }) => {
+    const topRow = () =>
+      page.evaluate(() => {
+        const grab = (className) => {
+          const box = document.querySelector(className).getBoundingClientRect();
+          return { left: +box.left.toFixed(1), right: +box.right.toFixed(1) };
+        };
+        return {
+          rotate: grab(".redditp__rotate"),
+          settings: grab(".redditp__settings-button"),
+          fullscreen: grab(".redditp__fullscreen"),
+          hide: grab(".redditp__hide"),
+          width: window.innerWidth,
+          fullscreenPressed: document
+            .querySelector(".redditp__fullscreen")
+            .getAttribute("aria-pressed"),
+        };
+      });
+
+    // Desktop: Hide occupies the far-right corner, Fullscreen sits in the
+    // slot Hide used to have, and Settings/Rotate are untouched.
+    await openSimple(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    let row = await topRow();
+    expect(row.hide.right, "desktop: hide hugs the right edge").toBeCloseTo(
+      row.width - 12,
+      0,
+    );
+    expect(
+      row.hide.left,
+      "desktop: hide is right of fullscreen",
+    ).toBeGreaterThan(row.fullscreen.left);
+    expect(
+      row.fullscreen.left,
+      "desktop: fullscreen is right of settings",
+    ).toBeGreaterThan(row.settings.left);
+    expect(
+      row.settings.left,
+      "desktop: settings is right of rotate",
+    ).toBeGreaterThan(row.rotate.left);
+    // Visual left→right order: rotate, settings, fullscreen, hide.
+    expect(row.hide.left).toBeGreaterThan(row.fullscreen.right);
+    expect(row.fullscreen.left).toBeGreaterThan(row.settings.right);
+    expect(row.settings.left).toBeGreaterThan(row.rotate.right);
+
+    // Both relocated buttons still do their own job on desktop.
+    await page.locator(".redditp__fullscreen").click();
+    await expect(page.locator(".redditp__fullscreen")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await page.locator(".redditp__hide").click();
+    await expect(page.locator("#redditp-presentation")).toHaveClass(
+      /redditp__interface-hidden/,
+    );
+    // The hide button itself stays reachable to un-hide the interface.
+    await page.locator(".redditp__hide").click();
+    await expect(page.locator("#redditp-presentation")).not.toHaveClass(
+      /redditp__interface-hidden/,
+    );
+    await expect(page.locator(".redditp__fullscreen")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    // Leave desktop fullscreen before resizing toward the mobile band.
+    await page
+      .getByRole("button", { name: "Exit fullscreen", exact: true })
+      .click();
+    await expect(page.locator(".redditp__fullscreen")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+
+    // Mobile: 48px-pitch row, Hide far right, Fullscreen next to it, and
+    // the visually expanded hit zones abut without overlapping.
+    await page.setViewportSize({ width: 390, height: 844 });
+    row = await topRow();
+    expect(row.hide.right, "mobile: hide hugs the right edge").toBeCloseTo(
+      row.width - 58,
+      0,
+    );
+    expect(
+      row.hide.left,
+      "mobile: hide is right of fullscreen",
+    ).toBeGreaterThan(row.fullscreen.left);
+    expect(
+      row.hide.left - row.fullscreen.right,
+      "mobile: no box overlap",
+    ).toBeGreaterThanOrEqual(4);
+    expect(
+      row.fullscreen.left - row.settings.right,
+      "mobile gap intact",
+    ).toBeGreaterThanOrEqual(4);
+    await page.locator(".redditp__hide").click();
+    await expect(page.locator("#redditp-presentation")).toHaveClass(
+      /redditp__interface-hidden/,
+    );
+    await page.locator(".redditp__hide").click();
+    await expect(page.locator("#redditp-presentation")).not.toHaveClass(
+      /redditp__interface-hidden/,
+    );
+    // Fullscreen still toggles from the relocated slot on mobile.
+    if (await page.evaluate(() => document.fullscreenEnabled)) {
+      await page.locator(".redditp__fullscreen").click();
+      await expect(page.locator(".redditp__fullscreen")).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      await page
+        .getByRole("button", { name: "Exit fullscreen", exact: true })
+        .click();
+      await expect(page.locator(".redditp__fullscreen")).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+    }
+  });
 });
+
 
 // ---------------------------------------------------------------------------
 // Anchored-viewer regression coverage: rapid or held Arrow key navigation
