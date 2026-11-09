@@ -51,6 +51,14 @@
   // time gets one fresh retry before the failure card takes over, so the
   // loader can never outlive the truth by more than one bounded attempt.
   const DISPLAY_TIMEOUT_MS = 30000;
+  // Image-first fairness: completed image loads feed a small rolling latency
+  // window. While recent images average slower than this, the network reads
+  // as congested and speculative video element fetches (plain and DASH) pause
+  // entirely. RedGIFs metadata resolution keeps running: it is a few hundred
+  // bytes of JSON that unlocks the ordinary video pipeline. The pause lifts
+  // by itself once image latency recovers (or the image queue drains).
+  const IMAGE_LATENCY_SAMPLES = 4;
+  const IMAGE_SLOW_MS = 2500;
   // Duration eligibility (Phase 5A): a post whose media is exclusively video
   // with every duration KNOWN to exceed this limit is excluded from the
   // eligible navigation sequence. Images are never filtered, and an unknown
@@ -140,6 +148,9 @@
     preloadCache: new Map(),
     preloadRetry: new Map(),
     preloadRetryLimit: 2,
+    // Rolling completion-latency window (ms) of the last few image loads,
+    // read by the scheduler as a network-congestion signal.
+    preloadImageLatencies: [],
     scanFailures: 0,
     preloadStats: {
       started: 0,
@@ -165,6 +176,9 @@
       // entry would both fake reuse and permanently occupy a video-budget
       // slot.
       dashReleased: 0,
+      // Video preparation depth accounting: preloaded videos that actually
+      // reached initial media data (first frame), not just metadata.
+      videoFirstFrames: 0,
     },
     lastNavigation: null,
     debugLog: [],
@@ -1536,13 +1550,6 @@
     "",
   );
   mediaModeButton.type = "button";
-  const galleryButton = element(
-    "button",
-    "redditp__button redditp__gallery redditp__control-item",
-    "",
-  );
-  galleryButton.title = "Skip the rest of this gallery (G)";
-  galleryButton.setAttribute("aria-label", "Skip gallery");
   const closeButton = element("button", "redditp__button redditp__close", "×");
   closeButton.type = "button";
   closeButton.setAttribute("aria-label", "Close presentation mode");
@@ -1600,6 +1607,27 @@
   const meta = element("div", "redditp__meta", "");
   details.append(title, meta);
 
+  // Phase 4 header redesign: one viewer header groups the title panel and
+  // the action chips into a single component (title/metadata on the left,
+  // buttons in one cluster on the right). This is a DOM move only — every
+  // element keeps its class, its event handlers, and its hidden-state
+  // toggles, so syncPresentationUi, the keyboard handler, and every test
+  // selector keep working unchanged; all layout and states are CSS.
+  const headerActions = element("div", "redditp__header-actions", "");
+  // The order is the product UI order and is identical at every breakpoint:
+  // exit → rotate/reload → settings → fullscreen → hide. The close chip
+  // leads so the shared DOM order needs no CSS `order` overrides; each
+  // breakpoint styles the same one row.
+  headerActions.append(
+    closeButton,
+    rotateButton,
+    settingsButton,
+    fullscreenButton,
+    hideButton,
+  );
+  const header = element("header", "redditp__header", "");
+  header.append(details, headerActions);
+
   const controls = element("nav", "redditp__controls", "");
   controls.setAttribute("aria-label", "Slideshow controls");
   const prevButton = element("button", "redditp__arrow redditp__prev", "‹");
@@ -1620,7 +1648,6 @@
   prevButton.type =
     settingsButton.type =
     autoButton.type =
-    galleryButton.type =
     hideButton.type =
     fullscreenButton.type =
       "button";
@@ -1700,7 +1727,6 @@
   [
     [["→", "PgDn", "Space"], "Next slide"],
     [["←", "PgUp"], "Previous slide"],
-    [["G"], "Skip gallery / next post"],
     [["F"], "Toggle fullscreen (if available)"],
     [["H"], "Hide / show the interface"],
     [["M"], "Toggle video sound"],
@@ -1757,14 +1783,8 @@
     stage,
     prevButton,
     nextButton,
-    details,
+    header,
     controls,
-    closeButton,
-    settingsButton,
-    rotateButton,
-    hideButton,
-    fullscreenButton,
-    galleryButton,
     settingsOverlay,
   );
   controls.insertBefore(mediaModeButton, count);
@@ -2094,7 +2114,11 @@
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    if (center && !reduceMotion && typeof track.scrollTo === "function") {
+    // Both anchoring modes share the same smooth scroll now: mobile centers
+    // the active chip, desktop only scrolls far enough to unclip it, but a
+    // repositioning that does happen glides instead of jumping. Reduced
+    // motion (or engines without scrollTo options) keeps the instant jump.
+    if (!reduceMotion && typeof track.scrollTo === "function") {
       track.scrollTo({ left, behavior: "smooth" });
     } else {
       track.scrollLeft = left;
@@ -2118,11 +2142,12 @@
         "No picture slides to show for the current media mode. Switch modes or keep scrolling; posts that arrive later appear here.";
     }
     empty.hidden = !hasSlides || hasVisible;
-    details.hidden =
-      !hasSlides ||
-      !hasVisible ||
-      !state.settings.showDetails ||
-      state.interfaceHidden;
+    // The title panel intentionally stays in the header layout while the
+    // interface is hidden: the `.redditp__interface-hidden` CSS rules
+    // reclaim it invisibly (opacity + visibility), while removing it here
+    // would collapse its flex space and slide the chip cluster — including
+    // the eye toggle — across the screen on every hide/show flip.
+    details.hidden = !hasSlides || !hasVisible || !state.settings.showDetails;
     meta.hidden = true;
     // The bottom-nav row itself follows the interface's visibility. In the
     // no-matching-media stage the row survives with only the media-mode
@@ -2146,11 +2171,6 @@
       (isSinglePostPage() && state.index === state.slides.length - 1);
     closeButton.hidden = !state.settings.showClose;
     updateCount(state.loadingMore && isOnLastEligiblePost());
-    const slide = hasSlides ? state.slides[state.index] : null;
-    galleryButton.hidden = !slide?.galleryItem;
-    // Gallery counter shown only in title; toolbar button is the "Skip gallery" control.
-    // Remove the duplicate counter from the toolbar button while preserving its function.
-    galleryButton.textContent = "";
     const starts = [];
     let previous = null;
     state.slides.forEach((item, index) => {
@@ -2755,7 +2775,12 @@
         offset <= VIDEO_PRELOAD_WINDOW &&
         preloadableVideoSlide(candidate)
       ) {
-        push(candidate, offset, "post-video");
+        // The +0.5 priority bias keeps same-distance images ahead of video
+        // element fetches: with the sort's priority-then-order tiebreak, a
+        // video would otherwise win (or lose) by pure queue insertion order
+        // against the image it shares a distance with. Images stay first;
+        // the biased video still outranks images one step farther away.
+        push(candidate, offset + 0.5, "post-video");
       } else if (
         offset <= VIDEO_PRELOAD_WINDOW &&
         candidate.kind === "video" &&
@@ -2774,7 +2799,9 @@
       if (candidate.kind === "image" && candidate.url) {
         push(candidate, 4 + offset, "revisit");
       } else if (preloadableVideoSlide(candidate)) {
-        push(candidate, 4 + offset, "revisit-video");
+        // Same image-first bias as the forward window: a revisit video must
+        // not leapfrog a not-yet-fetched forward image.
+        push(candidate, 4 + offset + 0.5, "revisit-video");
       }
     }
     return entries;
@@ -2983,19 +3010,47 @@
       const choices = state.preloadQueue
         .map((job, index) => ({ job, index }))
         .sort((a, b) => a.job.priority - b.job.priority || a.index - b.index);
-      // Video jobs wait while their budget is full so speculative videos
-      // can never crowd the image pipeline or create extra decoders. When
-      // the budget is full and the closest waiting video is nearer than a
-      // cached video resource, making room wins: release the farthest
-      // cached video (a Phase 7 measured case — a distant forward video's
-      // frames kept the slot a one-step-back video needed, so the step
-      // back refetched fresh over the network).
+      // Dispatch the highest-priority job that is allowed to start. Video
+      // element jobs (plain or DASH) face extra gates that image and RedGIFs
+      // metadata jobs never see, so speculative videos can never crowd the
+      // image pipeline or create extra decoders. A gated video defers but
+      // does not block the lower-priority image behind it, so the scan
+      // continues past it instead of breaking.
       let eligible = null;
       for (const choice of choices) {
+        if (choice.job.slide.kind !== "video") {
+          eligible = choice;
+          break;
+        }
+        // Gate 1 — congested network: while recent image loads averaged
+        // slow, no new speculative video fetch starts. The job stays queued
+        // and runs when image latency recovers.
+        if (imageNetworkSlow()) {
+          logVideoDeferred("slow-network");
+          continue;
+        }
+        // Gate 2 — a reserved slot for images: while any image job waits in
+        // the queue, video may only fill the pool up to concurrency - 1, so
+        // a freed slot always goes to an image first. When no images wait
+        // (end of feed, everything cached), video may use the whole pool.
+        const imageJobsWaiting = state.preloadQueue.some(
+          (queued) => queued.slide.kind === "image",
+        );
         if (
-          choice.job.slide.kind !== "video" ||
-          heldVideoPreloads() < VIDEO_PRELOAD_LIMIT
+          imageJobsWaiting &&
+          state.preloadInFlight.size >=
+            state.settings.preloadConcurrency - 1
         ) {
+          logVideoDeferred("image-priority");
+          continue;
+        }
+        // Gate 3 — the video decoder budget. When the budget is full and
+        // the closest waiting video is nearer than a cached video resource,
+        // making room wins: release the farthest cached video (a Phase 7
+        // measured case — a distant forward video's frames kept the slot a
+        // one-step-back video needed, so the step back refetched fresh over
+        // the network).
+        if (heldVideoPreloads() < VIDEO_PRELOAD_LIMIT) {
           eligible = choice;
           break;
         }
@@ -3017,6 +3072,37 @@
   function videoDistance(slide) {
     const index = state.slides.indexOf(slide);
     return index === -1 ? Infinity : Math.abs(index - state.index);
+  }
+
+  // Image-first fairness, part 1: record how long a completed image load
+  // took. The window stays tiny on purpose — a few samples let the signal
+  // track changing network conditions within a couple of preloads.
+  function noteImageLoadLatency(latencyMs) {
+    const samples = state.preloadImageLatencies;
+    samples.push(latencyMs);
+    while (samples.length > IMAGE_LATENCY_SAMPLES) samples.shift();
+  }
+
+  // Image-first fairness, part 2: true while recently completed images were
+  // consistently slow. With fewer samples than the window there is no
+  // evidence of congestion, so the answer is no — a fresh session never
+  // starts in the paused state.
+  function imageNetworkSlow() {
+    const samples = state.preloadImageLatencies;
+    if (samples.length < IMAGE_LATENCY_SAMPLES) return false;
+    const total = samples.reduce((sum, value) => sum + value, 0);
+    return total / samples.length > IMAGE_SLOW_MS;
+  }
+
+  // Deferral diagnostics, time-throttled: the scheduler re-runs on every
+  // preload terminal event, and an unchanged deferral state would flood the
+  // debug ring with repeats of the same fact.
+  let lastVideoDeferLogAt = 0;
+  function logVideoDeferred(reason) {
+    const now = Date.now();
+    if (now - lastVideoDeferLogAt < 2000) return;
+    lastVideoDeferLogAt = now;
+    debugLogEvent("preload-video-deferred", { reason });
   }
 
   // Shared failure tail for a preload job: the bounded retry requeue, stats,
@@ -3158,6 +3244,9 @@
     if (state.preloadInFlight.has(key) || state.preloadCache.has(key)) return;
     state.preloadInFlight.set(key, job);
     state.preloadStats.started += 1;
+    // Congestion-signal input: image jobs report their completion latency
+    // through this timestamp when the load event fires.
+    job.startedAtMs = performance.now();
     const guarded = (callback) => () => {
       // A job canceled by close() or eviction (or fired after the viewer
       // closed) must not fill the cache or restart the scheduler.
@@ -3196,6 +3285,9 @@
       image.addEventListener(
         "load",
         guarded(() => {
+          // Feed the image-latency window (measured to the load event, before
+          // decode time, so decode cost never reads as network slowness).
+          noteImageLoadLatency(performance.now() - job.startedAtMs);
           // Bytes are only half the story: decode upcoming images here so
           // display never waits for another decode. A decode failure is
           // recorded separately from a load failure and never poisons the
@@ -3289,12 +3381,18 @@
           // The immediate next eligible video also gets its first frame:
           // one bounded position fetch at the head of the media, so
           // navigation starts with usable pixels instead of decoding from
-          // zero. Longer or further videos keep their metadata-only depth.
+          // zero. Longer or further videos keep their metadata-only depth,
+          // and on a congested network (recent image loads consistently
+          // slow) even this fetch defers: pixels then arrive at display
+          // time, exactly as they would without preparation. The priority
+          // ceiling is 1.5 — the immediate-next slot including the
+          // image-first bias, but not its +1 deprioritized retries.
           const duration = slideVideoDuration(job.slide);
           if (
             duration !== null &&
             duration <= MAX_ELIGIBLE_VIDEO_SECONDS &&
-            job.priority === 1
+            job.priority <= 1.5 &&
+            !imageNetworkSlow()
           ) {
             try {
               video.currentTime = 0.01;
@@ -3308,6 +3406,7 @@
             () => {
               // Evidence that initial media data exists is recorded whether
               // or metadata never claims first-frame readiness (11H).
+              state.preloadStats.videoFirstFrames += 1;
               debugLogEvent("preload-firstframe", {
                 key,
                 readyState: video.readyState,
@@ -3383,6 +3482,7 @@
     video.addEventListener(
       "loadeddata",
       () => {
+        state.preloadStats.videoFirstFrames += 1;
         debugLogEvent("preload-firstframe", {
           key,
           readyState: video.readyState,
@@ -5140,10 +5240,6 @@
       event.preventDefault();
       event.stopPropagation();
       toggleAuto();
-    } else if (event.key.toLowerCase() === "g") {
-      event.preventDefault();
-      event.stopPropagation();
-      skipGallery();
     } else if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
@@ -5234,7 +5330,6 @@
   window.addEventListener("resize", () => {
     syncPresentationUi();
   });
-  galleryButton.addEventListener("click", skipGallery);
   root.addEventListener("pointerdown", (event) => {
     state.pointerStart = {
       x: event.clientX,

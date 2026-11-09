@@ -61,8 +61,8 @@ slideshow never hangs.
 
 Other controls: **F** browser fullscreen, **M** video sound, **T** title panel,
 **P** bottom panel, **H** hide the interface, **R** rotate, **C** comments, **I**
-original media, **G** skip the rest of the gallery, **Esc** close, **Alt+P**
-open/close. All preferences persist between sessions. You can also add
+original media, **Esc** close, **Alt+P** open/close. All preferences persist
+between sessions. You can also add
 `redditp=1` to any Reddit address (for example
 `https://www.reddit.com/r/pics/?redditp=1`) and the page opens in RedditPix
 by itself.

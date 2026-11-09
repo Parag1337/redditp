@@ -105,7 +105,6 @@ async function measure(page) {
       fullscreen: grab(".redditp__fullscreen"),
       settings: grab(".redditp__settings-button"),
       rotate: grab(".redditp__rotate"),
-      gallery: grab(".redditp__gallery"),
       details: grab(".redditp__details"),
       title: grab(".redditp__title"),
       count: grab(".redditp__count"),
@@ -116,7 +115,7 @@ async function measure(page) {
       root: grab("#redditp-presentation"),
     };
     // pairwise overlap of visible top-row controls
-    const chips = ["close", "hide", "fullscreen", "settings", "rotate", "gallery"]
+    const chips = ["close", "hide", "fullscreen", "settings", "rotate"]
       .filter((k) => items[k] && !items[k].hidden)
       .map((k) => [k, items[k]]);
     const overlaps = [];
@@ -173,15 +172,7 @@ async function measure(page) {
           };
         });
         m.imageFit = await imgFit;
-        await page.evaluate(() => {
-          const el = document.querySelector(".redditp__gallery");
-          if (el && !el.hidden) el.click();
-        });
-        await page.waitForTimeout(120);
-        const m2 = await measure(page);
-        await page.keyboard.press("ArrowLeft");
-        await page.waitForTimeout(120);
-        out[key][`${w}x${h}`] = { plain: m, skipGallery: m2 };
+        out[key][`${w}x${h}`] = m;
       }
       await page.close();
     }
@@ -191,18 +182,15 @@ async function measure(page) {
   // print a compact summary of problems
   for (const [key, byVp] of Object.entries(out)) {
     for (const [vp, data] of Object.entries(byVp)) {
-      for (const scene of ["plain", "skipGallery"]) {
-        for (const o of data[scene].overlaps) {
-          console.log(`${key} ${vp} ${scene}: OVERLAP ${o[0]} vs ${o[1]} width ${o[2]}`);
-        }
-        const items = data[scene].items;
-        if (!items.root) console.log(`${key} ${vp} ${scene}: ROOT MISSING`);
+      for (const o of data.overlaps) {
+        console.log(`${key} ${vp}: OVERLAP ${o[0]} vs ${o[1]} width ${o[2]}`);
       }
+      if (!data.items.root) console.log(`${key} ${vp}: ROOT MISSING`);
       console.log(
-        `${key} ${vp}: detailsW=${data.plain.items.details ? data.plain.items.details.width : "-"} ` +
-          `detailsR=${data.plain.items.details ? data.plain.items.details.right : "-"}` +
-          ` titleR=${data.plain.items.title ? data.plain.items.title.right : "-"}` +
-          ` imgFit=${JSON.stringify(data.plain.imageFit)}`,
+        `${key} ${vp}: detailsW=${data.items.details ? data.items.details.width : "-"} ` +
+          `detailsR=${data.items.details ? data.items.details.right : "-"}` +
+          ` titleR=${data.items.title ? data.items.title.right : "-"}` +
+          ` imgFit=${JSON.stringify(data.imageFit)}`,
       );
     }
   }

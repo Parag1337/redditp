@@ -750,13 +750,11 @@ test("long post titles wrap inside the title panel", async ({ page }) => {
         clamp: getComputedStyle(title).webkitLineClamp,
       };
     });
-  // The mobile redesign clamps long titles to two lines so the media keeps
-  // the screen: the title may reach two lines but never a third.
-  expect(titleLayout.clamp).toBe("2");
-  expect(titleLayout.height).toBeGreaterThanOrEqual(titleLayout.lineHeight);
-  expect(titleLayout.height).toBeLessThanOrEqual(
-    titleLayout.lineHeight * 2 + 1,
-  );
+  // The single-row mobile header clamps long titles to one ellipsized line
+  // next to the chips; the media keeps the screen and the metadata line
+  // truncates beneath the title.
+  expect(titleLayout.clamp).toBe("1");
+  expect(titleLayout.height).toBeLessThanOrEqual(titleLayout.lineHeight + 1);
   expect(titleLayout.whiteSpace).toBe("normal");
   expect(titleLayout.fitsWidth).toBe(true);
   await expect(page.locator(".redditp__controls")).toBeInViewport();
@@ -1559,8 +1557,8 @@ for (const expanded of [false, true]) {
         "src",
         oldGalleryImage(oldGalleryIds[index]),
       );
-      // The counter lives in the title; the toolbar button is only the
-      // "Skip gallery" control since the duplicate label was removed.
+      // The counter lives in the title alone; the toolbar has no gallery
+      // control since the skip button was removed.
       await expect(page.locator(".redditp__title")).toContainText(
         `(${index + 1}/5)`,
       );
@@ -1613,7 +1611,30 @@ for (const expanded of [false, true]) {
   });
 }
 
-test("G skips only the current gallery and advances ordinary posts", async ({
+  // Skipping is exercised through the tap zones now: the dedicated G
+  // toolbar button and keyboard shortcut were removed, but the same
+  // skipGallery() navigation stays reachable by tapping the right third
+  // of the stage. The synthetic touch-pointer pattern mirrors the swipe
+  // regression test above, so it runs on Firefox too (no hasTouch context).
+  async function tapSkip(page) {
+    const stage = page.locator(".redditp__stage");
+    const box = await stage.boundingBox();
+    const x = box.x + box.width / 2 + box.width * 0.32; // far right third
+    const y = box.y + box.height / 2;
+    for (const type of ["pointerdown", "pointerup"]) {
+      await stage.dispatchEvent(type, {
+        pointerType: "touch",
+        pointerId: 1,
+        isPrimary: true,
+        button: 0,
+        buttons: type === "pointerdown" ? 1 : 0,
+        clientX: x,
+        clientY: y,
+      });
+    }
+  }
+
+test("skipping a gallery only skips its own images and advances ordinary posts", async ({
   page,
 }) => {
   await page.route("https://preview.redd.it/**", (route) =>
@@ -1640,15 +1661,7 @@ test("G skips only the current gallery and advances ordinary posts", async ({
 
   await expect(page.locator(".redditp__count")).toHaveText("1 / 4");
 
-  await page
-    .getByRole("button", { name: "Open presentation settings" })
-    .click();  await page.keyboard.press("g");
-  await expect(page.locator(".redditp__count")).toHaveText("1 / 4");
-  await page
-    .getByRole("button", { name: "Close presentation settings" })
-    .click();
-
-  await page.keyboard.press("g");
+  await tapSkip(page);
   await expect(page.locator(".redditp__title")).toHaveText(
     "(1/2) Next gallery",
   );
@@ -1662,25 +1675,24 @@ test("G skips only the current gallery and advances ordinary posts", async ({
   await expect(page.locator(".redditp__title")).toContainText("(5/5");
   await expect(page.locator(".redditp__count")).toHaveText("1 / 4");
   await page.keyboard.press("ArrowLeft");
-  await page.keyboard.press("Shift+G");
+  await tapSkip(page);
+  // Tapping skip lands back on the next gallery and works from there.
   await expect(page.locator(".redditp__count")).toHaveText("2 / 4");
-  await expect(page.locator(".redditp__gallery")).toHaveAttribute(
-    "title",
-    /\(G\)/,
+  await expect(page.locator(".redditp__title")).toHaveText(
+    "(1/2) Next gallery",
   );
-  await page.locator(".redditp__gallery").click();
+  await tapSkip(page);
   await expect(page.locator(".redditp__title")).toHaveText("After galleries");
-  await expect(page.locator(".redditp__gallery")).toBeHidden();
-  await page.keyboard.press("g");
+  await tapSkip(page);
   await expect(page.locator(".redditp__title")).toHaveText("Final post");
 });
 
-test("G at the final gallery waits for more posts and otherwise wraps", async ({
+test("skipping the final gallery waits for more posts and otherwise wraps", async ({
   page,
 }) => {
   await page.route("https://preview.redd.it/**", (route) => route.abort());
   await startPresentation(page, oldGalleryPost());
-  await page.keyboard.press("g");
+  await tapSkip(page);
   await expect(page.locator(".redditp__count")).toHaveText(
     "1 / 1 · loading more",
   );
@@ -1691,7 +1703,7 @@ test("G at the final gallery waits for more posts and otherwise wraps", async ({
     );
   });
   await expect(page.locator(".redditp__title")).toHaveText("Newly loaded post");
-  await page.keyboard.press("g");
+  await tapSkip(page);
   await expect(page.locator(".redditp__count")).toHaveText("1 / 2");
   await expect(page.locator(".redditp__title")).toContainText("(1/5");
   // Skipping a gallery with no next post must also wrap safely.
@@ -1700,7 +1712,7 @@ test("G at the final gallery waits for more posts and otherwise wraps", async ({
     document.querySelector('[data-url="https://example.com/new"]').remove(),
   );
   await page.evaluate(() => window.__redditpPresentation.toggle());
-  await page.keyboard.press("g");
+  await tapSkip(page);
   await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
 });
 
@@ -1738,7 +1750,9 @@ test("the last gallery starts loading more posts from its first image", async ({
   await expect(page.locator(".redditp__title")).toContainText("(2/5");
 });
 
-test("G on a single-post gallery stops at its last image", async ({ page }) => {
+test("skipping a single-post gallery stops at its last image", async ({
+  page,
+}) => {
   await page.route(oldGalleryComments, (route) =>
     route.fulfill({ contentType: "text/html", body: oldGalleryPost() }),
   );
@@ -1746,11 +1760,11 @@ test("G on a single-post gallery stops at its last image", async ({ page }) => {
   await page.goto(oldGalleryComments);
   await page.addStyleTag({ path: extensionStyles });
   await page.addScriptTag({ path: extensionScript });
-  await page.keyboard.press("g");
+  await tapSkip(page);
   await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
   await expect(page.locator(".redditp__title")).toContainText("(5/5");
   await expect(page.locator(".redditp__next")).toBeDisabled();
-  await page.keyboard.press("g");
+  await tapSkip(page);
   await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
   await page.keyboard.press("ArrowLeft");
   await expect(page.locator(".redditp__title")).toContainText("(4/5");
@@ -2127,9 +2141,6 @@ test("settings shortcut reference fits mobile and desktop screens", async ({
   await expect(
     help.locator("dt").filter({ hasText: /^F$/ }).locator("+ dd"),
   ).toHaveText("Toggle fullscreen (if available)");
-  await expect(
-    help.locator("dt").filter({ hasText: /^G$/ }).locator("+ dd"),
-  ).toHaveText("Skip gallery / next post");
 
   for (const [width, height] of [
     [360, 780],
@@ -5451,13 +5462,10 @@ test.describe("phase 4a mobile touch targets", () => {
     await startPresentation(page, touchFeed());
     await pinAutoAdvance(page, false);
     await expect(page.locator(".redditp__count")).toHaveText("1 / 4");
-    // Slide 1 is a gallery: the counter shows in the title and the "Skip
-    // gallery" toolbar button is present.
+    // Slide 1 is a gallery: the counter shows in the title only — the old
+    // "Skip gallery" toolbar button and its G shortcut are gone.
     await expect(page.locator(".redditp__title")).toContainText("(1/5");
-    await expect(page.locator(".redditp__gallery")).toHaveAttribute(
-      "aria-label",
-      "Skip gallery",
-    );
+    expect(await page.locator(".redditp__gallery").count()).toBe(0);
   }
 
   // Measures the interactive controls from the live layout. The visible box
@@ -5477,7 +5485,6 @@ test.describe("phase 4a mobile touch targets", () => {
         if (el.classList.contains("redditp__settings-button"))
           return "settings";
         if (el.classList.contains("redditp__rotate")) return "rotate";
-        if (el.classList.contains("redditp__gallery")) return "gallery";
         return "unknown";
       };
 
@@ -5662,9 +5669,10 @@ test.describe("phase 4a mobile touch targets", () => {
         `${width}: no horizontal page scroll`,
       ).toBeLessThanOrEqual(layout.docScroll.clientWidth + 1);
 
-      // On a gallery slide all six row controls are visible: the five
-      // control-item chips plus the close button.
-      expect(layout.items, `at ${width}x${height}`).toHaveLength(6);
+      // On a gallery slide five row controls are visible: the four
+      // control-item chips (rotate, settings, fullscreen, hide) plus the
+      // close button. The old gallery skip chip is gone.
+      expect(layout.items, `at ${width}x${height}`).toHaveLength(5);
       for (const item of layout.items) {
         // Visible chips grew to 40x40 while keeping the same icon treatment.
         expect(item.box.width, `${item.name} visual width`).toBeCloseTo(40, 1);
@@ -5708,11 +5716,34 @@ test.describe("phase 4a mobile touch targets", () => {
         ).toBe(true);
       }
 
-      // The title panel must not intersect any hit zone. On phones the panel
-      // sits below the control row (the old side-clearance model starved long
-      // titles into a 54-130px column), so the guard is a true rectangle
-      // overlap check instead of a right-edge clearance.
+      // Single-row mobile header: the title panel shares the chip row as
+      // the flexible space instead of stacking below it. Its rect must end
+      // before the first chip and its vertical band must intersect the
+      // chips' band (the chips stay vertically centered on it).
       expect(layout.detailsVisible, `${width}: title panel shown`).toBe(true);
+      const chipsLeft = Math.min(
+        ...layout.items.map((item) => item.box.left),
+      );
+      const chipsTop = Math.min(...layout.items.map((item) => item.box.top));
+      const chipsBottom = Math.max(
+        ...layout.items.map((item) => item.box.bottom),
+      );
+      expect(
+        layout.detailsRect.right,
+        `${width}: title panel ends before the chips (one row)`,
+      ).toBeLessThanOrEqual(chipsLeft + 0.5);
+      expect(
+        layout.detailsRect.top,
+        `${width}: title panel is on the chip row, not below it`,
+      ).toBeLessThanOrEqual(chipsBottom - 1);
+      expect(
+        layout.detailsRect.bottom,
+        `${width}: title panel does not drop below the chip row`,
+      ).toBeGreaterThanOrEqual(chipsTop + 1);
+
+      // The title panel must still not intersect any hit zone: the 8px
+      // header gap clears the -4px zone insets, so a long title can only
+      // shrink (ellipsis), never reach the buttons.
       const titleOverlaps = layout.items.filter(
         (item) =>
           item.effective.left < layout.detailsRect.right &&
@@ -5770,8 +5801,9 @@ test.describe("phase 4a mobile touch targets", () => {
     await openTouchFeed(page);
     await page.setViewportSize({ width: 390, height: 844 });
 
-    // Tapping a hit-zone edge (not the chip itself) performs the action.
-    await clickTouchTarget(page, page.locator(".redditp__gallery"), "top");
+    // Tapping the right third of the media skips a gallery slide directly
+    // (the dedicated skip chip is gone; the tap zone path remains).
+    await tapSkip(page);
     await expect(page.locator(".redditp__title")).toHaveText("Image one");
     await expect(page.locator(".redditp__count")).toHaveText("2 / 4");
 
@@ -5786,8 +5818,9 @@ test.describe("phase 4a mobile touch targets", () => {
     await page.getByRole("button", { name: "Post 3" }).click();
     await expect(page.locator(".redditp__title")).toHaveText("Image two");
 
-    // Below the control row the title panel claims the full phone width
-    // (the side-clearance cap no longer applies in the below-row layout).
+    // In the single-row header the title panel owns exactly the
+    // viewport width minus side paddings (16), the five 40px chips and
+    // their 8px gaps (232), and the 8px panel-to-chips gap.
     await expect
       .poll(async () =>
         page.evaluate(
@@ -5796,7 +5829,7 @@ test.describe("phase 4a mobile touch targets", () => {
               .width,
         ),
       )
-      .toBe("374px");
+      .toBe("134px");
 
     // Hide/show still works, and the interface can come back without touch
     // on the hidden control itself.
@@ -5874,6 +5907,117 @@ test.describe("phase 4a mobile touch targets", () => {
       await expect(page.locator(".redditp__title")).toContainText("(2/5");
     });
   }
+
+  test("the gallery skip chip is gone from every breakpoint and slide kind", async ({
+    page,
+  }) => {
+    // Gallery slide on phones: the chip was visible there before removal.
+    await openTouchFeed(page);
+    for (const [width, height] of [
+      [320, 640],
+      [390, 844],
+      [700, 800],
+      [1280, 800],
+    ]) {
+      await page.setViewportSize({ width, height });
+      expect(
+        await page.locator(".redditp__gallery").count(),
+        `gallery chip absent at ${width}x${height}`,
+      ).toBe(0);
+    }
+
+    // Plain slides never showed the chip; they must stay chip-free too.
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (let step = 0; step < 5; step += 1) {
+      await page.keyboard.press("ArrowRight");
+    }
+    await expect(page.locator(".redditp__title")).toHaveText("Image one");
+    expect(await page.locator(".redditp__gallery").count()).toBe(0);
+  });
+
+  test("narrow 320px: one row, 44px touch targets, no overlap, chopped titles", async ({
+    page,
+  }) => {
+    await page.route("https://*.redd.it/**", (route) =>
+      route.fulfill({
+        contentType: "image/svg+xml",
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"/>',
+      }),
+    );
+    await startPresentation(
+      page,
+      `${oldGalleryPost(true)}${imagePost(
+        "tp4a-long",
+        "An extremely long titled post that cannot possibly fit on a 320 pixel wide screen without an ellipsis",
+      )}`,
+    );
+    await pinAutoAdvance(page, false);
+    await page.setViewportSize({ width: 320, height: 640 });
+    await expect(page.locator("#redditp-presentation")).toBeVisible();
+
+    const layout = await measureViewerLayout(page);
+
+    // Root and media still fill the viewport; no page-level scrolling.
+    expect(layout.rootRect.width).toBeCloseTo(320, 1);
+    expect(layout.mediaRect.width).toBeCloseTo(320, 1);
+    expect(layout.docScroll.scrollWidth).toBeLessThanOrEqual(
+      layout.docScroll.clientWidth + 1,
+    );
+
+    // Extremely-narrow fallback: five 36px chips, 44x44 hit zones from the
+    // unchanged -4px insets, all fully on screen and never overlapping.
+    expect(layout.items).toHaveLength(5);
+    for (const item of layout.items) {
+      expect(item.box.width, `${item.name} fallback width`).toBeCloseTo(36, 1);
+      expect(item.box.height, `${item.name} fallback height`).toBeCloseTo(
+        36,
+        1,
+      );
+      expect(item.expandable, `${item.name} keeps its hit zone`).toBe(true);
+      expect(item.effective.width, `${item.name} 44px target`).toBeCloseTo(
+        44,
+        1,
+      );
+      expect(item.effective.height, `${item.name} 44px target`).toBeCloseTo(
+        44,
+        1,
+      );
+      expect(item.effective.right).toBeLessThanOrEqual(320 + 0.5);
+      expect(item.effective.bottom).toBeLessThanOrEqual(640 + 0.5);
+    }
+    expect(layout.overlaps, "hit zones never overlap at 320px").toEqual([]);
+
+    // Title and chips share the one row: the title ends before the first
+    // chip, no rectangle intersects a hit zone, and the long title is cut
+    // to a single ellipsized line at 320px.
+    expect(layout.detailsRect.right).toBeLessThanOrEqual(
+      Math.min(...layout.items.map((item) => item.box.left)) + 0.5,
+    );
+    for (const item of layout.items) {
+      const boxOverlap =
+        item.effective.left < layout.detailsRect.right &&
+        item.effective.right > layout.detailsRect.left &&
+        item.effective.top < layout.detailsRect.bottom &&
+        item.effective.bottom > layout.detailsRect.top;
+      expect(boxOverlap, `${item.name} clear of title panel`).toBe(false);
+    }
+    const titleCut = await page.evaluate(() => {
+      const title = document.querySelector(".redditp__title");
+      const meta = document.querySelector(".redditp__meta");
+      const titleStyle = getComputedStyle(title);
+      const titleBox = title.getBoundingClientRect();
+      return {
+        clamp: titleStyle.webkitLineClamp,
+        lineHeight: parseFloat(titleStyle.lineHeight),
+        height: titleBox.height,
+        metaOverflow: meta ? getComputedStyle(meta).textOverflow : null,
+        scrollTop: title.scrollTop,
+      };
+    });
+    expect(titleCut.clamp).toBe("1");
+    expect(titleCut.height).toBeLessThanOrEqual(titleCut.lineHeight + 1);
+    expect(titleCut.metaOverflow).toBe("ellipsis");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -5948,9 +6092,10 @@ test.describe("phase 4b bottom bar polish", () => {
     expect(state.label).toBe("Start slideshow");
     expect(state.pressed).toBe("false");
     expect(state.title).toBe("Advance slides automatically (A)");
-    // The touch target keeps its 44px band and the icon stays centered.
-    expect(state.width).toBeCloseTo(44, 1);
-    expect(state.height).toBeCloseTo(44, 1);
+    // The compact desktop pill keeps the icon centered (touch targets ride
+    // on the ::after zone under coarse pointers, as on phones).
+    expect(state.width).toBeCloseTo(36, 1);
+    expect(state.height).toBeCloseTo(30, 1);
     expect(state.iconWidth).toBeGreaterThan(10);
     expect(state.iconHeight).toBeGreaterThan(10);
     expect(state.iconCenterOffset, "icon centered").toBeLessThanOrEqual(2);
@@ -6025,20 +6170,33 @@ test.describe("phase 4b bottom bar polish", () => {
       const bar = document.querySelector(".redditp__numbers");
       const active = bar && bar.querySelector(".redditp__number--active");
       if (!bar || !active) return true;
-      // Desktop keeps edge anchoring (no scroll when already visible); only
-      // the mobile mode centers, so only it has a fixed target to reach.
-      if (!window.matchMedia("(max-width: 600px)").matches) return true;
       const maxScroll = bar.scrollWidth - bar.clientWidth;
       if (maxScroll <= 0) return true;
       const a = active.getBoundingClientRect();
       const b = bar.getBoundingClientRect();
-      const target = Math.max(
-        0,
-        Math.min(
-          maxScroll,
-          bar.scrollLeft + (a.left - b.left) - (bar.clientWidth - a.width) / 2,
-        ),
-      );
+      // The target is scroll-invariant (current scrollLeft plus
+      // viewport-relative rects cancel out). Mobile centers the chip;
+      // desktop edge anchoring only scrolls far enough to unclip it inside
+      // the track padding. Both now scroll smoothly, so both targets must
+      // be awaited before measuring.
+      let target;
+      if (window.matchMedia("(max-width: 600px)").matches) {
+        target =
+          bar.scrollLeft + (a.left - b.left) - (bar.clientWidth - a.width) / 2;
+      } else {
+        const padLeft = parseFloat(getComputedStyle(bar).paddingLeft) || 0;
+        const padRight = parseFloat(getComputedStyle(bar).paddingRight) || 0;
+        const leftEdge = bar.scrollLeft + (a.left - b.left);
+        const rightEdge = bar.scrollLeft + (a.right - b.left);
+        if (leftEdge < bar.scrollLeft) {
+          target = leftEdge - padLeft;
+        } else if (rightEdge > bar.scrollLeft + bar.clientWidth) {
+          target = rightEdge - bar.clientWidth + padRight;
+        } else {
+          return true;
+        }
+      }
+      target = Math.max(0, Math.min(maxScroll, target));
       return Math.abs(bar.scrollLeft - target) <= 1;
     });
   }
@@ -6312,12 +6470,14 @@ test.describe("phase 4b bottom bar polish", () => {
       "false",
     );
 
-    // Mobile: 48px-pitch row, Hide far right, Fullscreen next to it, and
-    // the visually expanded hit zones abut without overlapping.
+    // Mobile: single 48px-pitch row, Hide far right, Fullscreen next to it,
+    // and the visually expanded hit zones abut without overlapping. Hide is
+    // the last control in the shared toolbar order, so its right edge sits
+    // at the 8px side padding.
     await page.setViewportSize({ width: 390, height: 844 });
     row = await topRow();
     expect(row.hide.right, "mobile: hide hugs the right edge").toBeCloseTo(
-      row.width - 58,
+      row.width - 8,
       0,
     );
     expect(
@@ -6355,6 +6515,230 @@ test.describe("phase 4b bottom bar polish", () => {
         "false",
       );
     }
+  });
+});
+
+
+// ---------------------------------------------------------------------------
+// Phase 6: stable hide toggle. Three contracts: one shared toolbar order at
+// every breakpoint (exit, rotate, settings, fullscreen, hide), the surviving
+// eye chip must never move across hide/show cycles, and the hidden state's
+// eye is deliberately minimal. The hide-icon jump root cause was the title
+// panel leaving the header flex row on hide (details.hidden while the
+// interface was hidden): without its flex: 1 1 auto slot the chip cluster
+// collapsed to flex-start and slid across the screen.
+
+test.describe("phase 6 stable hide toggle", () => {
+  const feedImagePost = (id, title) =>
+    `<div class="thing link" data-fullname="t3_${id}" data-url="https://i.redd.it/${id}.jpg" data-permalink="/r/pics/comments/${id}/post/" data-author="p1" data-subreddit="pics"><a class="title">${title}</a></div>`;
+
+  async function openViewer(page) {
+    await page.route("https://*.redd.it/**", (route) =>
+      route.fulfill({
+        contentType: "image/svg+xml",
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"/>',
+      }),
+    );
+    const url = "https://www.reddit.com/r/pics/?redditp=1";
+    await page.route(url, (route) =>
+      route.fulfill({
+        contentType: "text/html",
+        body: [1, 2, 3]
+          .map((i) => feedImagePost(`v${i}`, `Post ${i}`))
+          .join(""),
+      }),
+    );
+    await page.goto(url);
+    await page.addStyleTag({ path: extensionStyles });
+    await page.addScriptTag({ path: extensionScript });
+    await pinAutoAdvance(page, false);
+    await expect(page.locator(".redditp__count")).toHaveText("1 / 3");
+  }
+
+  async function chipBoxes(page) {
+    return page.evaluate(() => {
+      const grab = (name) => {
+        const el = document.querySelector(`.redditp__${name}`);
+        const b = el.getBoundingClientRect();
+        return {
+          name,
+          left: b.left,
+          hidden: el.hidden || !!(el.offsetWidth === 0 && el.offsetHeight === 0),
+        };
+      };
+      return ["close", "rotate", "settings-button", "fullscreen", "hide"].map(
+        grab,
+      );
+    });
+  }
+
+  test("toolbar order is exit, rotate, settings, fullscreen, hide at every breakpoint", async ({
+    page,
+  }) => {
+    await openViewer(page);
+    for (const [width, height] of [
+      [320, 640],
+      [390, 844],
+      [844, 390],
+      [1280, 800],
+      [1920, 1080],
+    ]) {
+      await page.setViewportSize({ width, height });
+      const visible = (await chipBoxes(page)).filter((c) => !c.hidden);
+      const ordered = [...visible]
+        .sort((a, b) => a.left - b.left)
+        .map((c) => c.name);
+      expect(
+        ordered,
+        `visual order at ${width}x${height}`,
+      ).toEqual([
+        "close",
+        "rotate",
+        "settings-button",
+        "fullscreen",
+        "hide",
+      ]);
+    }
+  });
+
+  test("the eye chip holds its viewport position across repeated hide/show cycles", async ({
+    page,
+  }) => {
+    await openViewer(page);
+    for (const [width, height] of [
+      [320, 780],
+      [360, 780],
+      [390, 844],
+      [430, 915],
+      [844, 390],
+      [1280, 800],
+      [1920, 1080],
+    ]) {
+      await page.setViewportSize({ width, height });
+      const visible = (await chipBoxes(page)).find((c) => c.name === "hide");
+      // The title panel keeps its flex slot while the interface is hidden,
+      // so it must not be reduced to display:none by the hide state.
+      const hiddenPanel = await page.evaluate(() => {
+        const root = document.getElementById("redditp-presentation");
+        root
+          .querySelector(".redditp__hide")
+          .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        const details = root.querySelector(".redditp__details");
+        return {
+          wasClassSet: root.classList.contains("redditp__interface-hidden"),
+          detailsHiddenAttr: details.hidden,
+          detailsDisplay: getComputedStyle(details).display,
+        };
+      });
+      expect(
+        hiddenPanel.wasClassSet,
+        `interface hidden at ${width}x${height}`,
+      ).toBe(true);
+      expect(
+        hiddenPanel.detailsHiddenAttr,
+        `title panel keeps its layout slot while hidden at ${width}x${height}`,
+      ).toBe(false);
+      expect(hiddenPanel.detailsDisplay).toBe("block");
+      const hidden = (await chipBoxes(page)).find((c) => c.name === "hide");
+
+      for (let cycle = 0; cycle < 3; cycle += 1) {
+        await page.locator(".redditp__hide").click(); // show
+        await page.locator(".redditp__hide").click(); // hide again
+      }
+      const afterCycles = (await chipBoxes(page)).find(
+        (c) => c.name === "hide",
+      );
+      expect(
+        Math.abs(afterCycles.left - visible.left),
+        `eye never moves horizontally at ${width}x${height}`,
+      ).toBeLessThanOrEqual(0.6);
+      expect(
+        Math.abs(hidden.left - visible.left),
+        `eye never moves while hidden at ${width}x${height}`,
+      ).toBeLessThanOrEqual(0.6);
+      expect(
+        Math.abs(afterCycles.left - hidden.left),
+        `cycles restore the same spot at ${width}x${height}`,
+      ).toBeLessThanOrEqual(0.6);
+      await page.locator(".redditp__hide").click(); // leave visible
+    }
+  });
+
+  test("the hidden-state eye is minimal but discoverable and tappable", async ({
+    page,
+  }) => {
+    await openViewer(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator(".redditp__hide").click();
+    await expect(
+      page.locator("#redditp-presentation.redditp__interface-hidden"),
+    ).toHaveCount(1);
+    // Park the pointer away from the eye; otherwise the :hover emphasis is
+    // active and there is no resting state to measure. Transitions are
+    // disabled so both end states read exactly instead of mid-flight.
+    await page.addStyleTag({
+      content:
+        "#redditp-presentation .redditp__hide { transition: none !important; }",
+    });
+    await page.mouse.move(5, 5);
+    await page.mouse.move(5, 5);
+    const resting = await page.evaluate(() => {
+      const el = document.querySelector(".redditp__hide");
+      const s = getComputedStyle(el);
+      const svg = el.querySelector("svg");
+      const normal = document
+        .querySelector(".redditp__rotate")
+        .querySelector("svg");
+      return {
+        bg: s.backgroundColor,
+        opacity: +s.opacity,
+        border: s.borderTopWidth,
+        shadow: s.boxShadow,
+        iconWidth: getComputedStyle(svg).width,
+        normalIconWidth: getComputedStyle(normal).width,
+        zone: getComputedStyle(el, "::after").content,
+        label: el.getAttribute("aria-label"),
+      };
+    });
+    expect(resting.bg, "no plate in the hidden state").toBe("rgba(0, 0, 0, 0)");
+    expect(resting.border, "no frame").toBe("0px");
+    expect(resting.shadow, "no drop shadow").toBe("none");
+    expect(resting.opacity).toBeGreaterThanOrEqual(0.5);
+    expect(resting.opacity).toBeLessThanOrEqual(0.66);
+    expect(
+      parseFloat(resting.iconWidth),
+      "slightly smaller icon",
+    ).toBeLessThan(parseFloat(resting.normalIconWidth));
+    expect(parseFloat(resting.iconWidth)).toBeGreaterThanOrEqual(13.5);
+    // Still a real touch target and still announces its action.
+    expect(resting.zone).toBe('""');
+    expect(resting.label).toBe("Show interface");
+
+    // Interaction grows the eye back to full visibility.
+    await page.mouse.move(5, 5);
+    const hover = await page.evaluate(() => {
+      const el = document.querySelector(".redditp__hide");
+      const s = getComputedStyle(el);
+      return { bg: s.backgroundColor, opacity: +s.opacity };
+    });
+    expect(hover.opacity).toBeLessThanOrEqual(0.7);
+    await page.hover(".redditp__hide");
+    const hovered = await page.evaluate(() => {
+      const el = document.querySelector(".redditp__hide");
+      const s = getComputedStyle(el);
+      return { bg: s.backgroundColor, opacity: +s.opacity };
+    });
+    expect(
+      hovered.opacity,
+      "hover restores full visibility",
+    ).toBeGreaterThan(0.9);
+    expect(hovered.bg).not.toBe("rgba(0, 0, 0, 0)");
+
+    // It still answers clicks after all the style changes.
+    await page.locator(".redditp__hide").click();
+    await expect(
+      page.locator("#redditp-presentation.redditp__interface-hidden"),
+    ).toHaveCount(0);
   });
 });
 

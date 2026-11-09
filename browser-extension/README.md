@@ -66,7 +66,6 @@ https://www.reddit.com/search/?q=formula1&redditp=1.
 - Right arrow or Page Down: next slide
 - Left arrow or Page Up: previous slide
 - Space: toggle auto-advance (the same as A)
-- G: skip the rest of the current gallery; otherwise advance one slide
 - Escape: close
 - F: enter or leave browser fullscreen, when available
 - M: toggle video sound; the choice is remembered for the next presentation

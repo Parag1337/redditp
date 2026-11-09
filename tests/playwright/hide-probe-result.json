@@ -1,0 +1,6390 @@
+{
+ "chrome": {
+  "port320": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 102,
+       "top": 10,
+       "right": 138,
+       "bottom": 46,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 146,
+       "top": 10,
+       "right": 182,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 190,
+       "top": 10,
+       "right": 226,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 234,
+       "top": 10,
+       "right": 270,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 278,
+       "top": 10,
+       "right": 314,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(0, 0, 0, 0)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(89, 89, 89, 0.298)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(20, 20, 20, 0.427)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(145, 145, 145, 0.216)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(52, 52, 52, 0.392)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(149, 149, 149, 0.21)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(88, 88, 88, 0.298)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "port360": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 142,
+       "top": 10,
+       "right": 178,
+       "bottom": 46,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 186,
+       "top": 10,
+       "right": 222,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 230,
+       "top": 10,
+       "right": 266,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 274,
+       "top": 10,
+       "right": 310,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 318,
+       "top": 10,
+       "right": 354,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(221, 221, 221, 0.035)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(132, 132, 132, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(20, 20, 20, 0.427)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(189, 189, 189, 0.18)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(52, 52, 52, 0.392)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(141, 141, 141, 0.22)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(52, 52, 52, 0.392)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "port390": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 150,
+       "top": 10,
+       "right": 190,
+       "bottom": 50,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 198,
+       "top": 10,
+       "right": 238,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 246,
+       "top": 10,
+       "right": 286,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 294,
+       "top": 10,
+       "right": 334,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 342,
+       "top": 10,
+       "right": 382,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(217, 217, 217, 0.035)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(21, 21, 21, 0.34)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(141, 141, 141, 0.22)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(52, 52, 52, 0.392)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(182, 182, 182, 0.184)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(87, 87, 87, 0.3)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "port430": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 190,
+       "top": 10,
+       "right": 230,
+       "bottom": 50,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 238,
+       "top": 10,
+       "right": 278,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 286,
+       "top": 10,
+       "right": 326,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 334,
+       "top": 10,
+       "right": 374,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 382,
+       "top": 10,
+       "right": 422,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(217, 217, 217, 0.02)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(21, 21, 21, 0.337)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(189, 189, 189, 0.18)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(52, 52, 52, 0.392)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(141, 141, 141, 0.22)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(88, 88, 88, 0.298)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "land844": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 602,
+       "top": 8,
+       "right": 642,
+       "bottom": 48,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 650,
+       "top": 8,
+       "right": 690,
+       "bottom": 48,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 698,
+       "top": 8,
+       "right": 738,
+       "bottom": 48,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 746,
+       "top": 8,
+       "right": 786,
+       "bottom": 48,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 794,
+       "top": 8,
+       "right": 834,
+       "bottom": 48,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(217, 217, 217, 0.035)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(21, 21, 21, 0.34)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(150, 150, 150, 0.21)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(89, 89, 89, 0.298)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(149, 149, 149, 0.21)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(84, 84, 84, 0.306)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "desk1280": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 1066,
+       "top": 12,
+       "right": 1100,
+       "bottom": 46,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 1108,
+       "top": 12,
+       "right": 1142,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 1150,
+       "top": 12,
+       "right": 1184,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 1192,
+       "top": 12,
+       "right": 1226,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 1234,
+       "top": 12,
+       "right": 1268,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(188, 188, 188, 0.02)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(89, 89, 89, 0.298)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(21, 21, 21, 0.34)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(145, 145, 145, 0.216)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(52, 52, 52, 0.392)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(140, 140, 140, 0.22)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(88, 88, 88, 0.298)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "desk1920": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 1706,
+       "top": 12,
+       "right": 1740,
+       "bottom": 46,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 1748,
+       "top": 12,
+       "right": 1782,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 1790,
+       "top": 12,
+       "right": 1824,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 1832,
+       "top": 12,
+       "right": 1866,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 1874,
+       "top": 12,
+       "right": 1908,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(217, 217, 217, 0.035)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(89, 89, 89, 0.298)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(22, 22, 22, 0.34)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(163, 163, 163, 0.2)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(52, 52, 52, 0.392)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(141, 141, 141, 0.22)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(87, 87, 87, 0.3)",
+     "eyeOpacity": "1"
+    }
+   }
+  }
+ },
+ "firefox": {
+  "port320": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 102,
+       "top": 10,
+       "right": 138,
+       "bottom": 46,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 146,
+       "top": 10,
+       "right": 182,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 190,
+       "top": 10,
+       "right": 226,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 234,
+       "top": 10,
+       "right": 270,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 278,
+       "top": 10,
+       "right": 314,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(0, 0, 0, 0)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(130, 130, 130, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(23, 23, 23, 0.339)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(87, 87, 87, 0.299)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 102,
+        "top": 10,
+        "right": 138,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 146,
+        "top": 10,
+        "right": 182,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 234,
+        "top": 10,
+        "right": 270,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 278,
+        "top": 10,
+        "right": 314,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "port360": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 142,
+       "top": 10,
+       "right": 178,
+       "bottom": 46,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 186,
+       "top": 10,
+       "right": 222,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 230,
+       "top": 10,
+       "right": 266,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 274,
+       "top": 10,
+       "right": 310,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 318,
+       "top": 10,
+       "right": 354,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(224, 224, 224, 0.02)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(20, 20, 20, 0.428)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(87, 87, 87, 0.299)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 142,
+        "top": 10,
+        "right": 178,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 186,
+        "top": 10,
+        "right": 222,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 230,
+        "top": 10,
+        "right": 266,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 274,
+        "top": 10,
+        "right": 310,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 318,
+        "top": 10,
+        "right": 354,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "port390": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 150,
+       "top": 10,
+       "right": 190,
+       "bottom": 50,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 198,
+       "top": 10,
+       "right": 238,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 246,
+       "top": 10,
+       "right": 286,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 294,
+       "top": 10,
+       "right": 334,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 342,
+       "top": 10,
+       "right": 382,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(182, 182, 182, 0.02)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(23, 23, 23, 0.339)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(133, 133, 133, 0.228)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(52, 52, 52, 0.395)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 150,
+        "top": 10,
+        "right": 190,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 198,
+        "top": 10,
+        "right": 238,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 246,
+        "top": 10,
+        "right": 286,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 294,
+        "top": 10,
+        "right": 334,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 342,
+        "top": 10,
+        "right": 382,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "port430": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 190,
+       "top": 10,
+       "right": 230,
+       "bottom": 50,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 238,
+       "top": 10,
+       "right": 278,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 286,
+       "top": 10,
+       "right": 326,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 334,
+       "top": 10,
+       "right": 374,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 382,
+       "top": 10,
+       "right": 422,
+       "bottom": 50,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(222, 222, 222, 0.061)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(28, 28, 28, 0.353)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 190,
+        "top": 10,
+        "right": 230,
+        "bottom": 50,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 238,
+        "top": 10,
+        "right": 278,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 286,
+        "top": 10,
+        "right": 326,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 334,
+        "top": 10,
+        "right": 374,
+        "bottom": 50,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 382,
+        "top": 10,
+        "right": 422,
+        "bottom": 50,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "land844": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 602,
+       "top": 8,
+       "right": 642,
+       "bottom": 48,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 650,
+       "top": 8,
+       "right": 690,
+       "bottom": 48,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 698,
+       "top": 8,
+       "right": 738,
+       "bottom": 48,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 746,
+       "top": 8,
+       "right": 786,
+       "bottom": 48,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 794,
+       "top": 8,
+       "right": 834,
+       "bottom": 48,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(246, 246, 246, 0.008)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(130, 130, 130, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(21, 21, 21, 0.34)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 602,
+        "top": 8,
+        "right": 642,
+        "bottom": 48,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 650,
+        "top": 8,
+        "right": 690,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 698,
+        "top": 8,
+        "right": 738,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 746,
+        "top": 8,
+        "right": 786,
+        "bottom": 48,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 794,
+        "top": 8,
+        "right": 834,
+        "bottom": 48,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "desk1280": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 1066,
+       "top": 12,
+       "right": 1100,
+       "bottom": 46,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 1108,
+       "top": 12,
+       "right": 1142,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 1150,
+       "top": 12,
+       "right": 1184,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 1192,
+       "top": 12,
+       "right": 1226,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 1234,
+       "top": 12,
+       "right": 1268,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(232, 232, 232, 0.02)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(24, 24, 24, 0.214)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1066,
+        "top": 12,
+        "right": 1100,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1108,
+        "top": 12,
+        "right": 1142,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1150,
+        "top": 12,
+        "right": 1184,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1192,
+        "top": 12,
+        "right": 1226,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1234,
+        "top": 12,
+        "right": 1268,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   }
+  },
+  "desk1920": {
+   "start": {
+    "chips": [
+     [
+      "close",
+      {
+       "left": 1706,
+       "top": 12,
+       "right": 1740,
+       "bottom": 46,
+       "svgW": null,
+       "hidden": false
+      }
+     ],
+     [
+      "rotate",
+      {
+       "left": 1748,
+       "top": 12,
+       "right": 1782,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "settings-button",
+      {
+       "left": 1790,
+       "top": 12,
+       "right": 1824,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "fullscreen",
+      {
+       "left": 1832,
+       "top": 12,
+       "right": 1866,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ],
+     [
+      "hide",
+      {
+       "left": 1874,
+       "top": 12,
+       "right": 1908,
+       "bottom": 46,
+       "svgW": 18,
+       "hidden": false
+      }
+     ]
+    ],
+    "hiddenAttr": false,
+    "display": "block",
+    "visibility": "visible",
+    "eyeBg": "rgba(221, 221, 221, 0.02)",
+    "eyeOpacity": "1"
+   },
+   "cycle1": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.08)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle2": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(131, 131, 131, 0.23)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   },
+   "cycle3": {
+    "shown": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "visible",
+     "eyeBg": "rgba(133, 133, 133, 0.229)",
+     "eyeOpacity": "1"
+    },
+    "hidden": {
+     "chips": [
+      [
+       "close",
+       {
+        "left": 1706,
+        "top": 12,
+        "right": 1740,
+        "bottom": 46,
+        "svgW": null,
+        "hidden": false
+       }
+      ],
+      [
+       "rotate",
+       {
+        "left": 1748,
+        "top": 12,
+        "right": 1782,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "settings-button",
+       {
+        "left": 1790,
+        "top": 12,
+        "right": 1824,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "fullscreen",
+       {
+        "left": 1832,
+        "top": 12,
+        "right": 1866,
+        "bottom": 46,
+        "svgW": 18,
+        "hidden": false
+       }
+      ],
+      [
+       "hide",
+       {
+        "left": 1874,
+        "top": 12,
+        "right": 1908,
+        "bottom": 46,
+        "svgW": 14,
+        "hidden": false
+       }
+      ]
+     ],
+     "hiddenAttr": false,
+     "display": "block",
+     "visibility": "hidden",
+     "eyeBg": "rgba(36, 36, 36, 0.46)",
+     "eyeOpacity": "1"
+    }
+   }
+  }
+ }
+}

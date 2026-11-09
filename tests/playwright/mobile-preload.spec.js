@@ -367,7 +367,7 @@ test.describe("mobile viewer redesign", () => {
     await expect(page.locator(".redditp__count")).toHaveText("3 / 4");
   });
 
-  test("the title clamps to two lines and controls keep safe spacing at 320px", async ({
+  test("the title shares one row with the chips and truncates at 320px", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 320, height: 640 });
@@ -381,21 +381,88 @@ test.describe("mobile viewer redesign", () => {
           "#redditp-presentation .redditp__control-item, #redditp-presentation .redditp__close",
         ),
       ].filter((chip) => !chip.hidden);
+      const chipBoxes = chips.map((chip) => chip.getBoundingClientRect());
+      const details = document
+        .querySelector(".redditp__details")
+        .getBoundingClientRect();
       return {
         lineHeight: parseFloat(style.lineHeight),
         height: box.height,
         clamp: style.webkitLineClamp,
-        detailsTop: document
-          .querySelector(".redditp__details")
-          .getBoundingClientRect().top,
-        chipsBottom: Math.max(
-          ...chips.map((chip) => chip.getBoundingClientRect().bottom),
-        ),
+        details,
+        chipsLeft: Math.min(...chipBoxes.map((b) => b.left)),
+        chipsTop: Math.min(...chipBoxes.map((b) => b.top)),
+        chipsBottom: Math.max(...chipBoxes.map((b) => b.bottom)),
       };
     });
-    expect(layout.clamp).toBe("2");
-    expect(layout.height).toBeLessThanOrEqual(layout.lineHeight * 2 + 1);
-    // The title panel starts below the chip row: no overlap at 320px.
-    expect(layout.detailsTop).toBeGreaterThanOrEqual(layout.chipsBottom - 1);
+    // One ellipsized line: the title no longer wraps under the chips.
+    expect(layout.clamp).toBe("1");
+    expect(layout.height).toBeLessThanOrEqual(layout.lineHeight + 1);
+    // Single-row header: the title panel sits in the chips' vertical band,
+    // ends before the first chip, and shares no pixel with any chip box.
+    expect(layout.details.top).toBeLessThanOrEqual(layout.chipsBottom - 1);
+    expect(layout.details.bottom).toBeGreaterThanOrEqual(layout.chipsTop + 1);
+    expect(layout.details.right).toBeLessThanOrEqual(layout.chipsLeft + 0.5);
+  });
+});
+
+test.describe("landscape phones keep the touch-sized top bar", () => {
+  test("landscape phone gets the mobile control set with tighter overlays", async ({ page }) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.route("https://www.reddit.com/r/pics/", (route) =>
+      route.fulfill({
+        contentType: "text/html",
+        body: Array.from(
+          { length: 4 },
+          (_, i) =>
+            `<div class="thing link" data-fullname="t3_l${i}" data-url="https://i.redd.it/l${i}.jpg" data-permalink="/r/pics/comments/l${i}/post/" data-author="p1" data-subreddit="pics"><a class="title">Post ${i + 1}</a></div>`
+        ).join(""),
+      })
+    );
+    await page.route("https://i.redd.it/**", (route) =>
+      route.fulfill({
+        contentType: "image/svg+xml",
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"/>',
+      })
+    );
+    await page.goto("https://www.reddit.com/r/pics/");
+    await page.addStyleTag({ path: extensionStyles });
+    await page.addScriptTag({ path: extensionScript });
+    await expect(page.locator("#redditp-presentation")).toBeVisible();
+    await page.keyboard.press("a");
+    const layout = await page.evaluate(() => {
+      const chip = document.querySelector(".redditp__settings-button");
+      const details = document.querySelector(".redditp__details");
+      const chips = [
+        ...document.querySelectorAll(
+          "#redditp-presentation .redditp__control-item, #redditp-presentation .redditp__close",
+        ),
+      ].filter((el) => !el.hidden);
+      const chipBoxes = chips.map((el) => el.getBoundingClientRect());
+      const detailsBox = details
+        ? details.getBoundingClientRect()
+        : null;
+      return {
+        chipWidth: chip ? chip.getBoundingClientRect().width : null,
+        detailsMaxHeight: details
+          ? parseFloat(getComputedStyle(details).maxHeight)
+          : null,
+        detailsRight: detailsBox ? detailsBox.right : null,
+        chipsLeft: Math.min(...chipBoxes.map((b) => b.left)),
+        chipsTop: Math.min(...chipBoxes.map((b) => b.top)),
+        detailsTop: detailsBox ? detailsBox.top : null,
+      };
+    });
+    // The mobile block's 40px touch chips apply in landscape (the desktop
+    // 34px chips would be the fallback), the title panel caps at 38dvh, and
+    // title plus chips still share one row with no overlap.
+    expect(layout.chipWidth).toBeCloseTo(40, 0);
+    expect(layout.detailsMaxHeight).toBeCloseTo(0.38 * 390, 0);
+    // Same flex row: the title panel starts on the chips' band (a stacked
+    // header would push it below the whole chip row).
+    expect(Math.abs(layout.detailsTop - layout.chipsTop)).toBeLessThanOrEqual(
+      10,
+    );
+    expect(layout.detailsRight).toBeLessThanOrEqual(layout.chipsLeft + 0.5);
   });
 });
