@@ -23,8 +23,12 @@
     sans-serif;
   text-align: left;
   color-scheme: dark;
+  /* The viewer owns its gestures: taps and swipes are pointer-event driven,
+     and the numbered strip opts into native horizontal panning for itself.
+     The previous pan-y here intersected away pan-x for every descendant,
+     which left the number track without native touch scrolling on phones. */
+  touch-action: pan-x pan-y;
   overscroll-behavior: contain;
-  touch-action: pan-y;
   padding-top: env(safe-area-inset-top);
   padding-right: env(safe-area-inset-right);
   padding-bottom: env(safe-area-inset-bottom);
@@ -930,6 +934,12 @@
   /* Only the number buttons take clicks; the empty strip stays transparent to
      the native video controls underneath and to tap zones. */
   pointer-events: none;
+  /* Native horizontal touch scrolling for the strip on phones: without this
+     the track's pan-x intersected the root's pan-y into "no panning at all",
+     leaving long bars unscrollable by touch (JS swipes navigated posts
+     instead). pointercancel during the native scroll keeps the media swipe
+     handler from double-firing. */
+  touch-action: pan-x;
 }
 #redditp-presentation .redditp__numbers::-webkit-scrollbar {
   display: none;
@@ -1002,14 +1012,20 @@
 }
 
 @media (max-width: 600px) {
-  /* ---- Mobile touch targets (phase 4a) ----------------------------------
+  /* ---- Mobile touch targets (phase 4a, redesign pass 2026-11) -----------
      Narrow, touch-oriented screens get a properly sized control row without
      changing the desktop UI: the visible chips grow from 34px to 40px and
      every row control reaches a 48x48 effective tap area through an
      invisible ::after zone instead of extra visual padding. The row was
      respaced to a 48px pitch so the enlarged tap zones exactly abut rather
      than overlap, and the close button joins the row (it previously sat on
-     top of the fullscreen button's corner). */
+     top of the fullscreen button's corner).
+
+     Redesign pass: the chips follow env(safe-area-inset-top) (absolute
+     children ignore the root's safe-area padding), the title clamps to two
+     lines, the bottom navigation shrinks to compact pill chips (44px touch
+     targets kept via invisible hit zones), and settings becomes a bottom
+     sheet. */
 
   #redditp-presentation .redditp__hide,
   #redditp-presentation .redditp__fullscreen,
@@ -1017,7 +1033,9 @@
   #redditp-presentation .redditp__rotate,
   #redditp-presentation .redditp__button.redditp__gallery,
   #redditp-presentation .redditp__close {
-    top: 10px;
+    /* Absolute positioning ignores the root's safe-area padding, so the
+       inset must be added here to clear notches and status bars. */
+    top: calc(10px + env(safe-area-inset-top, 0px));
     width: 40px;
     height: 40px;
   }
@@ -1059,12 +1077,109 @@
      button that only exists on gallery slides. At a 48px chip pitch the old
      side-clearance model squeezed long titles into a 54-130px column on
      phones, so the panel now starts below the chips and claims the full
-     width instead. */
+     width instead. The clamp keeps long titles to two lines so the media
+     keeps the screen. */
   #redditp-presentation .redditp__details {
-    top: 58px;
+    top: calc(58px + env(safe-area-inset-top, 0px));
     width: min(800px, calc(100vw - 16px));
-    max-height: calc(100vh - 150px);
-    max-height: calc(100dvh - 150px);
+    max-height: 32vh;
+    max-height: 32dvh;
+  }
+
+  #redditp-presentation .redditp__title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 15px;
+  }
+
+  #redditp-presentation .redditp__meta {
+    font-size: 11px;
+  }
+
+  /* ---- Compact bottom navigation ---------------------------------------
+     A photo-viewer strip instead of oversized desktop numbers: the count
+     stays fixed, the numbered chips become compact pills with invisible
+     44px hit zones, and the whole row hugs the bottom safe area. */
+  #redditp-presentation .redditp__controls {
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    gap: 5px;
+    padding-left: 8px;
+  }
+
+  #redditp-presentation .redditp__count {
+    min-height: 32px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+
+  #redditp-presentation .redditp__numbers {
+    gap: 5px;
+    padding: 5px 10px;
+    scroll-padding-inline: 10px;
+  }
+
+  #redditp-presentation .redditp__number {
+    position: relative;
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0 5px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+
+  #redditp-presentation .redditp__number--active {
+    background: #d93900;
+    color: #fff;
+  }
+
+  /* Invisible hit-area extensions: the visual chips stay compact while the
+     effective touch targets reach the 42-44px band. */
+  #redditp-presentation .redditp__number::after,
+  #redditp-presentation .redditp__numbers .redditp__auto::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+  }
+
+  #redditp-presentation .redditp__numbers .redditp__auto {
+    position: relative;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0 9px;
+    border-radius: 999px;
+  }
+
+  /* The video's native controls strip and the spinner: the loader moves to
+     the vertical center where no chip row competes with it. */
+  #redditp-presentation .redditp__media.redditp__loading::after {
+    top: 50%;
+    margin-top: -17px;
+  }
+
+  /* ---- Settings as a bottom sheet ---------------------------------------
+     A desktop-centered dialog wastes the top half of a phone. The sheet
+     docks to the bottom edge, keeps its own vertical scroll, and respects
+     the bottom safe area. */
+  #redditp-presentation .redditp__settings-overlay {
+    place-items: end center;
+    padding: 0;
+  }
+
+  #redditp-presentation .redditp__settings {
+    width: 100%;
+    max-height: 85vh;
+    max-height: 85dvh;
+    padding: 20px 14px calc(16px + env(safe-area-inset-bottom, 0px));
+    border: 0;
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
+  }
+
+  #redditp-presentation .redditp__settings h2 {
+    font-size: 19px;
   }
 
   /* Settings: full-height exit and a finger-sized duration input. */

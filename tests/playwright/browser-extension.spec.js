@@ -747,9 +747,16 @@ test("long post titles wrap inside the title panel", async ({ page }) => {
         lineHeight: parseFloat(getComputedStyle(title).lineHeight),
         whiteSpace: getComputedStyle(title).whiteSpace,
         fitsWidth: title.scrollWidth <= title.clientWidth,
+        clamp: getComputedStyle(title).webkitLineClamp,
       };
     });
-  expect(titleLayout.height).toBeGreaterThan(titleLayout.lineHeight * 2);
+  // The mobile redesign clamps long titles to two lines so the media keeps
+  // the screen: the title may reach two lines but never a third.
+  expect(titleLayout.clamp).toBe("2");
+  expect(titleLayout.height).toBeGreaterThanOrEqual(titleLayout.lineHeight);
+  expect(titleLayout.height).toBeLessThanOrEqual(
+    titleLayout.lineHeight * 2 + 1,
+  );
   expect(titleLayout.whiteSpace).toBe("normal");
   expect(titleLayout.fitsWidth).toBe(true);
   await expect(page.locator(".redditp__controls")).toBeInViewport();
@@ -2150,7 +2157,9 @@ test("settings shortcut reference fits mobile and desktop screens", async ({
     expect(bounds.left).toBeGreaterThanOrEqual(0);
     expect(bounds.top).toBeGreaterThanOrEqual(0);
     expect(bounds.right).toBeLessThanOrEqual(width);
-    expect(bounds.bottom).toBeLessThanOrEqual(height);
+    // The bottom sheet docks to the viewport's bottom edge; Firefox rounds
+    // the dvh math to a subpixel epsilon past it.
+    expect(bounds.bottom).toBeLessThanOrEqual(height + 0.5);
     expect(bounds.overflow).toBe(0);
     await expect(help.locator("p")).toBeInViewport();
     await page.screenshot({
@@ -5716,21 +5725,30 @@ test.describe("phase 4a mobile touch targets", () => {
         `${width}: title panel clear of hit zones`,
       ).toEqual([]);
 
-      // Numbered navigation stays finger-sized and fully on screen.
+      // Numbered navigation: compact mobile chips (the redesign shrinks the
+      // oversized desktop-size buttons) that stay fully on screen, with the
+      // 44px-class touch target carried by the invisible ::after zone.
       expect(layout.numbers.length, `${width}: numbers + auto`).toBe(5);
       for (const number of layout.numbers) {
         expect(number.rect.width, `${width}: number width`).toBeGreaterThanOrEqual(
-          43.5,
+          29.5,
         );
         expect(
           number.rect.height,
           `${width}: number height`,
-        ).toBeGreaterThanOrEqual(43.5);
+        ).toBeGreaterThanOrEqual(29.5);
         expect(
           number.rect.right,
           `${width}: number visible`,
         ).toBeLessThanOrEqual(width + 0.5);
       }
+      const chipHitZone = await page.evaluate(() => {
+        const chip = document.querySelector(".redditp__number");
+        if (!chip) return null;
+        const zone = getComputedStyle(chip, "::after");
+        return { inset: zone.inset, position: zone.position };
+      });
+      expect(chipHitZone).toEqual({ inset: "-6px", position: "absolute" });
 
       // Arrows gained the missing width; height unchanged.
       for (const arrowName of ["prev", "next"]) {
@@ -5996,6 +6014,35 @@ test.describe("phase 4b bottom bar polish", () => {
     [1280, 800],
   ];
 
+  // Mobile centering scrolls the numbered strip smoothly; measurements must
+  // wait until the track has settled or the active chip can be caught
+  // mid-flight. The target position is scroll-invariant (current scrollLeft
+  // plus viewport-relative rects cancel out), so waiting for scrollLeft to
+  // reach it is browser-independent — Firefox's smooth animation and
+  // Chromium's alike.
+  async function settleNumberTrack(page) {
+    await page.waitForFunction(() => {
+      const bar = document.querySelector(".redditp__numbers");
+      const active = bar && bar.querySelector(".redditp__number--active");
+      if (!bar || !active) return true;
+      // Desktop keeps edge anchoring (no scroll when already visible); only
+      // the mobile mode centers, so only it has a fixed target to reach.
+      if (!window.matchMedia("(max-width: 600px)").matches) return true;
+      const maxScroll = bar.scrollWidth - bar.clientWidth;
+      if (maxScroll <= 0) return true;
+      const a = active.getBoundingClientRect();
+      const b = bar.getBoundingClientRect();
+      const target = Math.max(
+        0,
+        Math.min(
+          maxScroll,
+          bar.scrollLeft + (a.left - b.left) - (bar.clientWidth - a.width) / 2,
+        ),
+      );
+      return Math.abs(bar.scrollLeft - target) <= 1;
+    });
+  }
+
   async function measureBottomBar(page) {
     return page.evaluate(() => {
       const rect = (el) => {
@@ -6084,9 +6131,10 @@ test.describe("phase 4b bottom bar polish", () => {
       // (or mid) navigation the track is scrolled and the toggle is off
       // screen, so the row still holds together without that pair.
       expect(m.countVisible, `${width}: chip visible`).toBe(true);
-      expect(m.count.left, `${width}: chip left breathing`).toBeGreaterThanOrEqual(
-        11.5,
-      );
+      expect(
+        m.count.left,
+        `${width}: chip left breathing`,
+      ).toBeGreaterThanOrEqual(width <= 600 ? 7.5 : 11.5);
       if (m.auto.left >= m.bar.left - 0.5) {
         expect(m.count.right, `${width}: chip clear of toggle`).toBeLessThanOrEqual(
           m.auto.left + 0.5,
@@ -6096,9 +6144,15 @@ test.describe("phase 4b bottom bar polish", () => {
         height + 0.5,
       );
 
-      // Balanced end padding on the scrolling region.
-      expect(m.barPadding.left, `${width}: track left padding`).toBe(16);
-      expect(m.barPadding.right, `${width}: track right padding`).toBe(16);
+      // Balanced end padding on the scrolling region: compact on phones,
+      // desktop keeps the original 16px band.
+      const expectedPad = width <= 600 ? 10 : 16;
+      expect(m.barPadding.left, `${width}: track left padding`).toBe(
+        expectedPad,
+      );
+      expect(m.barPadding.right, `${width}: track right padding`).toBe(
+        expectedPad,
+      );
 
       // Long feed: the strip scrolls; the page itself never grows sideways
       // and the viewer root stays anchored at the viewport origin.
@@ -6114,6 +6168,7 @@ test.describe("phase 4b bottom bar polish", () => {
       await page.locator(".redditp__number").nth(49).click();
       await expect(page.locator(".redditp__count")).toHaveText("50 / 100");
       await expect(page.locator(".redditp__title")).toHaveText("Post 50");
+      await settleNumberTrack(page);
       m = await measureBottomBar(page);
       expect(m.countVisible).toBe(true);
       expect(m.countText).toBe("50 / 100");
@@ -6135,6 +6190,7 @@ test.describe("phase 4b bottom bar polish", () => {
       // breathing room; the chip is still there.
       await page.locator(".redditp__number").nth(99).click();
       await expect(page.locator(".redditp__title")).toHaveText("Post 100");
+      await settleNumberTrack(page);
       m = await measureBottomBar(page);
       expect(m.countVisible, `${width}: chip visible at feed end`).toBe(true);
       expect(m.countText, `${width}: count at feed end`).toContain(
@@ -6144,7 +6200,7 @@ test.describe("phase 4b bottom bar polish", () => {
       expect(
         last.right,
         `${width}: last button honors end padding`,
-      ).toBeLessThanOrEqual(width - 11.5);
+      ).toBeLessThanOrEqual(width - (width <= 600 ? 8.5 : 11.5));
       expect(
         last.right,
         `${width}: last button fully visible`,
@@ -6165,8 +6221,10 @@ test.describe("phase 4b bottom bar polish", () => {
     await expect(page.locator(".redditp__number").first()).toBeHidden();
     const m = await measureBottomBar(page);
     expect(m.countVisible).toBe(false);
-    expect(m.auto.width).toBeCloseTo(44, 1);
-    expect(m.auto.height).toBeCloseTo(44, 1);
+    // The redesign compacted the toggle on phones (36px visual pill); the
+    // 44px-class touch target rides on its invisible ::after zone.
+    expect(m.auto.width).toBeCloseTo(36, 1);
+    expect(m.auto.height).toBeCloseTo(34, 1);
 
     // P restores them; the band survives untouched.
     await page.keyboard.press("p");

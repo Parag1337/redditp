@@ -68,7 +68,9 @@ distributed as "Presentation Mode for Reddit", first public extension version
   names, and the historical file/attribute naming) are intentionally
   unchanged, so existing users keep their saved settings and bookmarks.
 - First Firefox Add-ons (AMO) targeted release: MV3 event-page background,
-  static add-on id, `strict_min_version` 140.0 (142.0 on Android), and the
+  static add-on id `{941a3bf7-8de6-4d3a-b7d3-a6f7b5220fd2}` (an independent
+  fork identity — the upstream RedditP add-on keeps its own id and listing),
+  `strict_min_version` 140.0 (142.0 on Android), and the
   `data_collection_permissions: none` declaration.
 
 ### Security / privacy posture
@@ -78,6 +80,9 @@ distributed as "Presentation Mode for Reddit", first public extension version
   (`credentials: "omit"`).
 - No analytics, tracking, or extension-owned servers; a full privacy policy
   ships as `PRIVACY.md`.
+- Every dynamic HTML parse in the viewer now goes through inert `DOMParser`
+  parsing and static SVG icons go through the same parse path; AMO lint
+  (`web-ext lint`) reports 0 errors, 0 notices, and 0 warnings for the package.
 - iframe player sound control is deliberately not implemented because it
   would require cross-origin permissions; sound works for Reddit-hosted video
   and the supported embed protocols.

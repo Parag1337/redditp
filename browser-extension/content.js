@@ -42,6 +42,15 @@
   // window itself stays inside the ordinary preloadPosts horizon.
   const VIDEO_PRELOAD_LIMIT = 2;
   const VIDEO_PRELOAD_WINDOW = 2;
+  // A preload that produces neither completion nor an error within this
+  // budget is treated as failed (with the ordinary bounded retries): a hung
+  // connection must not hold a concurrency slot forever, and a display that
+  // joined the job must not sit on the loading indicator indefinitely.
+  const PRELOAD_TIMEOUT_MS = 30000;
+  // Same budget for the element on stage: media that shows no data event in
+  // time gets one fresh retry before the failure card takes over, so the
+  // loader can never outlive the truth by more than one bounded attempt.
+  const DISPLAY_TIMEOUT_MS = 30000;
   // Duration eligibility (Phase 5A): a post whose media is exclusively video
   // with every duration KNOWN to exceed this limit is excluded from the
   // eligible navigation sequence. Images are never filtered, and an unknown
@@ -1879,6 +1888,17 @@
   // the loading state that render created — never a newer one's loader.
   let renderGeneration = 0;
 
+  // Single-slot watchdog for the element currently on stage; cleared at
+  // every render and on every readiness signal (see armDisplayWatchdog).
+  let displayWatchdog = null;
+
+  function clearDisplayWatchdog() {
+    if (displayWatchdog) {
+      clearTimeout(displayWatchdog);
+      displayWatchdog = null;
+    }
+  }
+
   function dispatchRedditDashEvent(video, type) {
     if (video.isConnected) {
       video.dispatchEvent(new Event(type, { bubbles: true }));
@@ -2036,8 +2056,13 @@
   // an ancestor with `overflow: hidden` still counts as programmatically
   // scrollable — so a wide numbered bar used to drag the whole viewer
   // sideways with every rapid Arrow key press. Setting the track's own
-  // scrollLeft keeps the viewer anchored to the viewport no matter how the
-  // track is laid out.
+  // scroll position keeps the viewer anchored to the viewport no matter how
+  // the track is laid out.
+  //
+  // Narrow (mobile) screens center the active chip so navigation reads as a
+  // carousel; desktop keeps the original edge-anchoring, which only moves
+  // the track when the button would otherwise clip. Smooth scrolling is
+  // skipped when the OS asks for reduced motion.
   function scrollNumberTrackTo(button) {
     const track = button.parentElement;
     if (!track) return;
@@ -2047,12 +2072,32 @@
     const rect = button.getBoundingClientRect();
     const padLeft = parseFloat(getComputedStyle(track).paddingLeft) || 0;
     const padRight = parseFloat(getComputedStyle(track).paddingRight) || 0;
-    const left = track.scrollLeft + (rect.left - trackLeft);
-    const right = track.scrollLeft + (rect.right - trackLeft);
-    if (left < track.scrollLeft) {
-      track.scrollLeft = Math.min(maxScroll, left - padLeft);
-    } else if (right > track.scrollLeft + track.clientWidth) {
-      track.scrollLeft = Math.max(0, right - track.clientWidth + padRight);
+    const center = window.matchMedia("(max-width: 600px)").matches;
+    let left;
+    if (center) {
+      left =
+        track.scrollLeft +
+        (rect.left - trackLeft) -
+        (track.clientWidth - rect.width) / 2;
+    } else {
+      const leftEdge = track.scrollLeft + (rect.left - trackLeft);
+      const rightEdge = track.scrollLeft + (rect.right - trackLeft);
+      if (leftEdge < track.scrollLeft) {
+        left = leftEdge - padLeft;
+      } else if (rightEdge > track.scrollLeft + track.clientWidth) {
+        left = rightEdge - track.clientWidth + padRight;
+      } else {
+        return;
+      }
+    }
+    left = Math.max(0, Math.min(maxScroll, left));
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (center && !reduceMotion && typeof track.scrollTo === "function") {
+      track.scrollTo({ left, behavior: "smooth" });
+    } else {
+      track.scrollLeft = left;
     }
   }
 
@@ -2379,7 +2424,7 @@
       state.preloadCache.delete(key);
       state.preloadRetry.delete(key);
       state.preloadStats.evicted += 1;
-      debugLogEvent("preload-evict", key);
+      debugLogEvent("preload-evict", { key, reason: "horizon" });
     }
     // Drop per-slide shortcuts to released entries so a stale revisit cannot
     // re-use media whose resources were freed.
@@ -2974,6 +3019,99 @@
     return index === -1 ? Infinity : Math.abs(index - state.index);
   }
 
+  // Shared failure tail for a preload job: the bounded retry requeue, stats,
+  // diagnostics, and scheduler restart. `reason` distinguishes real errors
+  // from watchdog timeouts in the log. A slide is only parked with
+  // `preloadFailed` once its retries are spent, so a one-off failure can
+  // still be retried by the requeue (and by a later revisit) instead of the
+  // retry job being dropped by the scheduler's failed-slide filter.
+  function failPreloadJob(job, key, reason) {
+    const retries = (state.preloadRetry.get(key) || 0) + 1;
+    state.preloadRetry.set(key, retries);
+    state.preloadStats.failed += 1;
+    state.preloadInFlight.delete(key);
+    if (retries <= state.preloadRetryLimit) {
+      state.preloadQueue.push({
+        key,
+        slide: job.slide,
+        priority: job.priority + 1,
+        // The requeued job keeps its kind so a RedGIFs metadata job retries
+        // as metadata (the runPreload branches read slide.kind for media).
+        jobKind: job.jobKind,
+      });
+      debugLogEvent("preload-retry", { key, retries, reason });
+    } else {
+      job.slide.preloadFailed = true;
+    }
+    debugLogEvent("preload-failed", { key, retries, reason });
+    schedulePreloadQueue();
+  }
+
+  // Watchdog helpers: a job that neither completes nor errors within the
+  // budget is failed through the ordinary bounded-retry path above. The
+  // callback re-checks every condition because the timer can fire after a
+  // cancel, a close, or a superseding job for the same key.
+  function clearPreloadTimeout(job) {
+    if (job && job.timeoutId) {
+      clearTimeout(job.timeoutId);
+      job.timeoutId = null;
+    }
+  }
+
+  function armPreloadTimeout(job) {
+    clearPreloadTimeout(job);
+    job.timeoutId = setTimeout(() => {
+      job.timeoutId = null;
+      if (job.canceled || !state.open) return;
+      if (state.preloadInFlight.get(job.key) !== job) return;
+      releasePreloadResource(job.media);
+      job.media = null;
+      debugLogEvent("preload-timeout", job.key);
+      failPreloadJob(job, job.key, "timeout");
+    }, PRELOAD_TIMEOUT_MS);
+  }
+
+  // Display-side watchdog: the element on stage must reach a usable state
+  // within the budget. One silent budget earns a fresh restart (a hung
+  // connection often answers a restarted request); a second silent budget
+  // ends in the failure card. Ready media, navigation away, and superseded
+  // elements all disarm it.
+  function restartDisplayElement(video) {
+    // A DASH-attached element carries a live MediaSource; load() would tear
+    // it down, so the restart is refused and the watchdog's next pass takes
+    // the failure path instead.
+    if (video.getAttribute("data-redditp-dash") === "attached") return false;
+    try {
+      video.pause();
+      video.load();
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function armDisplayWatchdog(element, slide, isReady, canRestart) {
+    clearDisplayWatchdog();
+    if (isReady()) return;
+    let retried = false;
+    const attempt = () => {
+      displayWatchdog = setTimeout(() => {
+        displayWatchdog = null;
+        if (!state.open || state.slides[state.index] !== slide) return;
+        if (element.parentNode !== mediaBox || isReady()) return;
+        if (!retried && canRestart()) {
+          retried = true;
+          debugLogEvent("display-timeout-retry", mediaPreloadKey(slide));
+          attempt();
+          return;
+        }
+        debugLogEvent("display-timeout", mediaPreloadKey(slide));
+        showMediaFailure(element, slide);
+      }, DISPLAY_TIMEOUT_MS);
+    };
+    attempt();
+  }
+
   // Releases the cached video resource farthest from the displayed slide,
   // and only when it is strictly farther than the waiting job asking for
   // room. Returns whether one was released. Never releases the resource
@@ -3009,7 +3147,7 @@
     state.preloadCache.delete(farKey);
     state.preloadRetry.delete(farKey);
     state.preloadStats.evicted += 1;
-    debugLogEvent("preload-evict", farKey);
+    debugLogEvent("preload-evict", { key: farKey, reason: "video-budget" });
     return true;
   }
 
@@ -3024,6 +3162,7 @@
       // A job canceled by close() or eviction (or fired after the viewer
       // closed) must not fill the cache or restart the scheduler.
       if (job.canceled || !state.open) {
+        clearPreloadTimeout(job);
         releasePreloadResource(job.media);
         state.preloadInFlight.delete(key);
         return;
@@ -3034,6 +3173,7 @@
       // RedGIFs metadata resolution: no element of its own, so nothing to
       // attach; the resolution is awaited and the successful upgrade hands
       // the slide to the ordinary video pipeline on the next pass.
+      armPreloadTimeout(job);
       void runRedgifsPreload(job);
       return;
     }
@@ -3043,6 +3183,7 @@
       image.decoding = "async";
       image.redditpPreloaded = true;
       const finish = () => {
+        clearPreloadTimeout(job);
         job.slide.preloadedImage = image;
         job.slide.preloadFailed = false;
         state.preloadCache.set(key, image);
@@ -3081,6 +3222,7 @@
               // guarded callbacks do.
               .then(() => {
                 if (job.canceled || !state.open) {
+                  clearPreloadTimeout(job);
                   releasePreloadResource(job.media);
                   state.preloadInFlight.delete(key);
                   return;
@@ -3098,24 +3240,12 @@
       image.addEventListener(
         "error",
         guarded(() => {
-          job.slide.preloadFailed = true;
-          const retries = (state.preloadRetry.get(key) || 0) + 1;
-          state.preloadRetry.set(key, retries);
-          state.preloadStats.failed += 1;
-          state.preloadInFlight.delete(key);
-          if (retries <= state.preloadRetryLimit) {
-            state.preloadQueue.push({
-              key,
-              slide: job.slide,
-              priority: job.priority + 1,
-            });
-            debugLogEvent("preload-retry", { key, retries });
-          }
-          debugLogEvent("preload-failed", { key, retries });
-          schedulePreloadQueue();
+          clearPreloadTimeout(job);
+          failPreloadJob(job, key, "error");
         }),
         { once: true },
       );
+      armPreloadTimeout(job);
       debugLogEvent("preload-start", key);
       image.src = job.slide.url;
       return;
@@ -3149,6 +3279,7 @@
       video.addEventListener(
         "loadedmetadata",
         guarded(() => {
+          clearPreloadTimeout(job);
           noteVideoDuration(job.slide, video);
           state.preloadCache.set(key, video);
           state.preloadStats.loaded += 1;
@@ -3193,27 +3324,15 @@
         guarded(() => {
           // Without a failure marker this error handler would re-queue the
           // same URL forever (an HLS playlist on a browser that cannot play
-          // it, removed media, a network outage). Retry a limited number of
-          // times like the image path before parking the slide.
-          const retries = (state.preloadRetry.get(key) || 0) + 1;
-          state.preloadRetry.set(key, retries);
-          state.preloadStats.failed += 1;
-          state.preloadInFlight.delete(key);
-          if (retries <= state.preloadRetryLimit) {
-            state.preloadQueue.push({
-              key,
-              slide: job.slide,
-              priority: job.priority + 1,
-            });
-            debugLogEvent("preload-retry", { key, retries });
-          } else {
-            job.slide.preloadFailed = true;
-          }
-          debugLogEvent("preload-failed", { key, retries });
-          schedulePreloadQueue();
+          // it, removed media, a network outage). The shared failure path
+          // retries a limited number of times like the image path before
+          // parking the slide.
+          clearPreloadTimeout(job);
+          failPreloadJob(job, key, "error");
         }),
         { once: true },
       );
+      armPreloadTimeout(job);
       debugLogEvent("preload-start", key);
       video.src = job.slide.url;
       return;
@@ -3301,6 +3420,7 @@
   async function runRedgifsPreload(job) {
     const slide = job.slide;
     const result = await resolveRedgifsMedia(slide.redgifsId);
+    clearPreloadTimeout(job);
     state.preloadInFlight.delete(job.key);
     if (job.canceled || !state.open) {
       releasePreloadResource(job.media);
@@ -3389,6 +3509,7 @@
     state.preloadQueue = [];
     for (const job of state.preloadInFlight.values()) {
       job.canceled = true;
+      clearPreloadTimeout(job);
       if (job.media) releasePreloadResource(job.media);
     }
     state.preloadStats.canceled += state.preloadInFlight.size;
@@ -3671,6 +3792,9 @@
     }
     renderGeneration += 1;
     const generation = renderGeneration;
+    // The watchdog belongs to the element about to be built; the previous
+    // slide's timer must never fire into this render's stage.
+    clearDisplayWatchdog();
     stopMedia();
     resolveIneligibleIndex();
     syncPresentationUi();
@@ -3729,14 +3853,22 @@
         img.addEventListener(
           "load",
           () => {
+            clearDisplayWatchdog();
             expandLargeImage(img, slide);
             noteMediaReady(navKey);
           },
           { once: true },
         );
-        img.addEventListener("error", () => showMediaFailure(img, slide), {
-          once: true,
-        });
+        img.addEventListener(
+          "error",
+          () => {
+            clearDisplayWatchdog();
+            showMediaFailure(img, slide);
+          },
+          {
+            once: true,
+          },
+        );
         img.src = slide.url;
         recordNavigation(slide, false);
         noteCacheRead(false, slide);
@@ -3758,19 +3890,38 @@
                 if (mediaBox.firstElementChild === img) {
                   expandLargeImage(img, slide);
                 }
+                clearDisplayWatchdog();
                 noteMediaReady(navKey);
               },
               { once: true },
             );
           }
-          img.addEventListener("error", () => showMediaFailure(img, slide), {
-            once: true,
-          });
+          img.addEventListener(
+            "error",
+            () => {
+              clearDisplayWatchdog();
+              showMediaFailure(img, slide);
+            },
+            {
+              once: true,
+            },
+          );
         }
         recordNavigation(slide, Boolean(cachedImage || img.complete));
         noteCacheRead(true, slide);
       }
       mediaBox.append(img);
+      // A displayed image that never settles must not hold the loader
+      // forever: one fresh request, then the failure card (watchdog).
+      armDisplayWatchdog(
+        img,
+        slide,
+        () => img.complete && img.naturalWidth > 0,
+        () => {
+          img.src = slide.url;
+          return true;
+        },
+      );
     } else if (
       slide.kind === "video" &&
       slide.redgifsId &&
@@ -3863,6 +4014,9 @@
           ) {
             mediaBox.classList.remove("redditp__loading");
           }
+          // Data, failure, or playback: whichever arrives first, the loader
+          // question is settled and the display watchdog stands down.
+          clearDisplayWatchdog();
         };
         video.addEventListener("loadeddata", clearLoader, { once: true });
         video.addEventListener("error", clearLoader, { once: true });
@@ -3910,6 +4064,18 @@
         firstFrameEvidence();
       }
       mediaBox.append(video);
+      // A displayed video that produces no data within the budget gets one
+      // restarted request, then the failure card. DASH-attached elements
+      // refuse the restart (a live MediaSource must not be torn down) and
+      // take the failure path directly.
+      armDisplayWatchdog(
+        video,
+        slide,
+        () =>
+          video.readyState >= (HTMLMediaElement.HAVE_CURRENT_DATA || 2) &&
+          !video.error,
+        () => restartDisplayElement(video),
+      );
       if (
         slide.mpdUrl &&
         video.getAttribute("data-redditp-dash") === "attached"
@@ -4827,6 +4993,7 @@
     // presentation surface, and closing refreshes the reader it sits over.
     cancelTransition();
     renderAutoButton();
+    clearDisplayWatchdog();
     stopMedia();
     cancelPreloads();
     root.hidden = true;
@@ -5074,6 +5241,13 @@
       y: event.clientY,
       id: event.pointerId,
       target: event.target,
+      // Gestures starting in the bottom navigation row (count chip, numbered
+      // strip, auto toggle — including the strip's transparent gaps) belong
+      // to the row: the strip scrolls natively and the row never navigates
+      // media.
+      inControls: Boolean(
+        event.target.closest?.(".redditp__controls, .redditp__numbers"),
+      ),
     };
   });
   root.addEventListener("pointerup", (event) => {
@@ -5083,6 +5257,9 @@
     state.pointerStart = null;
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
+    // A gesture born in the bottom navigation row never navigates media, no
+    // matter where it ends; the row scrolls itself.
+    if (start.inControls) return;
     // Check if the tap target is the video element itself.
     const video = event.target.closest?.("video.redditp__video");
     const isVideoTarget = !!video;

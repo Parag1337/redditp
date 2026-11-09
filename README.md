@@ -405,15 +405,23 @@ others:
   pagination/wrapping, and the legacy toolbar staying gone.
 - Responsive overlap checks for long titles and controls at mobile viewports.
 
-Test results for this revision (run locally against the committed tree):
+Test results for this revision (run locally against the current tree):
 
-- `npm test` (bundled Chromium + Firefox projects): **245 passed, 1 skipped, 0
-  failed** (~3.4 min). The single skip is the Chromium-only native-controls
-  test, which is skipped by design on Firefox.
-- `npx playwright test -c playwright.chrome.config.js` (installed Google Chrome
-  156): **125 passed, 0 failed**.
-- `npx web-ext lint --source-dir build/firefox-extension`: **0 errors**, 0
-  notices, 3 advisory `innerHTML` warnings in `content.js`.
+- `npm test` (bundled Chromium + Firefox projects, including the preload
+  benchmark spec): **391 passed, 1 skipped, 0 failed** (~13 min). The single
+  skip is the Chromium-only native-controls test, which is skipped by design
+  on Firefox.
+- `npx playwright test -c tests/playwright/_firefox-bench.config.js` (Firefox
+  preload benchmarks): **10 passed, 0 failed**.
+- `npx playwright test -c playwright.chrome.config.js` (installed-Chrome
+  legacy config): **239 passed, 2 failed**. Both failures are pre-existing and
+  unrelated to this release: a diagnostic probe spec that cannot launch
+  Firefox under the `chrome` channel, and one known timing-flaky upgrade test
+  (2 passed / 2 failed across repeated runs; green in the main suite). See
+  `release/RELEASE-VERIFICATION.md` §6.2.
+- `npx web-ext lint --source-dir build/firefox-extension`: **0 errors, 0
+  notices, 0 warnings** (the former advisory `innerHTML` assignments are now
+  inert `DOMParser` parsing).
 
 Note: running two suites concurrently in this directory has previously made
 timing-sensitive preloading tests flake; run suites sequentially.

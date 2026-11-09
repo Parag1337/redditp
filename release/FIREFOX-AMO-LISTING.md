@@ -7,6 +7,18 @@ this document does not invent them.
 
 Submitted file: `RedditPix-v1.0.0-firefox.zip` (see `RELEASE-VERIFICATION.md`).
 
+## Add-on identity
+
+- **Gecko id:** `{941a3bf7-8de6-4d3a-b7d3-a6f7b5220fd2}`
+  (random-UUID GUID form; verified not in use by any listed add-on via the
+  AMO public API — see `RELEASE-VERIFICATION.md` for the exact check. Firefox
+  requires the braces or an email-style address for this key.)
+- RedditPix is an independent fork; the upstream RedditP add-on
+  (`presentation-mode@redditp.com`, owned by its original developer on AMO)
+  must never be referenced here, so submissions are never treated as updates
+  to that listing.
+- List it on your own AMO account as a **new add-on**, not an update.
+
 ## Add-on name
 
     RedditPix
@@ -125,7 +137,7 @@ history behind that rule.)
   install-time; the `?redditp=1` deep-link flow needs the grant. The
   auto-activation content script reads only the URL query on reddit.com
   (the `redditp=1` opt-in parameter) and does nothing else.
-- `browser_specific_settings.gecko.id.presentation-mode@redditp.com` /
+- `browser_specific_settings.gecko.id.{941a3bf7-8de6-4d3a-b7d3-a6f7b5220fd2}` /
   `strict_min_version 140.0` (Android 142.0) — 140 is the first release
   supporting the `data_collection_permissions` declaration; 142 the first
   Android release.
