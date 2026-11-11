@@ -6092,10 +6092,15 @@ test.describe("phase 4b bottom bar polish", () => {
     expect(state.label).toBe("Start slideshow");
     expect(state.pressed).toBe("false");
     expect(state.title).toBe("Advance slides automatically (A)");
-    // The compact desktop pill keeps the icon centered (touch targets ride
-    // on the ::after zone under coarse pointers, as on phones).
-    expect(state.width).toBeCloseTo(36, 1);
-    expect(state.height).toBeCloseTo(30, 1);
+    // Desktop keeps a uniform 44px control box (same as the other numbered-
+    // band chips: min-width/min-height 44 + inline-flex centering). A
+    // compact desktop pill never existed in production CSS — the compact
+    // 36×34 pill is a phone-only size and is pinned separately by the
+    // "compact controls keep the auto toggle in the same aligned band"
+    // test below at ≤600px, where the icon still rides on the ::after
+    // hit-zone extension.
+    expect(state.width).toBeCloseTo(44, 1);
+    expect(state.height).toBeCloseTo(44, 1);
     expect(state.iconWidth).toBeGreaterThan(10);
     expect(state.iconHeight).toBeGreaterThan(10);
     expect(state.iconCenterOffset, "icon centered").toBeLessThanOrEqual(2);
@@ -6159,45 +6164,52 @@ test.describe("phase 4b bottom bar polish", () => {
     [1280, 800],
   ];
 
-  // Mobile centering scrolls the numbered strip smoothly; measurements must
+  // Both engines scroll the numbered strip smoothly, so measurements must
   // wait until the track has settled or the active chip can be caught
-  // mid-flight. The target position is scroll-invariant (current scrollLeft
-  // plus viewport-relative rects cancel out), so waiting for scrollLeft to
-  // reach it is browser-independent — Firefox's smooth animation and
-  // Chromium's alike.
+  // mid-flight. A pure target-formula wait is not enough: the desktop end
+  // anchor animates THROUGH positions where the active chip already looks
+  // unclipped (its right edge travels from inside the track toward the
+  // padded final position, so `rightEdge <= scrollLeft + clientWidth`
+  // becomes true about 16px before the animation ends), so the previous
+  // early-return let measurements run mid-animation and catch the last
+  // button ~14px past its final spot. Settling therefore requires the
+  // scroll position to hold still across consecutive animation frames
+  // before the final visibility conditions are checked.
   async function settleNumberTrack(page) {
+    await page.evaluate(() => {
+      delete window.__trackSettle;
+    });
     await page.waitForFunction(() => {
       const bar = document.querySelector(".redditp__numbers");
       const active = bar && bar.querySelector(".redditp__number--active");
       if (!bar || !active) return true;
+      const state = (window.__trackSettle = window.__trackSettle || {
+        last: null,
+        quiet: 0,
+      });
+      if (bar.scrollLeft !== state.last) {
+        state.last = bar.scrollLeft;
+        state.quiet = 0;
+      } else {
+        state.quiet += 1;
+      }
+      if (state.quiet < 3) return false;
       const maxScroll = bar.scrollWidth - bar.clientWidth;
       if (maxScroll <= 0) return true;
       const a = active.getBoundingClientRect();
       const b = bar.getBoundingClientRect();
-      // The target is scroll-invariant (current scrollLeft plus
-      // viewport-relative rects cancel out). Mobile centers the chip;
-      // desktop edge anchoring only scrolls far enough to unclip it inside
-      // the track padding. Both now scroll smoothly, so both targets must
-      // be awaited before measuring.
-      let target;
       if (window.matchMedia("(max-width: 600px)").matches) {
-        target =
+        let target =
           bar.scrollLeft + (a.left - b.left) - (bar.clientWidth - a.width) / 2;
-      } else {
-        const padLeft = parseFloat(getComputedStyle(bar).paddingLeft) || 0;
-        const padRight = parseFloat(getComputedStyle(bar).paddingRight) || 0;
-        const leftEdge = bar.scrollLeft + (a.left - b.left);
-        const rightEdge = bar.scrollLeft + (a.right - b.left);
-        if (leftEdge < bar.scrollLeft) {
-          target = leftEdge - padLeft;
-        } else if (rightEdge > bar.scrollLeft + bar.clientWidth) {
-          target = rightEdge - bar.clientWidth + padRight;
-        } else {
-          return true;
-        }
+        target = Math.max(0, Math.min(maxScroll, target));
+        return Math.abs(bar.scrollLeft - target) <= 1;
       }
-      target = Math.max(0, Math.min(maxScroll, target));
-      return Math.abs(bar.scrollLeft - target) <= 1;
+      // Desktop edge anchoring: once the scroll is quiet, the chip must be
+      // fully inside the track on both edges (the padded anchor positions
+      // keep it there; a clipped chip means the anchor scroll has not
+      // finished even if a few frames were quiet).
+      const clipped = a.left < b.left + 0.5 || a.right > b.right - 0.5;
+      return !clipped;
     });
   }
 

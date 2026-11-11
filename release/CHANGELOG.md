@@ -4,6 +4,41 @@ All notable changes to RedditPix are documented here.
 The format loosely follows [Keep a Changelog](https://keepachangelog.com/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] — 2026-11-10
+
+Patch release with the numbered-bar anchoring and image-latency recording
+fixes found during the 1.0.0→1.0.1 audit. Package: `RedditPix-v1.0.1-firefox.zip`
+(SHA-256 `fb9c0aa6713e2c1c91202fa441e22b96ddaff9046a76e84b7e0295372e376ec7`).
+`web-ext lint`: 0 errors, 0 notices, 0 warnings.
+
+### Fixed — viewer
+
+- Numbered-bar anchoring is no longer judged against a mid-flight smooth
+  scroll: a resize or rapid reselect while an earlier anchor animation was
+  still running could read the active number as visible right before the
+  pending scroll carried it off-track, leaving the selected number out of
+  view until the next navigation. Anchoring decisions now use the remembered
+  resting target of the pending animation (content coordinates are
+  scroll-invariant, an 800ms staleness guard covers engine timing).
+- The resource-aware video pause ("slow network") no longer un-pauses
+  because of cache-served image loads: a re-preload of an already held image
+  URL completes without a network fetch (no new resource timing entry in
+  both Chromium and Firefox), and such completions carry no congestion
+  evidence — they are excluded from the latency window, so speculative
+  video fetches stay paused until actual network latency recovers. Engines
+  without resource timing keep the previous sampling behavior.
+
+### Internal — test suite
+
+- The numbered-bar settle helper waits for a scroll-quiet position before
+  measuring (the padded end anchor animates through positions that look
+  unclipped ~16px early), and the auto-toggle test pins the real 44×44
+  desktop control box instead of a compact pill that never shipped; the
+  congestion fixture sends `no-store` so every image fetch under test
+  traverses the throttled route.
+
+[1.0.1]: https://github.com/Parag1337/redditp
+
 ## [1.0.0] — 2026-11-06
 
 First officially released version, published as **RedditPix** (previously

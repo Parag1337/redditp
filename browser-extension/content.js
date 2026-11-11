@@ -2077,12 +2077,12 @@
   // scrollable — so a wide numbered bar used to drag the whole viewer
   // sideways with every rapid Arrow key press. Setting the track's own
   // scroll position keeps the viewer anchored to the viewport no matter how
-  // the track is laid out.
-  //
+  // the track is laid out.  //
   // Narrow (mobile) screens center the active chip so navigation reads as a
   // carousel; desktop keeps the original edge-anchoring, which only moves
   // the track when the button would otherwise clip. Smooth scrolling is
   // skipped when the OS asks for reduced motion.
+  let numberTrackAnchor = null; // { track, target, startedAt }
   function scrollNumberTrackTo(button) {
     const track = button.parentElement;
     if (!track) return;
@@ -2092,20 +2092,33 @@
     const rect = button.getBoundingClientRect();
     const padLeft = parseFloat(getComputedStyle(track).paddingLeft) || 0;
     const padRight = parseFloat(getComputedStyle(track).paddingRight) || 0;
+    // The chip's offsets in track-content coordinates are scroll-invariant
+    // (rect deltas cancel the live scroll position), so they are exact even
+    // while a smooth scroll is mid-flight. The clip decision, though, must
+    // judge where the track will COME TO REST: a smooth scroll started by an
+    // earlier resize or navigation may still be running, and judging its
+    // transient scrollLeft can read the active chip as visible right before
+    // that animation carries it off-track (a rapid resize + reselect could
+    // then leave the active number permanently out of view). The bookkeeping
+    // below remembers the last issued target per track, which is exactly the
+    // resting position the pending animation converges to.
+    const contentLeft = rect.left - trackLeft + track.scrollLeft;
+    const contentRight = rect.right - trackLeft + track.scrollLeft;
     const center = window.matchMedia("(max-width: 600px)").matches;
     let left;
     if (center) {
-      left =
-        track.scrollLeft +
-        (rect.left - trackLeft) -
-        (track.clientWidth - rect.width) / 2;
+      left = contentLeft - (track.clientWidth - rect.width) / 2;
     } else {
-      const leftEdge = track.scrollLeft + (rect.left - trackLeft);
-      const rightEdge = track.scrollLeft + (rect.right - trackLeft);
-      if (leftEdge < track.scrollLeft) {
-        left = leftEdge - padLeft;
-      } else if (rightEdge > track.scrollLeft + track.clientWidth) {
-        left = rightEdge - track.clientWidth + padRight;
+      const pending =
+        numberTrackAnchor &&
+        numberTrackAnchor.track === track &&
+        performance.now() - numberTrackAnchor.startedAt < 800
+          ? numberTrackAnchor.target
+          : track.scrollLeft;
+      if (contentLeft < pending) {
+        left = contentLeft - padLeft;
+      } else if (contentRight > pending + track.clientWidth) {
+        left = contentRight - track.clientWidth + padRight;
       } else {
         return;
       }
@@ -2119,8 +2132,14 @@
     // repositioning that does happen glides instead of jumping. Reduced
     // motion (or engines without scrollTo options) keeps the instant jump.
     if (!reduceMotion && typeof track.scrollTo === "function") {
+      numberTrackAnchor = {
+        track,
+        target: left,
+        startedAt: performance.now(),
+      };
       track.scrollTo({ left, behavior: "smooth" });
     } else {
+      numberTrackAnchor = null;
       track.scrollLeft = left;
     }
   }
@@ -3083,6 +3102,37 @@
     while (samples.length > IMAGE_LATENCY_SAMPLES) samples.shift();
   }
 
+  // Baseline for cache-hit detection in the latency window (only image jobs
+  // call it). The browser's image cache serves a repeat load of a URL the
+  // document already holds without a network fetch in both Chromium and
+  // Firefox, and such a load records no NEW resource timing entry — while an
+  // entry from the original fetch stays buffered. Counting the entries for
+  // the URL around the src assignment therefore separates real fetches
+  // (baseline grows) from cache-served completions (baseline unchanged).
+  // Feature-detected; engines without resource timing keep the old behavior.
+  let resourceTimingBufferEnlarged = false;
+  function resourceTimingBaseline(url) {
+    if (
+      typeof performance === "undefined" ||
+      typeof performance.getEntriesByName !== "function"
+    ) {
+      return -1;
+    }
+    if (!resourceTimingBufferEnlarged) {
+      resourceTimingBufferEnlarged = true;
+      if (typeof performance.setResourceTimingBufferSize === "function") {
+        try {
+          // A default-sized buffer fills on long feeds, after which new
+          // fetches record no entry and would read as cache hits.
+          performance.setResourceTimingBufferSize(20000);
+        } catch (error) {
+          /* keep the engine's default buffer */
+        }
+      }
+    }
+    return performance.getEntriesByName(url, "resource").length;
+  }
+
   // Image-first fairness, part 2: true while recently completed images were
   // consistently slow. With fewer samples than the window there is no
   // evidence of congestion, so the answer is no — a fresh session never
@@ -3287,7 +3337,17 @@
         guarded(() => {
           // Feed the image-latency window (measured to the load event, before
           // decode time, so decode cost never reads as network slowness).
-          noteImageLoadLatency(performance.now() - job.startedAtMs);
+          // Loads served by the browser's image cache record no new resource
+          // timing entry after the src assignment, so they are not sampled:
+          // the pause must lift on recovered network latency, not on cache
+          // hits. Engines without resource timing sample as before.
+          if (
+            timingBaseline === -1 ||
+            performance.getEntriesByName(job.slide.url, "resource").length >
+              timingBaseline
+          ) {
+            noteImageLoadLatency(performance.now() - job.startedAtMs);
+          }
           // Bytes are only half the story: decode upcoming images here so
           // display never waits for another decode. A decode failure is
           // recorded separately from a load failure and never poisons the
@@ -3339,6 +3399,13 @@
       );
       armPreloadTimeout(job);
       debugLogEvent("preload-start", key);
+      // Measured around the src assignment (a URL the session already holds
+      // can be served by the browser's image cache without a fetch; see
+      // resourceTimingBaseline). Such a cached recheck carries no network
+      // evidence: a sub-30ms completion sampling into the congestion window
+      // would erase real congestion history and lift the speculative-video
+      // pause while the network is still slow.
+      const timingBaseline = resourceTimingBaseline(job.slide.url);
       image.src = job.slide.url;
       return;
     }

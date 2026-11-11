@@ -1,6 +1,6 @@
 {
   "name": "redditpix",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Turn the Reddit page you are browsing into a media slideshow (browser extension)",
   "main": "browser-extension/manifest.json",
   "devDependencies": {

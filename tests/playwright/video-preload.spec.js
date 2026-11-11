@@ -221,6 +221,15 @@ test.describe("phase 6 resource-aware video preparation", () => {
       await route.fulfill({
         status: 200,
         contentType: "image/svg+xml",
+        // no-store: headerless fulfilled 200s can be heuristically cached at
+        // the HTTP layer (Firefox in particular), which would let a
+        // re-preload of an already displayed post skip the route. Cached
+        // completions carry no network evidence either way — the production
+        // side only counts loads that record a new resource timing entry —
+        // but the fixture must not rely on HTTP caching either:
+        // every image fetch under test should traverse the route and its
+        // latency throttle.
+        headers: { "cache-control": "no-store" },
         body: svgImage,
       });
     });

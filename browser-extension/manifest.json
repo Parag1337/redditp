@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "RedditPix",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Turn the Reddit page you are browsing into a media slideshow.",
   "homepage_url": "https://redditp.com/",
   "permissions": [
@@ -14,7 +14,9 @@
     "https://*.reddit.com/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "scripts": [
+      "background.js"
+    ]
   },
   "content_scripts": [
     {
@@ -51,6 +53,20 @@
         "mac": "Alt+P"
       },
       "description": "Open presentation mode"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{941a3bf7-8de6-4d3a-b7d3-a6f7b5220fd2}",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
     }
   }
 }
