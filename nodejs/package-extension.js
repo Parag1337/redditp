@@ -19,6 +19,7 @@ const files = [
   "background.js",
   "content.js",
   "page-bridge.js",
+  "redgifs-bridge.js",
   "auto-activate.js",
   "presentation.css",
   "favicon.png",

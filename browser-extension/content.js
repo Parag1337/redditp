@@ -97,6 +97,14 @@
   // The one embed origin that publishes a message protocol for controlling
   // its player. Every other player keeps its own sound control.
   const JS_API_EMBED_ORIGIN = "https://www.youtube.com";
+  // RedGIFs player frames never publish a control protocol, but the bridge
+  // content script reports one complete playback cycle through this one
+  // versioned message. The parent validates the origin, source frame, and
+  // media identity before treating it as a completion.
+  const REDGIFS_EMBED_ORIGIN = "https://www.redgifs.com";
+  const REDGIFS_BRIDGE_CHANNEL = "redditp-redgifs";
+  const REDGIFS_BRIDGE_VERSION = 1;
+  const REDGIFS_BRIDGE_COMPLETION = "completion";
   const DEFAULT_SETTINGS = {
     slideDurationSeconds: 5,
     finishMediaOnce: true,
@@ -124,6 +132,9 @@
     autoTimer: null,
     autoPlaying: false,
     mediaPlayback: null,
+    // The slide whose RedGIFs player frame is currently mounted, so its
+    // completion bookkeeping can be released when that frame is torn down.
+    redgifsEmbedSlide: null,
     loadingMore: false,
     advanceAfterLoad: false,
     loadRequest: 0,
@@ -1763,7 +1774,7 @@
     element(
       "p",
       "redditp__setting-hint",
-      "Includes GIFs played as videos. Animated images and embedded players use the slide timer.",
+      "Includes GIFs played as videos. Animated images and other embedded players use the slide timer.",
     ),
     checkboxSetting("showDetails", "Show the title panel"),
     checkboxSetting("showArrows", "Show previous and next arrows"),
@@ -1810,6 +1821,9 @@
 
   function stopMedia() {
     untrackMedia();
+    const redgifsSlide = state.redgifsEmbedSlide;
+    state.redgifsEmbedSlide = null;
+    if (redgifsSlide) resetRedgifsCompletion(redgifsSlide);
     mediaBox.querySelectorAll("video").forEach((video) => {
       const wasPreparedDASH =
         video.getAttribute("data-redditp-dash") === "attached";
@@ -2029,6 +2043,10 @@
   // One place builds the host's player frame, so the embed slide and the
   // RedGIFs fallback below cannot drift apart.
   function embedElement(slide) {
+    if (slide.redgifsId) {
+      resetRedgifsCompletion(slide);
+      state.redgifsEmbedSlide = slide;
+    }
     const iframe = element("iframe", "redditp__embed", "");
     iframe.title = slide.title;
     iframe.allow =
@@ -4764,6 +4782,17 @@
 
   function autoTimerFired() {
     state.autoTimer = null;
+    const slide = state.slides[state.index];
+    // A RedGIFs player loops, so the ordinary slide interval is not evidence
+    // that its media finished. Wait for the bridge's completion report; a
+    // paused completion recorded earlier advances after the resume timer,
+    // matching the completed-video path. If the bridge never reports (for
+    // example, injection was unavailable), the slide is safely held and
+    // manual navigation remains available.
+    if (isRedgifsEmbedSlide(slide) && state.settings.finishMediaOnce) {
+      if (slide.redgifsCompleted) move(1);
+      return;
+    }
     const playback = state.mediaPlayback;
     const video = playback?.video;
     // Unknown, failed, blocked, or paused media must not trap auto-advance.
@@ -5023,6 +5052,41 @@
     return mediaBox.querySelector("iframe.redditp__embed");
   }
 
+  // A RedGIFs embed can be the original slide or the last-resort fallback
+  // after a direct rendition failed. Both are the same player frame and both
+  // must wait for the bridge's completion report instead of the ordinary
+  // image timer.
+  function isRedgifsEmbedSlide(slide) {
+    if (!slide || !slide.redgifsId) return false;
+    return (
+      slide.kind === "embed" ||
+      (slide.kind === "video" && Boolean(slide.redgifsFallback))
+    );
+  }
+
+  function resetRedgifsCompletion(slide) {
+    if (!slide || !slide.redgifsId) return;
+    slide.redgifsCompleted = false;
+    slide.redgifsCompletionConsumed = false;
+  }
+
+  // Returns the frame only when it is the active slide's own RedGIFs player.
+  // The media-id check keeps a message from one embed from completing a
+  // different slide that happens to be current.
+  function activeRedgifsEmbed(slide) {
+    const embed = currentEmbed();
+    if (!embed || !embed.contentWindow) return null;
+    let source;
+    try {
+      source = new URL(embed.src);
+    } catch (_error) {
+      return null;
+    }
+    if (source.origin !== REDGIFS_EMBED_ORIGIN) return null;
+    if (redgifsMediaId(source) !== slide.redgifsId) return null;
+    return embed;
+  }
+
   // A player frame is cross-origin, so its video cannot be touched from this
   // document and no amount of DOM work will reach it. Two things still are
   // possible: ask for the opening state in the frame URL, and speak a player's
@@ -5083,6 +5147,38 @@
       }
     }
     if (message?.event === "onReady") sendEmbedSound();
+  }
+
+  // Parent half of the RedGIFs bridge. Every condition below is a gate: a
+  // message that fails any one of them cannot move the slideshow.
+  function onRedgifsMessage(event) {
+    if (!state.open) return;
+    if (event.origin !== REDGIFS_EMBED_ORIGIN) return;
+    const message = event.data;
+    if (!message || typeof message !== "object") return;
+    if (message.channel !== REDGIFS_BRIDGE_CHANNEL) return;
+    if (message.version !== REDGIFS_BRIDGE_VERSION) return;
+    if (message.type !== REDGIFS_BRIDGE_COMPLETION) return;
+    const slide = state.slides[state.index];
+    if (!isRedgifsEmbedSlide(slide)) return;
+    const embed = activeRedgifsEmbed(slide);
+    if (!embed || event.source !== embed.contentWindow) return;
+    if (String(message.mediaId || "").toLowerCase() !== slide.redgifsId) return;
+    // One completion per displayed player. A paused completion is recorded
+    // but not consumed; the ordinary resume timer takes it from there.
+    if (slide.redgifsCompletionConsumed || slide.redgifsCompleted) return;
+    slide.redgifsCompleted = true;
+    debugLogEvent("redgifs-completion", {
+      key: mediaPreloadKey(slide),
+      auto: state.autoPlaying,
+    });
+    if (!state.autoPlaying) return;
+    // With finishing turned off the ordinary slide timer owns advancement,
+    // exactly as it does for direct videos. The completed state is still
+    // recorded for the timer and for a later resume.
+    if (!state.settings.finishMediaOnce) return;
+    slide.redgifsCompletionConsumed = true;
+    move(1);
   }
 
   function toggleSound() {
@@ -5173,6 +5269,7 @@
     root.remove();
     document.removeEventListener("redditp:presentation-retire", retire);
     window.removeEventListener("message", onEmbedMessage);
+    window.removeEventListener("message", onRedgifsMessage);
   }
 
   async function open() {
@@ -5384,6 +5481,7 @@
   });
   document.addEventListener("redditp:presentation-retire", retire);
   window.addEventListener("message", onEmbedMessage);
+  window.addEventListener("message", onRedgifsMessage);
   prevButton.addEventListener("click", () => move(-1));
   nextButton.addEventListener("click", () => move(1));
   autoButton.addEventListener("click", toggleAuto);
@@ -5560,6 +5658,10 @@
               i,
               kind: slide.kind,
               redgifsId: slide.redgifsId || "",
+              redgifsCompleted: Boolean(slide.redgifsCompleted),
+              redgifsCompletionConsumed: Boolean(
+                slide.redgifsCompletionConsumed,
+              ),
               identity,
               durationReason: postDurationExclusionReason(identity),
               modeEligible: slideMediaModeEligible(slide),

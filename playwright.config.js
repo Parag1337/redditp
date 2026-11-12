@@ -17,10 +17,11 @@ module.exports = defineConfig({
       },
     },
     {
-      // The extension spec injects content.js directly, so the same suite also
-      // covers the Firefox add-on build. Site specs stay Chromium-only.
+      // The extension specs inject content.js directly, so the same suite
+      // also covers the Firefox add-on build. The RedGIFs bridge spec is
+      // included because it exercises the same injected-files path.
       name: "firefox",
-      testMatch: /browser-extension\.spec\.js/,
+      testMatch: /(?:browser-extension|redgifs-bridge)\.spec\.js/,
       use: {
         ...devices["Desktop Firefox"],
       },
