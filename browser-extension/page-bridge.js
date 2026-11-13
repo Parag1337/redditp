@@ -12,6 +12,12 @@
 //   The bridge answers synchronously by setting data-redditp-dash to
 //   "attached" or "unavailable". Later playback errors arrive as
 //   "redditp:dash-failed". "redditp:dash-reset" tears the player down.
+//   Preparation progress is reported as a stage attribute plus a plain
+//   "redditp:dash-stage" event: "manifest" (the MPD was fetched and parsed),
+//   "segments" (the stream was initialized and segment requests start), and
+//   "ready" (the player can start playback). content.js tracks these after
+//   an attach so a speculative DASH job is only settled once real stream
+//   work happened, not merely because the player object exists.
 (function redditpPageBridge() {
   "use strict";
 
@@ -19,6 +25,38 @@
   window.__redditpPageBridge = true;
 
   var players = new WeakMap();
+
+  // dash.js MediaPlayer.events members, resolved defensively: a build that
+  // renamed or dropped one just reports no stage for it instead of breaking
+  // the attach.
+  var stageEventNames = [
+    ["MANIFEST_LOADED", "manifest"],
+    ["STREAM_INITIALIZED", "segments"],
+    ["CAN_PLAY", "ready"],
+  ];
+
+  function reportStage(video, stage) {
+    video.setAttribute("data-redditp-dash-stage", stage);
+    video.dispatchEvent(new Event("redditp:dash-stage", { bubbles: true }));
+  }
+
+  function wireStageEvents(player, video, dash) {
+    var events = (dash && dash.MediaPlayer && dash.MediaPlayer.events) || {};
+    stageEventNames.forEach(function (pair) {
+      var type = events[pair[0]];
+      if (!type) return;
+      try {
+        player.on(type, function () {
+          // A reset between the event and its dispatch must not report a
+          // stage for a player the element no longer owns.
+          if (players.get(video) !== player) return;
+          reportStage(video, pair[1]);
+        });
+      } catch (_error) {
+        // Stage reporting is diagnostics; the attach itself must not fail.
+      }
+    });
+  }
 
   function reset(video) {
     var player = players.get(video);
@@ -37,6 +75,7 @@
       var video = event.target;
       if (!(video instanceof HTMLVideoElement)) return;
       reset(video);
+      video.removeAttribute("data-redditp-dash-stage");
       var url = video.getAttribute("data-redditp-mpd") || "";
       var dash = window.dashjs;
       if (
@@ -54,6 +93,9 @@
           reset(video);
           video.dispatchEvent(new Event("redditp:dash-failed"));
         });
+        // Progress stages go out before initialize() so the earliest one
+        // (the manifest) cannot be missed.
+        wireStageEvents(player, video, dash);
         // content.js starts playback itself so it can fall back to muted
         // playback when the browser refuses autoplay with sound.
         players.set(video, player);

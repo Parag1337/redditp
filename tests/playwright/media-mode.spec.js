@@ -34,6 +34,22 @@ const videoPost = (id, title) =>
 const redgifsPost = (id, title) =>
   `<div class="thing link" data-fullname="t3_${id}" data-url="https://www.redgifs.com/watch/${id}" data-permalink="/r/pics/comments/${id}/post/" data-author="p1" data-subreddit="pics"><a class="title">${title}</a></div>`;
 
+const gifPost = (id, title) =>
+  `<div class="thing link" data-fullname="t3_${id}" data-url="https://i.redd.it/${id}.gif" data-permalink="/r/pics/comments/${id}/post/" data-author="p1" data-subreddit="pics"><a class="title">${title}</a></div>`;
+
+// Old Reddit exposes DASH through the player's data attributes rather than a
+// <video> element until its own script runs.
+const dashPost = (id, title) =>
+  `<div class="thing link" data-fullname="t3_${id}" data-url="https://v.redd.it/${id}" data-permalink="/r/pics/comments/${id}/post/" data-author="p1" data-subreddit="pics"><a class="title">${title}</a><div class="portrait" data-hls-url="https://v.redd.it/${id}/HLSPlaylist.m3u8" data-mpd-url="https://v.redd.it/${id}/DASHPlaylist.mpd?a=1&amp;v=1" data-seek-preview-url="https://v.redd.it/${id}/DASH_96.mp4"></div></div>`;
+
+const gifvPost = (id, title) =>
+  `<div class="thing link" data-fullname="t3_${id}" data-url="https://i.imgur.com/${id}.gifv" data-permalink="/r/pics/comments/${id}/post/" data-author="p1" data-subreddit="pics"><a class="title">${title}</a></div>`;
+
+// A lazy hosted-video card: only the still preview is in the listing, but the
+// source URL still identifies the v.redd.it video post.
+const hostedVideoThumbPost = (id, title) =>
+  `<div class="thing link" data-fullname="t3_${id}" data-url="https://v.redd.it/${id}" data-permalink="/r/pics/comments/${id}/post/" data-author="p1" data-subreddit="pics"><a class="title">${title}</a><img class="preview-image" src="https://preview.redd.it/${id}.jpg"></div>`;
+
 // Gallery cards resolve through the post JSON endpoint, which supports four
 // images and two videos laid out in one interleaved gallery.
 const galleryCard = `
@@ -165,7 +181,7 @@ function trackMediaHosts(page, { hostDelay = 0 } = {}) {
     tracker.requested.push(url);
     if (hostDelay)
       await new Promise((resolve) => setTimeout(resolve, hostDelay));
-    if (/\.jpe?g(?:\?|$)|\.png(?:\?|$)/.test(url) && !/format=mp4/.test(url)) {
+    if (/\.(?:jpe?g|png|gif)(?:\?|$)/.test(url) && !/format=mp4/.test(url)) {
       await route.fulfill({
         status: 200,
         contentType: "image/svg+xml",
@@ -377,6 +393,184 @@ test.describe("media mode control", () => {
     // Previous navigation from the first video stays within the mode.
     await page.keyboard.press("ArrowLeft");
     await expect(page.locator(".redditp__title")).toHaveText("Clip A");
+  });
+
+  test("videos mode admits MP4, DASH, GIF, and GIFV while excluding ordinary images", async ({
+    page,
+  }) => {
+    const tracker = trackMediaHosts(page);
+    await page.route("https://i.imgur.com/**", (route) =>
+      route.fulfill({ status: 200, contentType: "video/webm", body: webm }),
+    );
+    await openFeed(
+      page,
+      `${imagePost("vi1", "Image 1")}${videoPost("vm1", "MP4")}${dashPost(
+        "vd1",
+        "DASH",
+      )}${gifPost("vg1", "GIF")}${gifvPost("vv1", "GIFV")}${imagePost(
+        "vi2",
+        "Image 2",
+      )}`,
+      null,
+      { mediaMode: "videos" },
+    );
+    await waitSettled(page);
+
+    await expect(page.locator(".redditp__media-mode")).toHaveAttribute(
+      "data-media-mode",
+      "videos",
+    );
+    await expect(page.locator(".redditp__number")).toHaveCount(4);
+    await expect(page.locator(".redditp__title")).toHaveText("MP4");
+    await expect(page.locator(".redditp__count")).toHaveText("1 / 4");
+    await expect(page.locator(".redditp__video")).toHaveAttribute(
+      "src",
+      /vm1\/DASH_480\.mp4/,
+    );
+    // Ineligible images are not fetched by the preloader.
+    expect(countOf(tracker, "vi1")).toBe(0);
+    expect(countOf(tracker, "vi2")).toBe(0);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("DASH");
+    await expect(page.locator(".redditp__video")).toHaveCount(1);
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("GIF");
+    // GIFs stay <img> slides; Video Only admits them through their URL.
+    await expect(page.locator(".redditp__image")).toHaveAttribute(
+      "src",
+      /vg1\.gif/,
+    );
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("GIFV");
+    await expect(page.locator(".redditp__video")).toHaveAttribute(
+      "src",
+      /^https:\/\/i\.imgur\.com\/vv1\.mp4$/,
+    );
+    await expect(page.locator(".redditp__count")).toHaveText("4 / 4");
+
+    // Turning Video Only off restores the full feed, including the images
+    // that were never admitted while the filter was active.
+    await cycleTo(page, "both");
+    await expect(page.locator(".redditp__number")).toHaveCount(6);
+    await expect(page.locator(".redditp__count")).toHaveText("5 / 6");
+    await page.locator(".redditp__number").nth(0).click();
+    await expect(page.locator(".redditp__title")).toHaveText("Image 1");
+    await expect(page.locator(".redditp__count")).toHaveText("1 / 6");
+  });
+
+  test("videos mode upgrades a still-framed hosted-video card to its playable video", async ({
+    page,
+  }) => {
+    trackMediaHosts(page);
+    const postUrl = "https://www.reddit.com/r/pics/comments/hv1/post/";
+    await page.route(postUrl, (route) =>
+      fulfillPage(
+        route,
+        `<html><body><shreddit-post id="t3_hv1" post-title="Hosted video" post-type="video" content-href="https://v.redd.it/hv1" permalink="/r/pics/comments/hv1/post/"><shreddit-player preview="https://v.redd.it/hv1/DASH_480.mp4" poster="https://preview.redd.it/hv1.jpg"></shreddit-player></shreddit-post></body></html>`,
+      ),
+    );
+    await openFeed(
+      page,
+      `${imagePost("hv0", "Image 0")}${hostedVideoThumbPost(
+        "hv1",
+        "Hosted video",
+      )}${imagePost("hv2", "Image 2")}`,
+      null,
+      { mediaMode: "videos" },
+    );
+
+    // The listing only carries the preview image. Video Only must still
+    // admit the v.redd.it post, then enrichment replaces the still with the
+    // playable hosted video.
+    await expect(page.locator(".redditp__title")).toHaveText("Hosted video");
+    await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
+    await expect(page.locator(".redditp__video")).toHaveAttribute(
+      "src",
+      /^https:\/\/v\.redd\.it\/hv1\/DASH_480\.mp4$/,
+    );
+    await expect(page.locator(".redditp__number")).toHaveCount(1);
+  });
+
+  test("Images Only keeps a hosted-video thumbnail until videos mode upgrades it", async ({
+    page,
+  }) => {
+    trackMediaHosts(page);
+    const postUrl = "https://www.reddit.com/r/pics/comments/hv2/post/";
+    let enrichmentFetches = 0;
+    await page.route(postUrl, (route) => {
+      enrichmentFetches += 1;
+      return fulfillPage(
+        route,
+        `<html><body><shreddit-post id="t3_hv2" post-title="Hosted video" post-type="video" content-href="https://v.redd.it/hv2" permalink="/r/pics/comments/hv2/post/"><shreddit-player preview="https://v.redd.it/hv2/DASH_480.mp4" poster="https://preview.redd.it/hv2.jpg"></shreddit-player></shreddit-post></body></html>`,
+      );
+    });
+    await openFeed(
+      page,
+      `${imagePost("hvi0", "Image 0")}${hostedVideoThumbPost(
+        "hv2",
+        "Hosted video",
+      )}${imagePost("hvi2", "Image 2")}`,
+      null,
+      { mediaMode: "images" },
+    );
+
+    // Images Only keeps the historical still thumbnail and does not pay for
+    // the video upgrade it would never display.
+    await expect(page.locator(".redditp__title")).toHaveText("Image 0");
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("Hosted video");
+    await expect(page.locator(".redditp__image")).toHaveAttribute(
+      "src",
+      /hv2\.jpg/,
+    );
+    await expect(page.locator(".redditp__video")).toHaveCount(0);
+    expect(enrichmentFetches).toBe(0);
+
+    // Switching to Video Only retries the deferred upgrade and shows the
+    // playable hosted video.
+    await cycleTo(page, "videos");
+    await expect(page.locator(".redditp__title")).toHaveText("Hosted video");
+    await expect(page.locator(".redditp__video")).toHaveAttribute(
+      "src",
+      /^https:\/\/v\.redd\.it\/hv2\/DASH_480\.mp4$/,
+    );
+    await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
+    expect(enrichmentFetches).toBeGreaterThanOrEqual(1);
+  });
+
+  test("Images Only keeps its existing GIF treatment while Video Only also admits GIFs", async ({
+    page,
+  }) => {
+    trackMediaHosts(page);
+    await openFeed(
+      page,
+      `${imagePost("gi1", "Image 1")}${gifPost("gg1", "GIF")}`,
+    );
+    await waitSettled(page);
+    await expect(page.locator(".redditp__number")).toHaveCount(2);
+
+    // Images Only historically treats GIFs as images; keep that behavior.
+    await cycleTo(page, "images");
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator(".redditp__title")).toHaveText("GIF");
+    await expect(page.locator(".redditp__number")).toHaveCount(2);
+    await expect(page.locator(".redditp__image")).toHaveAttribute(
+      "src",
+      /gg1\.gif/,
+    );
+
+    // Video Only admits the same GIF, without duplicating it.
+    await cycleTo(page, "videos");
+    await expect(page.locator(".redditp__title")).toHaveText("GIF");
+    await expect(page.locator(".redditp__number")).toHaveCount(1);
+    await expect(page.locator(".redditp__count")).toHaveText("1 / 1");
+    await expect(page.locator(".redditp__image")).toHaveAttribute(
+      "src",
+      /gg1\.gif/,
+    );
   });
 
   test("mixed gallery exposes filtered slides in order with visible-slide counters", async ({

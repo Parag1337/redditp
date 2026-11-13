@@ -466,6 +466,9 @@ test.describe("redgifs direct media", () => {
     );
     // Back to a video-friendly mode, the resolved media is reused.
     await expect(page.locator(".redditp__video")).toHaveCount(1);
+    // The direct video is eligible and the ordinary image is not.
+    await expect(page.locator(".redditp__title")).toHaveText("Mode gif");
+    await expect(page.locator(".redditp__number")).toHaveCount(1);
   });
 
   test("a hidden tab suspends speculative resolution until it returns", async ({

@@ -2389,7 +2389,20 @@ test("a thumbnail-only search result upgrades again after reopening", async ({
     });
   });
   await page.route(previewUrl, async (route) => {
-    await route.abort();
+    // A delayed response (instead of an instant abort) keeps the upgraded
+    // video element holding its src for the whole assertion window: the
+    // failure fallback chain — preview error, then the content-href
+    // fallback error — otherwise replaces the element within milliseconds
+    // of each render, making both upgrade assertions a timing lottery
+    // (measured flaky on the pre-change build too). The upgrade behavior
+    // under test — the video element attempting the preview URL on every
+    // visit — is unchanged; the bytes arrive late and the fallback card
+    // path plays out after the assertions.
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await route.fulfill({
+      contentType: "video/mp4",
+      body: "not-a-video",
+    });
   });
   await startPresentation(
     page,
@@ -3462,10 +3475,12 @@ test.describe("phase 2 preloading and pagination", () => {
     await expect(page.locator(".redditp__title")).toHaveText("Image 7: eg7");
 
     // Reaching the last slide drops the first four preloads; the two slides
-    // just behind it stay cached.
+    // just behind it stay cached. The first slide's cold display also joined
+    // the cache, so it is evicted with the others instead of being re-fetched
+    // as a revisit duplicate — which is why one preload fewer completed.
     await expect
       .poll(() => stats(page), { timeout: 15000 })
-      .toEqual(expect.objectContaining({ loaded: 7, evicted: 4 }));
+      .toEqual(expect.objectContaining({ loaded: 6, evicted: 4 }));
     expect((await page.evaluate(() => window.__releasedSrcs)).length).toBe(4);
 
     // Stepping back re-preloads what it evicted.
@@ -3473,7 +3488,7 @@ test.describe("phase 2 preloading and pagination", () => {
     await expect(page.locator(".redditp__title")).toHaveText("Image 6: ef6");
     await expect
       .poll(() => stats(page), { timeout: 15000 })
-      .toEqual(expect.objectContaining({ loaded: 8, evicted: 4, failed: 0 }));
+      .toEqual(expect.objectContaining({ loaded: 7, evicted: 4, failed: 0 }));
 
     // Network-wise the cache keeps the window warm without a refetch storm:
     // after the step back the schedule quenches and stops churning.
@@ -4738,7 +4753,11 @@ test.describe("phase 3.1 preloading stress and edge cases", () => {
     });
     expect(state).toEqual({ src: true, preloaded: true, ready: true });
     expect(countOf(media, "rd2.jpg")).toBe(1);
-    expect((await page.evaluate(() => window.__decoded)).length).toBe(2);
+    // Three decode calls, not two: the cold-displayed first image is decoded
+    // on the display path too (once per element — its prepared entry later
+    // skips it), on top of the two preload decodes, and the failed rd2
+    // preload decode is never repeated by its display.
+    expect((await page.evaluate(() => window.__decoded)).length).toBe(3);
   });
 
   test("engines without decode() still finish preloads and reuse them", async ({

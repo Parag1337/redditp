@@ -42,6 +42,10 @@
   // window itself stays inside the ordinary preloadPosts horizon.
   const VIDEO_PRELOAD_LIMIT = 2;
   const VIDEO_PRELOAD_WINDOW = 2;
+  // A queued video may not hold the video budget hostage forever: after
+  // this long in the queue with no image job competing for the pool, the
+  // stalled job starts anyway (the stall override in the dispatcher).
+  const VIDEO_QUEUE_STALL_MS = 15000;
   // A preload that produces neither completion nor an error within this
   // budget is treated as failed (with the ordinary bounded retries): a hung
   // connection must not hold a concurrency slot forever, and a display that
@@ -190,7 +194,20 @@
       // Video preparation depth accounting: preloaded videos that actually
       // reached initial media data (first frame), not just metadata.
       videoFirstFrames: 0,
+      // DASH preparation depth accounting (post-attach): how many prepared
+      // players actually reached each bridge stage — manifest parsed,
+      // segments initialized, playback-ready. Attachment alone (the old
+      // completion point) fetches nothing; these counters show what the
+      // preparation really did.
+      dashManifest: 0,
+      dashFirstSegment: 0,
+      dashReady: 0,
     },
+    // Live DASH preparation activity, one entry per media key: current
+    // stage and when it was reached. Entries appear at attach and leave on
+    // release (teardown, eviction, failure, cancel), so an entry here means
+    // a player is actively fetching or holding a stream.
+    dashActivity: new Map(),
     lastNavigation: null,
     debugLog: [],
   };
@@ -393,6 +410,47 @@
     } catch (_error) {
       return false;
     }
+  }
+
+  function isGifMediaUrl(url) {
+    return /\.gifv?(?:$|[?#])/i.test(url);
+  }
+
+  // Reddit's hosted-video permalink carries no file extension:
+  // https://v.redd.it/<id> is a video page, while the listing card around it
+  // may only expose a still preview image.
+  function isRedditHostedVideoUrl(url) {
+    try {
+      return (
+        new URL(url).hostname.replace(/^www\./, "").toLowerCase() ===
+        "v.redd.it"
+      );
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  // Video Only is intentionally more URL-aware than the image kind alone.
+  // GIFs are extracted as <img> slides, and a lazy hosted-video card can be
+  // represented by its preview image while its sourceUrl still points at the
+  // v.redd.it video. Both must be admitted, but ordinary images must not.
+  // externalMedia is the same provider table used during extraction, so any
+  // supported third-party video is recognised here too.
+  function isVideoOnlyMediaUrl(url) {
+    if (!url) return false;
+    if (isVideoUrl(url) || isGifMediaUrl(url) || isRedditHostedVideoUrl(url)) {
+      return true;
+    }
+    const external = externalMedia(url);
+    return Boolean(
+      external && (external.kind === "video" || external.kind === "embed"),
+    );
+  }
+
+  function slideHasVideoOnlyMedia(slide) {
+    if (!slide) return false;
+    if (slide.mpdUrl || slide.embedUrl) return true;
+    return [slide.url, slide.sourceUrl].some(isVideoOnlyMediaUrl);
   }
 
   // Safari and Android browsers play HLS in a plain <video>. Most desktop
@@ -1090,7 +1148,17 @@
       if (!media.length)
         media.push({ kind: "link", url: source || comments, poster: "" });
       const isGallery = isGalleryPost(node);
-      const needsEnrichment =
+      // A lazy modern gallery card renders only its first <figure>. With
+      // fewer items than the card is known to hold (or an unknown count
+      // entirely), the card must be enriched before its remaining media
+      // becomes unreachable. Old-Reddit galleries expand their full link
+      // list up front, so they never read as incomplete here.
+      const galleryIncomplete =
+        isGallery &&
+        media.length <= 1 &&
+        !oldRedditGalleryLinks(node).length &&
+        !media.some((item) => item.kind === "link");
+      const needsCardEnrichment =
         Boolean(comments) &&
         media.length <= 1 &&
         !isSinglePostPage() &&
@@ -1113,6 +1181,22 @@
           // post page holds the real media; a genuine external link stays a
           // card after enrichment comes back empty.
           media[0]?.kind === "link");
+      // A hosted-video card can be reduced to its preview image when Reddit
+      // has not hydrated the player yet. The v.redd.it sourceUrl identifies
+      // it as a video; fetch the post so Video Only can show the playable
+      // media rather than a still frame. Images Only keeps its historical
+      // thumbnail treatment: enrichSlide defers this upgrade until the user
+      // asks for videos.
+      const needsVideoUpgrade =
+        Boolean(comments) &&
+        media.length === 1 &&
+        !isSinglePostPage() &&
+        media[0]?.kind === "image" &&
+        isRedditHostedVideoUrl(source) &&
+        !galleryIncomplete;
+      const needsEnrichment =
+        needsCardEnrichment || needsVideoUpgrade || galleryIncomplete;
+      const videoUpgrade = needsVideoUpgrade && !needsCardEnrichment;
       media.forEach((item, mediaIndex) => {
         const key = `${comments || base.title}|${item.url}`;
         if (!seenPostMedia.has(key)) {
@@ -1120,8 +1204,13 @@
           slides.push(
             Object.assign({}, base, item, {
               galleryItem: isGallery ? mediaIndex + 1 : 0,
-              galleryTotal: isGallery ? media.length : 0,
+              // An unknown item count must not display as a complete
+              // "(1/1)" gallery; 0 reads as "unknown" everywhere a total
+              // is shown.
+              galleryTotal: isGallery && !galleryIncomplete ? media.length : 0,
               needsEnrichment,
+              videoUpgrade,
+              galleryPending: galleryIncomplete,
             }),
           );
         }
@@ -1244,9 +1333,15 @@
     const metadata = data?.media_metadata;
     if (!items?.length || !metadata) return null;
     const media = [];
+    const seen = new Set();
     for (const item of items) {
       const resolved = redditJsonGalleryItem(metadata[item.media_id]);
-      if (resolved) media.push(resolved);
+      if (!resolved) continue;
+      // gallery_data can repeat a media id; one item must stay one slide.
+      const key = canonicalMediaKey(resolved.url);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      media.push(resolved);
     }
     return media.length ? media : null;
   }
@@ -1320,6 +1415,12 @@
   }
 
   function finishEnrichment(slide, key, detail) {
+    // A video upgrade requested in Videos/Both mode must not replace the
+    // historical Images Only thumbnail when the user switches mid-fetch.
+    if (slide.videoUpgrade && currentMediaMode() === "images") {
+      state.enrichments.delete(key);
+      return;
+    }
     const replacements = detail.items.map((item, index) =>
       Object.assign({}, slide, item, {
         body: detail.body || slide.body,
@@ -1327,6 +1428,11 @@
         galleryItem: detail.isGallery ? index + 1 : 0,
         galleryTotal: detail.isGallery ? detail.items.length : 0,
         needsEnrichment: false,
+        videoUpgrade: false,
+        // The replacement is the resolved gallery; no pending state may
+        // leak from the card this slide list was built from.
+        galleryPending: false,
+        galleryUnresolved: false,
       }),
     );
 
@@ -1348,55 +1454,124 @@
     }
   }
 
+  // The complete gallery for a lazy card, straight from the post's JSON.
+  // gallery_data is the authoritative item list in display order, so it is
+  // preferred over the HTML page, whose carousel can be just as lazily
+  // rendered as the card the viewer started from.
+  async function fetchGalleryJsonDetail(slide) {
+    try {
+      const detail = mediaFromRedditJson(
+        await fetchRedditJson(slide.commentsUrl),
+      );
+      if (detail && detail.isGallery && detail.items.length) {
+        return Object.assign({ source: "json" }, detail);
+      }
+    } catch (_error) {
+      // A challenge page over JSON counts as no detail; the HTML path (and
+      // its own JSON fallback) still gets its chance.
+    }
+    return null;
+  }
+
+  // A gallery-pending slide may only be replaced once the detail response
+  // proves more than the card already showed. JSON gallery_data is
+  // authoritative at any count; an HTML page that again shows a single
+  // item is just as lazy as the card was, so it is inconclusive.
+  function isResolvedGalleryDetail(detail) {
+    if (!detail) return false;
+    if (detail.source === "json") return true;
+    return detail.items.length > 1;
+  }
+
   async function enrichSlide(slide) {
     if (!slide.needsEnrichment || !slide.commentsUrl) return;
+    // Keep a hosted-video card's historical Images Only thumbnail. This does
+    // not set the enrichment cache, so switching to Videos/Both retries it.
+    if (slide.videoUpgrade && currentMediaMode() === "images") return;
     const key = slide.postKey || slide.commentsUrl;
     if (state.enrichments.has(key)) return;
     state.enrichments.set(key, "pending");
 
     try {
-      let detail;
-      try {
-        const doc = await fetchRedditDocument(slide.commentsUrl);
-        const safePostKey = /^[\w-]+$/.test(slide.postKey || "")
-          ? slide.postKey
-          : "";
-        const detailNode =
-          (safePostKey &&
-            doc.querySelector(`shreddit-post[id="${safePostKey}"]`)) ||
-          doc.querySelector("shreddit-post, .thing.link");
-        if (!detailNode)
-          throw new Error("Post media was not present in the response");
-
-        const detailSource = contentUrl(detailNode, slide.commentsUrl);
-        const detailMedia = mediaFromNode(detailNode, detailSource);
-        // Search cards carry only a title, so a text post's body is worth the
-        // fetch even when the post has no media; it then stays a link card.
-        const detailBody = postBodyText(detailNode);
-        if (!detailMedia.length && !detailBody)
-          throw new Error("Post had no supported media");
-        detail = {
-          items: detailMedia.length ? detailMedia : [{}],
-          body: detailBody,
-          sourceUrl: detailSource || slide.sourceUrl,
-          isGallery: isGalleryPost(detailNode),
-        };
-      } catch (htmlError) {
-        // The HTML fetch can succeed with a 200 and still hold nothing:
-        // Reddit serves challenges and hydration-only shells that way. The
-        // JSON endpoint answers for the same post from the same origin.
-        let jsonDetail = null;
+      let detail = null;
+      // A gallery with an unknown item count resolves through the JSON
+      // endpoint first: the HTML page can be as lazily rendered as the
+      // card was, and replacing one incomplete snapshot with another is
+      // exactly the bug this path exists to avoid.
+      if (slide.galleryPending) {
+        detail = await fetchGalleryJsonDetail(slide);
+      }
+      let inconclusive = false;
+      if (!detail) {
         try {
-          jsonDetail = mediaFromRedditJson(
-            await fetchRedditJson(slide.commentsUrl),
-          );
-        } catch (_jsonError) {
-          // A challenge page can come back over JSON too; treat it as no
-          // detail so the HTML error decides the outcome.
-          jsonDetail = null;
+          const doc = await fetchRedditDocument(slide.commentsUrl);
+          const safePostKey = /^[\w-]+$/.test(slide.postKey || "")
+            ? slide.postKey
+            : "";
+          const detailNode =
+            (safePostKey &&
+              doc.querySelector(`shreddit-post[id="${safePostKey}"]`)) ||
+            doc.querySelector("shreddit-post, .thing.link");
+          if (!detailNode)
+            throw new Error("Post media was not present in the response");
+
+          const detailSource = contentUrl(detailNode, slide.commentsUrl);
+          const detailMedia = mediaFromNode(detailNode, detailSource);
+          // Search cards carry only a title, so a text post's body is worth the
+          // fetch even when the post has no media; it then stays a link card.
+          const detailBody = postBodyText(detailNode);
+          if (!detailMedia.length && !detailBody)
+            throw new Error("Post had no supported media");
+          detail = {
+            items: detailMedia.length ? detailMedia : [{}],
+            body: detailBody,
+            sourceUrl: detailSource || slide.sourceUrl,
+            isGallery: isGalleryPost(detailNode),
+            source: "html",
+          };
+        } catch (htmlError) {
+          // The HTML fetch can succeed with a 200 and still hold nothing:
+          // Reddit serves challenges and hydration-only shells that way. The
+          // JSON endpoint answers for the same post from the same origin.
+          let jsonDetail = null;
+          try {
+            const parsed = mediaFromRedditJson(
+              await fetchRedditJson(slide.commentsUrl),
+            );
+            if (parsed) jsonDetail = Object.assign({ source: "json" }, parsed);
+          } catch (_jsonError) {
+            // A challenge page can come back over JSON too; treat it as no
+            // detail so the HTML error decides the outcome.
+            jsonDetail = null;
+          }
+          if (!jsonDetail) throw htmlError;
+          detail = jsonDetail;
         }
-        if (!jsonDetail) throw htmlError;
-        detail = jsonDetail;
+        // A single-item HTML answer for a gallery whose count is unknown
+        // cannot be told apart from Reddit's lazy one-figure render. One
+        // more JSON attempt settles it; if that also answers nothing, the
+        // visible slide is kept and the count stays honestly unknown.
+        if (slide.galleryPending && !isResolvedGalleryDetail(detail)) {
+          const jsonDetail = await fetchGalleryJsonDetail(slide);
+          if (jsonDetail) detail = jsonDetail;
+          else inconclusive = true;
+        }
+      }
+      if (inconclusive) {
+        // Keep the visible thumbnail; mark the attempt settled so a
+        // revisit cannot loop the same inconclusive fetches forever.
+        state.enrichments.set(key, "done");
+        slide.galleryPending = false;
+        slide.galleryUnresolved = true;
+        debugLogEvent("enrichment-inconclusive", key);
+        if (
+          state.open &&
+          state.slides[state.index] === slide &&
+          slide.galleryItem
+        ) {
+          title.textContent = visibleGalleryLabel(slide);
+        }
+        return;
       }
       finishEnrichment(slide, key, detail);
     } catch (_error) {
@@ -1812,6 +1987,7 @@
       if (entry !== video) continue;
       state.preloadCache.delete(key);
       state.preloadRetry.delete(key);
+      settleEvictedDashJob(key);
       state.preloadStats.dashReleased += 1;
       debugLogEvent("preload-invalidated", { key, reason: "dash-released" });
       break;
@@ -1831,7 +2007,24 @@
       if (wasPreparedDASH) dropPreparedDashEntry(video);
       video.pause();
       const restore = state.nativeRestores.get(video);
-      if (!restore) return;
+      if (!restore) {
+        // A video the viewer displayed cold and that never joined the
+        // cache (no metadata arrived, a released DASH player) holds
+        // buffers nothing can reuse: release them here, since the next
+        // eviction pass will no longer see this detached element. A cached
+        // or prepared element keeps its data — that is exactly what a
+        // step back is meant to reuse.
+        const navKey = video.redditpNavKey || "";
+        const cachedEntry = navKey ? state.preloadCache.get(navKey) : null;
+        if (
+          video.classList.contains("redditp__video") &&
+          !video.redditpPreloaded &&
+          cachedEntry !== video
+        ) {
+          releasePreloadResource(video);
+        }
+        return;
+      }
       if (restore.className === null) video.removeAttribute("class");
       else video.setAttribute("class", restore.className);
       if (restore.style === null) video.removeAttribute("style");
@@ -1956,7 +2149,11 @@
   function attachRedditDashSource(video, mpdUrl) {
     video.setAttribute("data-redditp-mpd", mpdUrl);
     dispatchRedditDashEvent(video, "redditp:dash-attach");
-    return video.getAttribute("data-redditp-dash") === "attached";
+    const attached = video.getAttribute("data-redditp-dash") === "attached";
+    // Stage events fire after this call returns (and often while the
+    // element is detached), so the listener rides on the element itself.
+    if (attached) listenDashStages(video);
+    return attached;
   }
 
   // v.redd.it serves video and audio as separate DASH tracks. Old Reddit
@@ -1964,6 +2161,9 @@
   // page's world) attaches it to our element. DOM events reach the bridge
   // synchronously, so its answer is on the element when dispatchEvent returns.
   function attachRedditDash(video, slide) {
+    // Activity tracking is keyed like the preload cache, so a displayed
+    // stream and its prepared entry share one identity.
+    video.redditpDashKey = mediaPreloadKey(slide);
     if (!attachRedditDashSource(video, slide.mpdUrl)) return false;
     video.addEventListener(
       "redditp:dash-failed",
@@ -1976,10 +2176,63 @@
     return true;
   }
 
+  // DASH preparation progress, as reported by the page bridge. Each stage
+  // is recorded once per element (a re-attach clears its entry first), and
+  // the matching stat counter increments only for the first element that
+  // reached it under a given media key.
+  function trackDashStage(video, stage) {
+    if (!stage) return;
+    const key = video.redditpDashKey || "";
+    if (!key) return;
+    const now = Date.now();
+    let entry = state.dashActivity.get(key);
+    if (!entry) {
+      entry = { stage: "", at: 0, manifest: 0, segments: 0, ready: 0 };
+      state.dashActivity.set(key, entry);
+    }
+    entry.stage = stage;
+    entry.at = now;
+    if (stage === "manifest" && !entry.manifest) {
+      entry.manifest = now;
+      state.preloadStats.dashManifest += 1;
+    } else if (stage === "segments" && !entry.segments) {
+      entry.segments = now;
+      state.preloadStats.dashFirstSegment += 1;
+    } else if (stage === "ready" && !entry.ready) {
+      entry.ready = now;
+      state.preloadStats.dashReady += 1;
+    }
+    debugLogEvent("dash-stage", { key, stage });
+  }
+
+  // Stage reporting listener, added once per element at attach. The element
+  // can be detached when a stage fires (a speculative entry is cached off
+  // screen), so the listener must live on the element itself — a document
+  // listener would only see connected elements.
+  function listenDashStages(video) {
+    if (video.redditpDashStagesHooked) return;
+    video.redditpDashStagesHooked = true;
+    video.addEventListener("redditp:dash-stage", () => {
+      trackDashStage(video, video.getAttribute("data-redditp-dash-stage"));
+    });
+  }
+
+  // A released DASH element no longer holds a stream: its activity entry
+  // must leave the live map at the same moment the player is reset, whether
+  // the release came from teardown, eviction, failure, or cancel.
+  function clearDashActivity(video) {
+    const key = video.redditpDashKey;
+    if (key && state.dashActivity.get(key)) {
+      state.dashActivity.delete(key);
+      debugLogEvent("dash-released", { key });
+    }
+  }
+
   function releaseRedditDash(video) {
     if (video.getAttribute("data-redditp-dash") !== "attached") return;
     dispatchRedditDashEvent(video, "redditp:dash-reset");
     video.removeAttribute("data-redditp-dash");
+    clearDashActivity(video);
   }
 
   function playVideoFallback(video, slide) {
@@ -2403,6 +2656,24 @@
     return cached;
   }
 
+  // An evicted cache entry whose DASH preparation is still in flight must
+  // end that in-flight period immediately: the element just lost its
+  // stream, so holding the video-budget slot until the settle timer would
+  // block other video work for nothing.
+  function settleEvictedDashJob(key) {
+    const job = state.preloadInFlight.get(key);
+    if (!job || !job.dashPending) return;
+    job.canceled = true;
+    if (job.dashSettleId) {
+      clearTimeout(job.dashSettleId);
+      job.dashSettleId = null;
+    }
+    job.dashPending = false;
+    state.preloadInFlight.delete(key);
+    state.preloadStats.canceled += 1;
+    debugLogEvent("preload-cancel", key);
+  }
+
   // Releases the browser resources a preloaded media object holds (decoded
   // image data, video buffers) so eviction actually frees memory.
   function releasePreloadResource(cached) {
@@ -2450,7 +2721,10 @@
   }
 
   // A cache entry is kept while its slide is on screen, worth showing on a
-  // step back, or inside the preload horizon (including a dangling gallery).
+  // step back, or inside the preload horizon (including a dangling gallery,
+  // bounded to the gallery window: a 60-item gallery must not pin its whole
+  // distant tail in memory forever — the rolling window re-centers on the
+  // slides that are actually near).
   function activePreloadKeys() {
     const keys = new Set();
     if (!state.slides.length) return keys;
@@ -2462,11 +2736,18 @@
       const slide = state.slides[index];
       if (slide) keys.add(mediaPreloadKey(slide));
     }
-    // A dangling gallery keeps its cache alive past the offset horizon.
+    // A dangling gallery keeps its cache alive past the offset horizon, but
+    // only across the same depth the preload candidates use: an entry
+    // outside the gallery window is evicted as the user advances, and the
+    // next scheduler pass re-prepares whatever the (rolled) window holds
+    // then. Both bounds read the same window, so a preloaded item can never
+    // be evicted and re-queued in a loop.
     let tail = state.index + state.settings.preloadPosts;
+    const galleryWindow = galleryPreloadWindow();
     while (tail >= 0 && tail < state.slides.length) {
       const slide = state.slides[tail];
       if (!slide || postIdentity(slide) !== identity) break;
+      if (tail - state.index > galleryWindow) break;
       keys.add(mediaPreloadKey(slide));
       tail += 1;
     }
@@ -2480,6 +2761,7 @@
       releasePreloadResource(state.preloadCache.get(key));
       state.preloadCache.delete(key);
       state.preloadRetry.delete(key);
+      settleEvictedDashJob(key);
       state.preloadStats.evicted += 1;
       debugLogEvent("preload-evict", { key, reason: "horizon" });
     }
@@ -2618,6 +2900,8 @@
   // video, everything of unknown type (link cards, text posts) stays outside
   // the filter. RedGIFs slides are video hosts from the moment they are
   // recognized, whether or not a direct rendition has been resolved yet.
+  // This remains the kind-based classification Images Only has always used;
+  // Video Only augments it with URL evidence in slideMediaModeEligible.
   function slideMediaType(slide) {
     if (!slide) return "";
     if (slide.kind === "image") return "image";
@@ -2635,7 +2919,10 @@
   // The single media-mode eligibility decision used by navigation, counters,
   // the numbered bar, and the preload scheduler alike. `both` keeps every
   // media kind (the pre-existing behavior); `images`/`videos` keep their one
-  // kind, and unknown types never disappear because of the mode.
+  // kind, and unknown types never disappear because of the mode. Video Only
+  // additionally admits image-kind slides that carry a video URL, so GIFs
+  // and still-framed hosted-video cards are not mistaken for ordinary
+  // pictures. Images Only keeps its previous GIF/thumbnail behavior.
   function slideMediaModeEligible(slide) {
     const type = slideMediaType(slide);
     if (!type) return true;
@@ -2644,11 +2931,9 @@
       : "both";
     // The mode keys are plural ("images"/"videos") while the media type is
     // singular ("image"/"video"); compare by meaning, not by string.
-    return (
-      mode === "both" ||
-      (mode === "images" && type === "image") ||
-      (mode === "videos" && type === "video")
-    );
+    if (mode === "both") return true;
+    if (mode === "images") return type === "image";
+    return type === "video" || slideHasVideoOnlyMedia(slide);
   }
 
   // The full slide-level exclusion answer: the media mode first, then the
@@ -2762,9 +3047,29 @@
     );
   }
 
+  // Gallery preloading depth. The window must stay wide enough to feel
+  // seamless (never a tiny fixed 4–6 cap) but must not let a 60-item
+  // gallery park distant media in every scheduler slot. The base scales
+  // with the user's own preload depth, and spare scheduler capacity
+  // widens it further while the network reads healthy.
+  const GALLERY_PRIORITY_STEP = 0.02;
+  function galleryPreloadWindow() {
+    const base = Math.max(8, state.settings.preloadPosts * 2);
+    const spare =
+      state.settings.preloadConcurrency -
+      schedulerLoad() -
+      state.preloadQueue.length;
+    if (spare > 0 && !imageNetworkSlow()) {
+      return Math.min(base + spare * 2, 40);
+    }
+    return base;
+  }
+
   // The rolling preload window, ordered by how soon the user is likely to
   // see the media (lower priority = fetched sooner):
-  //   0        remaining images of the gallery currently on screen
+  //   0..~0.3  the current gallery's remaining media in order — images at
+  //            distance d sit just ahead of that distance's video, and the
+  //            whole gallery stays ahead of the next post's media
   //   1..horizon  the near posts' primary media; videos only in the first
   //            window positions, and subject to the video budget
   //   5..6     the slides just left behind, so stepping back is free
@@ -2781,11 +3086,39 @@
     const current = state.slides[state.index];
     const currentIdentity = postIdentity(current);
     if (current?.galleryItem) {
+      const window = galleryPreloadWindow();
+      let distance = 0;
       for (let i = state.index + 1; i < state.slides.length; i += 1) {
         const candidate = state.slides[i];
         if (postIdentity(candidate) !== currentIdentity) break;
-        if (candidate.kind === "image") {
-          push(candidate, 0, "gallery");
+        distance += 1;
+        if (distance > window) break;
+        // Every slide kind the gallery carries gets a slot: images, direct
+        // and DASH videos, and animated GIFs that Reddit delivered as MP4
+        // renditions. Images lead at the same distance; a video at
+        // distance d still outranks the image at d+1, so a mixed gallery
+        // never stalls on a cold video right after a warm image.
+        if (candidate.kind === "image" && candidate.url) {
+          push(candidate, distance * GALLERY_PRIORITY_STEP, "gallery");
+        } else if (preloadableVideoSlide(candidate)) {
+          push(
+            candidate,
+            distance * GALLERY_PRIORITY_STEP + 0.01,
+            "gallery-video",
+          );
+        } else if (
+          candidate.redgifsId &&
+          candidate.kind === "embed" &&
+          !candidate.redditpRedgifsSkip
+        ) {
+          push(
+            candidate,
+            distance * GALLERY_PRIORITY_STEP + 0.01,
+            "redgifs",
+          );
+        } else if (candidate.kind === "video" && candidate.url) {
+          // Inside the window but never queued: say why in the diagnostics.
+          notePreloadSkip(candidate, videoPreloadExclusionReason(candidate));
         }
       }
     }
@@ -2877,6 +3210,23 @@
     );
   }
 
+  // Generic pool load: how many preload slots are occupied by work the
+  // scheduler's own concurrency limit should govern. A DASH job that is
+  // still preparing (its manifest and first segments are in flight inside
+  // the page's dash.js) does not count here: dash.js drives its own
+  // request pipeline, and holding a generic slot for it starved image
+  // jobs for the whole preparation. Such a job IS accounted against the
+  // video budget (heldVideoPreloads), so preparation still cannot stack
+  // up video streams without bound.
+  function schedulerLoad() {
+    let count = 0;
+    for (const job of state.preloadInFlight.values()) {
+      if (job.dashPending) continue;
+      count += 1;
+    }
+    return count;
+  }
+
   // How many video resources in an expensive state exist right now, across
   // the cache and still-running jobs. The one being displayed counts when
   // it was prepared by the preloader, so it still occupies its budget slot.
@@ -2889,24 +3239,27 @@
   // exactly that accounting). Expensive states are:
   //   - readyState >= HAVE_CURRENT_DATA (buffered samples/frames), or
   //   - an attached dash.js player (data-redditp-dash "attached").
+  // The two passes share one Set keyed by media key: a DASH job that is
+  // both still in flight (preparing) and already cached used to be counted
+  // twice and could consume two budget slots with one resource.
   function heldVideoPreloads() {
-    let count = 0;
-    const expensive = (video) =>
+    const expensive = new Set();
+    const isExpensive = (video) =>
       video.readyState >= (HTMLMediaElement.HAVE_CURRENT_DATA || 2) ||
       video.getAttribute("data-redditp-dash") === "attached";
-    for (const value of state.preloadCache.values()) {
+    for (const [key, value] of state.preloadCache) {
       if (
         typeof HTMLVideoElement !== "undefined" &&
         value instanceof HTMLVideoElement &&
-        expensive(value)
+        isExpensive(value)
       ) {
-        count += 1;
+        expensive.add(key);
       }
     }
-    for (const job of state.preloadInFlight.values()) {
-      if (job.slide?.kind === "video") count += 1;
+    for (const [key, job] of state.preloadInFlight) {
+      if (job.slide?.kind === "video" || job.dashPending) expensive.add(key);
     }
-    return count;
+    return expensive.size;
   }
 
   // Cache outcomes for the displayed media, one per navigation render.
@@ -3036,17 +3389,42 @@
       const existing = state.preloadQueue.find(
         (candidate) => candidate.key === job.key,
       );
-      if (!existing) state.preloadQueue.push(job);
+      if (existing) {
+        // One job per media key, refreshed against the freshly computed
+        // window every pass: a navigation re-ranks the queue without
+        // dropping jobs or losing their wait time. Priorities, kinds, and
+        // slide references all go stale otherwise (the queue outlives the
+        // navigation that created it), which used to dispatch jobs at
+        // distances the current position no longer justifies.
+        existing.priority = job.priority;
+        existing.jobKind = job.jobKind;
+        existing.slide = job.slide;
+      } else {
+        job.queuedAt = Date.now();
+        state.preloadQueue.push(job);
+      }
     }
 
-    const capacity = Math.max(
-      0,
-      state.settings.preloadConcurrency - state.preloadInFlight.size,
-    );
+    // Effective dispatch priority: the candidate priority plus a boost for
+    // time already spent waiting, so a job that keeps losing the sort
+    // (a video repeatedly deferred behind fresh images) cannot be starved
+    // indefinitely. The boost ramps over 30 seconds and is capped below
+    // the next post's media distance, so aging reorders within a
+    // distance band, not across the feed.
+    const dispatchPriority = (job, now) =>
+      job.priority + (job.queuedAt ? Math.min(0.9, (now - job.queuedAt) / 30000) : 0);
+
+    const concurrency = state.settings.preloadConcurrency;
+    const capacity = Math.max(0, concurrency - schedulerLoad());
     for (let i = 0; i < capacity && state.preloadQueue.length; i += 1) {
+      const now = Date.now();
       const choices = state.preloadQueue
-        .map((job, index) => ({ job, index }))
-        .sort((a, b) => a.job.priority - b.job.priority || a.index - b.index);
+        .map((job, index) => ({
+          job,
+          index,
+          effective: dispatchPriority(job, now),
+        }))
+        .sort((a, b) => a.effective - b.effective || a.index - b.index);
       // Dispatch the highest-priority job that is allowed to start. Video
       // element jobs (plain or DASH) face extra gates that image and RedGIFs
       // metadata jobs never see, so speculative videos can never crowd the
@@ -3054,8 +3432,17 @@
       // does not block the lower-priority image behind it, so the scan
       // continues past it instead of breaking.
       let eligible = null;
+      // Snapshot per dispatch round: the queue only changes between rounds.
+      const queuedImageJobs = state.preloadQueue.filter(
+        (queued) => queued.slide.kind === "image",
+      );
+      let videosInFlight = 0;
+      for (const job of state.preloadInFlight.values()) {
+        if (job.slide?.kind === "video") videosInFlight += 1;
+      }
       for (const choice of choices) {
-        if (choice.job.slide.kind !== "video") {
+        const job = choice.job;
+        if (job.slide.kind !== "video") {
           eligible = choice;
           break;
         }
@@ -3066,20 +3453,28 @@
           logVideoDeferred("slow-network");
           continue;
         }
-        // Gate 2 — a reserved slot for images: while any image job waits in
-        // the queue, video may only fill the pool up to concurrency - 1, so
-        // a freed slot always goes to an image first. When no images wait
-        // (end of feed, everything cached), video may use the whole pool.
-        const imageJobsWaiting = state.preloadQueue.some(
-          (queued) => queued.slide.kind === "image",
-        );
-        if (
-          imageJobsWaiting &&
-          state.preloadInFlight.size >=
-            state.settings.preloadConcurrency - 1
-        ) {
-          logVideoDeferred("image-priority");
-          continue;
+        if (queuedImageJobs.length) {
+          // Gate 2 — a reserved slot for images: while image jobs wait in
+          // the queue, videos may only fill the pool up to concurrency - 1,
+          // so a freed slot always goes to an image first. The reservation
+          // reads the generic pool load (DASH preparation excluded — see
+          // schedulerLoad), not raw in-flight size.
+          const reserved = schedulerLoad() >= concurrency - 1;
+          // The immediate bypass: the video the user is one step away from,
+          // with no nearer image waiting and no other video being fetched,
+          // may take the last slot. A mixed feed must never present a cold
+          // video right after a warm image just because a distant image
+          // holds the reservation.
+          const jobDistance = forwardSlideDistance(job.slide);
+          const nearerImageWaiting = queuedImageJobs.some(
+            (queued) => forwardSlideDistance(queued.slide) < jobDistance,
+          );
+          const bypass =
+            jobDistance <= 1 && !nearerImageWaiting && videosInFlight === 0;
+          if (reserved && !bypass) {
+            logVideoDeferred("image-priority");
+            continue;
+          }
         }
         // Gate 3 — the video decoder budget. When the budget is full and
         // the closest waiting video is nearer than a cached video resource,
@@ -3091,17 +3486,62 @@
           eligible = choice;
           break;
         }
-        if (evictFartherVideoResource(videoDistance(choice.job.slide))) {
+        if (evictFartherVideoResource(videoDistance(job.slide))) {
           if (heldVideoPreloads() < VIDEO_PRELOAD_LIMIT) {
             eligible = choice;
             break;
           }
         }
+        // The budget must not block a job forever: after a long queue wait
+        // with no image job competing for the pool, the stalled video
+        // starts anyway. Images keep their absolute priority — the override
+        // only fires once nothing else is waiting.
+        if (
+          job.queuedAt &&
+          now - job.queuedAt > VIDEO_QUEUE_STALL_MS &&
+          !queuedImageJobs.length
+        ) {
+          debugLogEvent("preload-video-stall", { key: job.key });
+          eligible = choice;
+          break;
+        }
+        logVideoDeferred("video-budget");
       }
       if (!eligible) break;
       state.preloadQueue.splice(eligible.index, 1);
       runPreload(eligible.job);
     }
+    // A gated video must never wait for an event that never comes: once
+    // the dispatcher leaves jobs queued, a kick timer re-opens the pass at
+    // the next stall deadline, so the budget override (and the priority
+    // aging that accumulated meanwhile) runs even when the scheduler is
+    // otherwise completely idle.
+    if (state.preloadQueue.length) {
+      scheduleQueueKick();
+    } else if (queueKickTimer) {
+      clearTimeout(queueKickTimer);
+      queueKickTimer = 0;
+    }
+  }
+
+  let queueKickTimer = 0;
+  function scheduleQueueKick() {
+    if (queueKickTimer) return;
+    const now = Date.now();
+    let earliest = Infinity;
+    for (const job of state.preloadQueue) {
+      if (job.slide?.kind !== "video" || !job.queuedAt) continue;
+      earliest = Math.min(earliest, job.queuedAt + VIDEO_QUEUE_STALL_MS);
+    }
+    if (!Number.isFinite(earliest)) return;
+    const delay = Math.max(
+      500,
+      Math.min(earliest - now, VIDEO_QUEUE_STALL_MS),
+    );
+    queueKickTimer = setTimeout(() => {
+      queueKickTimer = 0;
+      if (state.open && state.preloadQueue.length) schedulePreloadQueue();
+    }, delay);
   }
 
   // A video job's distance from the displayed slide, used to compare it
@@ -3109,6 +3549,14 @@
   function videoDistance(slide) {
     const index = state.slides.indexOf(slide);
     return index === -1 ? Infinity : Math.abs(index - state.index);
+  }
+
+  // A queued job's forward distance from the displayed slide — the input to
+  // the dispatcher's immediate-video bypass. Only a slide still in the list
+  // has a distance; anything else reads as infinitely far.
+  function forwardSlideDistance(slide) {
+    const index = state.slides.indexOf(slide);
+    return index === -1 ? Infinity : index - state.index;
   }
 
   // Image-first fairness, part 1: record how long a completed image load
@@ -3151,15 +3599,25 @@
     return performance.getEntriesByName(url, "resource").length;
   }
 
-  // Image-first fairness, part 2: true while recently completed images were
-  // consistently slow. With fewer samples than the window there is no
-  // evidence of congestion, so the answer is no — a fresh session never
-  // starts in the paused state.
+  // Image-first fairness, part 2: true while recent image loads show
+  // congestion. Two signals, either of which pauses speculative videos:
+  //   - the rolling average is past the threshold, including partial
+  //     windows — waiting for a full window used to delay the pause until
+  //     four slow loads had already burned seconds of bandwidth, and
+  //   - the two most recent loads were both individually slow, which
+  //     catches fresh congestion hiding behind a couple of fast samples.
+  // With fewer than two samples there is no evidence of congestion, so the
+  // answer is no — a fresh session never starts in the paused state, and
+  // fast image completions wash the pause out again.
   function imageNetworkSlow() {
     const samples = state.preloadImageLatencies;
-    if (samples.length < IMAGE_LATENCY_SAMPLES) return false;
+    if (samples.length < 2) return false;
     const total = samples.reduce((sum, value) => sum + value, 0);
-    return total / samples.length > IMAGE_SLOW_MS;
+    if (total / samples.length > IMAGE_SLOW_MS * 0.8) return true;
+    return (
+      samples[samples.length - 1] > IMAGE_SLOW_MS &&
+      samples[samples.length - 2] > IMAGE_SLOW_MS
+    );
   }
 
   // Deferral diagnostics, time-throttled: the scheduler re-runs on every
@@ -3192,6 +3650,9 @@
         // The requeued job keeps its kind so a RedGIFs metadata job retries
         // as metadata (the runPreload branches read slide.kind for media).
         jobKind: job.jobKind,
+        // The retry's own queue wait starts here, so the stall override and
+        // priority aging measure this attempt, not the failed one.
+        queuedAt: Date.now(),
       });
       debugLogEvent("preload-retry", { key, retries, reason });
     } else {
@@ -3209,6 +3670,13 @@
     if (job && job.timeoutId) {
       clearTimeout(job.timeoutId);
       job.timeoutId = null;
+    }
+    // A DASH job's settle timer (bounded post-attach wait) belongs to the
+    // same cancellation contract: close(), timeout, or cancel must not
+    // leave it scheduled.
+    if (job && job.dashSettleId) {
+      clearTimeout(job.dashSettleId);
+      job.dashSettleId = null;
     }
   }
 
@@ -3300,6 +3768,7 @@
     releasePreloadResource(state.preloadCache.get(farKey));
     state.preloadCache.delete(farKey);
     state.preloadRetry.delete(farKey);
+    settleEvictedDashJob(farKey);
     state.preloadStats.evicted += 1;
     debugLogEvent("preload-evict", { key: farKey, reason: "video-budget" });
     return true;
@@ -3485,6 +3954,14 @@
               // Seek-less engines simply pay the fetch at display time.
             }
             debugLogEvent("preload-firstframe-scheduled", { key });
+          } else {
+            // Metadata depth is the end of this element's network work:
+            // with preload="metadata" browsers still read a variable
+            // amount past the metadata boxes (measured: a whole 1.9 MB
+            // MP4 for a distant video), so a video nobody is about to
+            // seek into stops downloading here. No byte-count heuristic —
+            // the engine's own metadata/data boundary does the cutting.
+            video.preload = "none";
           }
           video.addEventListener(
             "loadeddata",
@@ -3529,14 +4006,37 @@
   // display path uses (attachRedditDash), so the MPD is resolved and the
   // player is connected before navigation; no competing DASH player is
   // created and src stays untouched (dash.js needs a src-free element).
-  // Completing on attach keeps the budget from freezing on engines where
-  // dash.js never reports loadedmetadata; duration only arrives when it
-  // arrives, and stays unknown until then.
+  //
+  // Attachment used to be the completion point, which lied twice: the
+  // scheduler freed the slot while dash.js was still fetching the manifest
+  // and first segments, and the video budget never saw the stream work at
+  // all. The job now stays in flight (dashPending) until the element
+  // reaches initial media data, or a bounded wait ends it; the budget
+  // counts the preparation the whole time (heldVideoPreloads), while the
+  // generic pool ignores it (schedulerLoad) so image jobs are not starved
+  // by dash.js's own request pipeline.
+  const DASH_PRELOAD_SETTLE_MS = 15000;
+
+  // Ends a DASH job's in-flight period. Everything routes through here so
+  // the settle timer, the loadeddata event, and cleanup paths all agree.
+  function settleDashPreloadJob(job, why) {
+    if (state.preloadInFlight.get(job.key) !== job) return;
+    job.dashPending = false;
+    if (job.dashSettleId) {
+      clearTimeout(job.dashSettleId);
+      job.dashSettleId = null;
+    }
+    state.preloadInFlight.delete(job.key);
+    debugLogEvent("preload-dash-settled", { key: job.key, why });
+    schedulePreloadQueue();
+  }
+
   function runDashVideoPreload(job) {
     const key = job.key;
     const video = document.createElement("video");
     job.media = video;
     video.redditpPreloaded = true;
+    video.redditpDashKey = key;
     video.preload = "metadata";
     video.muted = true;
     video.playsInline = true;
@@ -3555,10 +4055,19 @@
     state.preloadStats.loaded += 1;
     state.preloadStats.dashPrepared += 1;
     state.preloadRetry.delete(key);
-    state.preloadInFlight.delete(key);
     debugLogEvent("preload-loaded", { key, media: "dash" });
+    // The in-flight period: manifest, segments, and playback readiness are
+    // dash.js work happening inside the page. A hung bridge (no stream data
+    // ever arrives) settles the job after this bounded wait so it cannot
+    // occupy the video budget forever.
+    job.dashPending = true;
+    job.dashSettleId = setTimeout(() => {
+      job.dashSettleId = null;
+      settleDashPreloadJob(job, "timeout");
+    }, DASH_PRELOAD_SETTLE_MS);
     // Duration and first-frame evidence still arrive later through the
-    // connected player's own element events.
+    // connected player's own element events; loadeddata also ends the
+    // in-flight period.
     video.addEventListener(
       "loadedmetadata",
       () => noteVideoDuration(job.slide, video),
@@ -3572,6 +4081,7 @@
           key,
           readyState: video.readyState,
         });
+        settleDashPreloadJob(job, "ready");
       },
       { once: true },
     );
@@ -3586,11 +4096,21 @@
         if (video.parentNode === mediaBox) return; // displayed fallback path owns it
         if (state.preloadCache.get(key) === video) {
           state.preloadCache.delete(key);
+          state.preloadRetry.delete(key);
           state.preloadStats.evicted += 1;
           job.slide.preloadFailed = true;
           debugLogEvent("preload-invalidated", { key, reason: "dash-failed" });
-          schedulePreloadQueue();
         }
+        // The stream died: the job's in-flight period and its activity
+        // entry end here, not at a settle timer that has nothing to wait for.
+        if (job.dashSettleId) {
+          clearTimeout(job.dashSettleId);
+          job.dashSettleId = null;
+        }
+        job.dashPending = false;
+        state.preloadInFlight.delete(key);
+        clearDashActivity(video);
+        schedulePreloadQueue();
       },
       { once: true },
     );
@@ -3695,10 +4215,25 @@
     for (const job of state.preloadInFlight.values()) {
       job.canceled = true;
       clearPreloadTimeout(job);
+      // A canceled job must not leave a half-prepared entry behind: if the
+      // element it was fetching already joined the cache (a DASH attach, a
+      // metadata race), that entry goes with the job.
+      for (const [key, entry] of Array.from(state.preloadCache)) {
+        if (entry === job.media) {
+          state.preloadCache.delete(key);
+          state.preloadRetry.delete(key);
+        }
+      }
       if (job.media) releasePreloadResource(job.media);
     }
     state.preloadStats.canceled += state.preloadInFlight.size;
     state.preloadInFlight.clear();
+    // The idle-scheduler kick timer has nothing to re-open once the queue
+    // and its jobs are gone.
+    if (queueKickTimer) {
+      clearTimeout(queueKickTimer);
+      queueKickTimer = 0;
+    }
   }
 
   // Renders the explicit no-matching-media stage (sync already un-hid the
@@ -4035,12 +4570,41 @@
         cachedImage || inflightImage || element("img", "redditp__image", "");
       if (!cachedImage && !inflightImage) {
         img.alt = slide.title;
+        const settleColdImage = () => {
+          img.redditpDecoded = true;
+          // The bytes are complete and reusable the moment they arrive,
+          // whether or not the user already moved on: the entry is keyed by
+          // media, not by display state, so a fast navigation away (before
+          // the load settled) still leaves the image cached for a step back.
+          if (state.open && state.preloadCache.get(navKey) !== img) {
+            state.preloadCache.set(navKey, img);
+            debugLogEvent("cache-displayed", { key: navKey, media: "image" });
+          }
+          if (
+            generation !== renderGeneration ||
+            state.slides[state.index] !== slide
+          ) {
+            // Superseded display: the watchdog and readiness belong to the
+            // stage that replaced this one.
+            return;
+          }
+          clearDisplayWatchdog();
+          expandLargeImage(img, slide);
+          noteMediaReady(navKey);
+        };
         img.addEventListener(
           "load",
           () => {
-            clearDisplayWatchdog();
-            expandLargeImage(img, slide);
-            noteMediaReady(navKey);
+            // Decode readiness on the display path, once per element: a
+            // prepared image arrives already decoded, and a cold one must
+            // not pay a second decode when it is shown again. A decode
+            // failure (rare, and never a network fact) still settles the
+            // display — the browser holds complete bytes either way.
+            if (img.redditpDecoded || typeof img.decode !== "function") {
+              settleColdImage();
+              return;
+            }
+            img.decode().then(settleColdImage, settleColdImage);
           },
           { once: true },
         );
@@ -4138,6 +4702,7 @@
         // can neither be reused nor hold a video budget slot.
         state.preloadCache.delete(navKey);
         state.preloadRetry.delete(navKey);
+        settleEvictedDashJob(navKey);
         state.preloadStats.dashReleased += 1;
         debugLogEvent("preload-invalidated", {
           key: navKey,
@@ -4163,6 +4728,10 @@
         video.preload = "metadata";
       }
       video.className = "redditp__video";
+      // Identity for stopMedia's release decision: a video the viewer
+      // displayed cold and that never joined the cache cannot be reused by
+      // anything, so its buffers are freed when the stage moves on.
+      video.redditpNavKey = navKey;
       video.poster = slide.poster || "";
       video.controls = true;
       video.playsInline = true;
@@ -4223,6 +4792,20 @@
           () => {
             noteVideoDuration(slide, video);
             noteMediaReady(navKey);
+            // Cold-displayed video joins the cache at the prepared key so
+            // leaving this slide doesn't throw the buffered bytes away.
+            // DASH elements are excluded: their player is released on the
+            // way out, so the element can never be reused as prepared.
+            if (
+              state.open &&
+              generation === renderGeneration &&
+              state.slides[state.index] === slide &&
+              !slide.mpdUrl &&
+              state.preloadCache.get(navKey) !== video
+            ) {
+              state.preloadCache.set(navKey, video);
+              debugLogEvent("cache-displayed", { key: navKey, media: "video" });
+            }
           },
           { once: true },
         );
@@ -4530,6 +5113,12 @@
   // describes what next/previous actually walk through.
   function visibleGalleryLabel(slide) {
     if (!slide || !slide.galleryItem) return slide ? slide.title : "";
+    // An unresolved count must never read as a complete gallery: while
+    // enrichment is pending (or settled without a count) the total is
+    // shown as unknown instead of a misleading "(1/1)".
+    if (slide.galleryPending || slide.galleryUnresolved) {
+      return `(${slide.galleryItem}/?) ${slide.title}`;
+    }
     const identity = postIdentity(slide);
     let start = state.index;
     while (
@@ -4556,7 +5145,7 @@
     if (total > 0) {
       return `(${position + 1}/${total}) ${slide.title}`;
     }
-    return `(${slide.galleryItem}/${slide.galleryTotal}) ${slide.title}`;
+    return `(${slide.galleryItem}/${slide.galleryTotal || "?"}) ${slide.title}`;
   }
 
   function appendNewPosts(root) {
@@ -4982,6 +5571,10 @@
       if (state.slides[state.index]?.galleryItem) {
         title.textContent = visibleGalleryLabel(state.slides[state.index]);
       }
+      // A still-framed hosted-video slide was deliberately not upgraded in
+      // Images Only. Switching to Videos/Both keeps it on screen without a
+      // re-render, so retry the deferred upgrade here.
+      if (current.videoUpgrade) void enrichSlide(current);
       schedulePreloadQueue();
       return;
     }
@@ -5642,6 +6235,18 @@
           cacheSize: state.preloadCache.size,
           scanFailures: state.scanFailures,
           redgifsPending: redgifsResolutions.size,
+          // Live DASH preparation accounting: how many streams are actively
+          // attached/fetching right now, and what stage each reached. The
+          // counters above (dashManifest/dashFirstSegment/dashReady) are
+          // cumulative; this list is the current view.
+          dashActive: state.dashActivity.size,
+          dashActivity: Array.from(state.dashActivity.entries()).map(
+            ([key, entry]) => ({
+              key,
+              stage: entry.stage,
+              ageMs: Math.max(0, Date.now() - entry.at),
+            }),
+          ),
         };
       },
       // Test/diagnostic snapshot: one immutable view of the state the

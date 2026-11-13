@@ -452,6 +452,35 @@ test.describe("redgifs parent integration", () => {
     await expect(page.locator(".redditp__title")).toHaveText("Image 3");
   });
 
+  test("Video Only keeps an unresolved embed eligible and completion advances", async ({
+    page,
+  }) => {
+    await openIntegrationFeed(
+      page,
+      `${redgifsPost(MEDIA_ID, "RedGIFs clip")}${redgifsPost(
+        "bridgeclip2",
+        "Second clip",
+      )}`,
+      { settings: { mediaMode: "videos", slideDurationSeconds: 30 } },
+    );
+    await expect(page.locator(".redditp__media-mode")).toHaveAttribute(
+      "data-media-mode",
+      "videos",
+    );
+    // Both unresolved RedGIFs embeds are video slides in Video Only.
+    await expect(page.locator(".redditp__number")).toHaveCount(2);
+    await expect(page.locator(".redditp__title")).toHaveText("RedGIFs clip");
+
+    const frame = await installBridgeInActiveFrame(page);
+    await loopBridgeVideo(frame);
+    await expect(page.locator(".redditp__title")).toHaveText("Second clip", {
+      timeout: 3000,
+    });
+    // One completion produces exactly one advancement in this mode too.
+    await page.waitForTimeout(300);
+    await expect(page.locator(".redditp__title")).toHaveText("Second clip");
+  });
+
   test("a paused completion is recorded and advances after resume", async ({
     page,
   }) => {
